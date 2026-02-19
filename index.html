@@ -1,1 +1,1954 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>NEON CASINO: PRESTIGE FINAL</title>
 
+<style>
+  :root {
+    --bg-dark: #050510;
+    --panel-bg: rgba(20, 25, 40, 0.85);
+    --primary: #ff0055; 
+    --secondary: #00ffff; 
+    --gold: #ffd700;
+    --sp-color: #b026ff;
+    --success: #00ff66;
+    --danger: #ff4444;
+    --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* THEMES */
+  body.theme-gold { --primary: #d4af37; --secondary: #fff; --panel-bg: rgba(40, 30, 10, 0.9); }
+  body.theme-matrix { --primary: #0f0; --secondary: #0f0; --gold: #0f0; --sp-color: #fff; --bg-dark: #000; font-family: 'Courier New', monospace; }
+
+  body { 
+    margin: 0; 
+    background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%); 
+    color: #fff; 
+    font-family: var(--font-main); 
+    overflow: hidden; 
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    user-select: none; 
+    transition: all 0.5s;
+  }
+
+  /* FX LAYER */
+  #fx-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9000; }
+
+  /* ANIMATIONS */
+  body.shark-attack { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } }
+  @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); filter: brightness(1.2); } 100% { transform: scale(1); } }
+  @keyframes pulseRed { 0% { box-shadow: inset 0 0 0 #f00; } 50% { box-shadow: inset 0 0 30px #f00; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* UI COMPONENTS */
+  .glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
+  }
+
+  /* HUD */
+  .hud { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 15px 20px; 
+    background: rgba(0,0,0,0.8); 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    z-index: 100; flex-shrink: 0;
+  }
+  .balance-container { text-align: right; }
+  .balance-val { font-size: 20px; font-weight: 700; color: var(--gold); text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); letter-spacing: 1px; }
+  .sp-val { font-size: 14px; color: var(--sp-color); font-weight: bold; text-shadow: 0 0 5px var(--sp-color); }
+  .debt-box { font-size: 11px; color: #ff4444; display:flex; gap:10px; align-items:center; animation: pulseRed 2s infinite; margin-top: 4px; }
+
+  .btn-small { padding: 4px 10px; font-size: 10px; border-radius: 4px; background: #333; border: 1px solid #555; color: #fff; cursor: pointer; }
+  .btn-reset { background: #d00; color: #fff; border: 1px solid #ff5555; animation: pulse 1s infinite; display: none; margin-right: 10px; }
+
+  .xp-container { display: flex; flex-direction: column; gap: 2px; }
+  .xp-label { font-size: 10px; font-weight: bold; color: #aaa; }
+  .xp-bar-bg { width: 120px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
+  .xp-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.5s; }
+
+  /* SCREENS */
+  .screen { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 10px; box-sizing: border-box; overflow-y: auto; }
+  .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
+
+  /* LOBBY & SHOP */
+  .lobby-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; width: 100%; max-width: 900px; padding: 10px; }
+  .game-tile { 
+    background: linear-gradient(145deg, rgba(30,30,40,1), rgba(20,20,30,1));
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+  .game-tile:hover { transform: translateY(-5px); border-color: var(--secondary); box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); }
+  .game-tile h3 { margin: 10px 0 5px 0; font-size: 16px; color: #fff; }
+  .game-tile.locked { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+
+  /* SHOP ITEMS */
+  .shop-item { border-color: var(--sp-color); }
+  .shop-item:hover { box-shadow: 0 0 20px var(--sp-color); }
+  .shop-item.sold-out { opacity: 0.5; filter: grayscale(1); pointer-events: none; border-color: #333; }
+  .shop-item.sold-out::after { content: "AUSVERKAUFT"; position: absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-15deg); background:#f00; color:#fff; padding:5px; font-weight:bold; border:2px solid #fff; font-size:10px; }
+  .price-tag { background: var(--sp-color); color: #fff; font-weight: bold; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; font-size: 12px; }
+
+  /* HEIST TILE */
+  .heist-tile { border-color: var(--danger); }
+  .heist-tile:hover { box-shadow: 0 0 20px var(--danger); }
+
+  /* ROUND INFO BAR */
+  .round-info { 
+    background: rgba(0,0,0,0.6); border: 1px solid #444; 
+    padding: 8px 20px; border-radius: 20px; 
+    font-family: monospace; font-size: 14px; 
+    margin-bottom: 15px; display: flex; gap: 20px; 
+  }
+  .round-val.pos { color: var(--success); }
+  .round-val.neg { color: var(--primary); }
+
+  /* COMMON CONTROLS */
+  .controls-area { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 15px; }
+  .bet-controls { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 12px; border: 1px solid #333; }
+  .action-controls { display: flex; gap: 10px; justify-content: center; }
+
+  button { 
+    background: linear-gradient(to bottom, #444, #222); 
+    border: 1px solid #555; color: #fff; 
+    padding: 0 20px; height: 40px; 
+    border-radius: 8px; cursor: pointer; 
+    font-weight: 700; text-transform: uppercase; font-size: 12px; 
+    transition: all 0.2s; 
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  }
+  button:hover:not(:disabled) { background: linear-gradient(to bottom, #555, #333); border-color: #fff; transform: translateY(-1px); }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
+  .btn-spin { 
+    background: linear-gradient(135deg, var(--primary) 0%, #990033 100%); 
+    border: none; font-size: 16px; min-width: 140px; height: 50px;
+    box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); 
+  }
+  .btn-spin:hover:not(:disabled) { box-shadow: 0 0 25px rgba(255, 0, 85, 0.6); }
+
+  .btn-gamble { background: linear-gradient(to bottom, #ff9900, #cc7a00); box-shadow: 0 0 10px rgba(255,153,0,0.3); }
+  .btn-collect { background: linear-gradient(to bottom, #00cc52, #008033); box-shadow: 0 0 10px rgba(0,255,100,0.3); }
+  .btn-multi { width: 32px; height: 32px; padding: 0; font-size: 14px; background: #2a2a3a; }
+
+  input[type=number], select { 
+    background: #111; color: #fff; border: 1px solid #444; 
+    height: 32px; border-radius: 6px; text-align: center; font-weight: bold; 
+    width: 80px; font-family: inherit; 
+  }
+
+  /* SLOTS */
+  .slot-machine { 
+    background: linear-gradient(180deg, #222, #111);
+    padding: 20px; border-radius: 20px; 
+    border: 4px solid #333; 
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 20px #000; 
+    position: relative; width: 100%; max-width: 800px; 
+  }
+  .reels-container { 
+    display: flex; gap: 5px; 
+    background: #000; padding: 10px; 
+    border-radius: 10px; overflow: hidden; height: 240px; 
+    box-shadow: inset 0 0 20px #000; border: 1px solid #333;
+    position: relative;
+  }
+  .reel-col { width: 100%; height: 100%; position: relative; overflow: hidden; }
+  .reel-strip { position: absolute; top: 0; width: 100%; will-change: transform; }
+  .symbol { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 48px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+  .symbol.scatter-orb::after { content: "🌀"; font-size: 50px; color:#fff; position: absolute; filter: hue-rotate(90deg) drop-shadow(0 0 10px var(--secondary)); animation: spinIcon 2s linear infinite; }
+  .paylines-svg { position: absolute; inset: 0; pointer-events: none; z-index: 10; width:100%; height:100%; }
+  .laser-line { fill: none; stroke-width: 6; stroke-linecap: round; filter: drop-shadow(0 0 8px currentColor); stroke-opacity: 0.8; }
+  @keyframes spinIcon { to { transform: rotate(360deg); } }
+
+  /* BLACKJACK TABLE */
+  .bj-table { 
+    background: radial-gradient(ellipse at center, #1a5c2a 0%, #0e3015 100%);
+    border: 10px solid #3e2723; border-radius: 150px; 
+    width: 100%; max-width: 800px; height: 400px; 
+    position: relative; display: flex; flex-direction: column; justify-content: space-between; 
+    padding: 40px; box-sizing: border-box; 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 100px rgba(0,0,0,0.5); 
+  }
+  .card-area { display: flex; justify-content: center; height: 110px; perspective: 800px; }
+  .card { 
+    width: 70px; height: 100px; 
+    background: #fff; border-radius: 6px; 
+    color: #000; font-weight: bold; font-size: 20px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.4); margin-right: -20px; 
+    transition: transform 0.3s;
+    animation: dealCard 0.4s ease-out backwards;
+  }
+  .card:hover { transform: translateY(-10px) rotate(2deg); z-index: 10; }
+  .card.red { color: #d00; }
+  .card.hidden { background: repeating-linear-gradient(45deg, #800, #800 10px, #fff 10px, #fff 11px); color: transparent; }
+  .score-bubble { background: #000; border: 1px solid #555; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 14px; margin-top: 5px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+  @keyframes dealCard { from { transform:translateY(-200px) scale(0.5); opacity:0; } to { transform:translateY(0) scale(1); opacity:1; } }
+
+  /* ROULETTE */
+  .roulette-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; width: 100%; max-width: 1000px; }
+  .wheel-frame { 
+    width: 300px; height: 300px; border-radius: 50%; 
+    background: #2a1a1a; padding: 10px; 
+    box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px #000; 
+    position: relative; flex-shrink: 0;
+  }
+  .wheel-outer { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #c0a062; position: relative; overflow: hidden; transition: transform 5s cubic-bezier(0.1, 0.9, 0.1, 1); background: #000; }
+  .wheel-number { position: absolute; top: 0; left: 50%; width: 24px; height: 50%; transform-origin: 50% 100%; margin-left: -12px; text-align: center; font-size: 10px; font-weight: bold; color: #fff; padding-top: 5px; }
+  .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); border-top: 25px solid var(--gold); border-left: 10px solid transparent; border-right: 10px solid transparent; z-index: 50; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+
+  .betting-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #0a2510; padding: 8px; border: 6px solid #8B4513; border-radius: 8px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .bet-cell { 
+    background: transparent; border: 1px solid rgba(255,255,255,0.1); 
+    color: #fff; display: flex; align-items: center; justify-content: center; 
+    height: 45px; font-weight: bold; cursor: pointer; position: relative; font-size: 14px; 
+    transition: background 0.2s;
+  }
+  .bet-cell:hover { background: rgba(255,255,255,0.1); border-color: #fff; }
+  .bet-cell.red { background-color: rgba(200, 0, 0, 0.3); } 
+  .bet-cell.black { background-color: rgba(20, 20, 20, 0.3); }
+  .bet-cell.zero { grid-column: span 3; background-color: rgba(0, 150, 0, 0.3); clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%); margin-bottom: 5px; }
+
+  .chip { 
+    width: 22px; height: 22px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 8px; color: #000; font-weight:900; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.6), inset 0 0 5px rgba(0,0,0,0.2); 
+    position: absolute; z-index: 5; pointer-events: none; background: #fff; border: 2px dashed #999; 
+  }
+  .chip-selector { display:flex; gap:10px; padding:10px; background:#111; border-radius:30px; border:1px solid #333; margin-top: 10px; justify-content: center; }
+  .chip-btn { 
+    width: 36px; height: 36px; border-radius: 50%; 
+    border: 2px dashed #666; cursor: pointer; 
+    display: grid; place-items: center; font-size: 10px; font-weight: bold; color: #000;
+    transition: transform 0.2s; background: #ddd;
+  }
+  .chip-btn.active { transform: scale(1.2); box-shadow: 0 0 15px #fff; border-color: #fff; }
+
+  /* RACE TRACK (NO ZOOM) */
+  .race-container { width: 100%; max-width: 800px; }
+  .race-track { 
+    background: #111; 
+    width: 100%; height: 300px;
+    border: 4px solid #444; border-radius: 10px; 
+    position: relative; overflow: hidden; 
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    margin-bottom: 15px;
+    background-image: repeating-linear-gradient(90deg, #111 0px, #111 50px, #161616 50px, #161616 100px);
+  }
+  .race-lane { 
+    height: 20%; width: 100%; 
+    border-bottom: 1px solid #333; 
+    display: flex; align-items: center; position: relative;
+  }
+  .lane-num { width: 30px; text-align: center; color: #555; font-weight: bold; border-right: 1px solid #333; height: 100%; display: grid; place-items: center; background: #080808; z-index: 5; }
+  .horse { 
+    position: absolute; left: 0; font-size: 32px; 
+    transform: scaleX(-1); filter: drop-shadow(4px 4px 4px rgba(0,0,0,0.7)); 
+    z-index: 2; transition: left 0.1s linear; margin-left: 10px;
+  }
+  .finish-line { 
+    position: absolute; left: 90%; top: 0; bottom: 0; width: 6px; 
+    background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px); 
+    z-index: 1; box-shadow: 0 0 10px rgba(255,255,255,0.2);
+  }
+
+  /* GAMBLE OVERLAY */
+  .gamble-overlay { 
+    position: absolute; inset: 0; background: rgba(0,0,0,0.9); 
+    z-index: 500; display: none; flex-direction: column; align-items: center; justify-content: center; 
+    backdrop-filter: blur(5px);
+  }
+  .gamble-overlay.active { display: flex; }
+  .ladder-steps { display: flex; flex-direction: column-reverse; gap: 4px; margin-bottom: 20px; }
+  .ladder-step { 
+    width: 200px; padding: 10px; text-align: center; 
+    background: #222; border: 1px solid #444; color: #666; 
+    font-weight: bold; font-family: monospace; font-size: 16px; border-radius: 4px;
+  }
+  .ladder-step.active { background: var(--gold); color: #000; box-shadow: 0 0 20px var(--gold); transform: scale(1.05); border-color: #fff; z-index: 2; }
+  .ladder-step.blink { background: #fff; color: #000; }
+
+  /* BIG WIN & POPUPS */
+  #win-overlay { 
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
+    z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; 
+    backdrop-filter: blur(10px);
+  }
+  #win-overlay.active { display: flex; }
+  .win-title { font-size: 60px; color: var(--gold); text-transform: uppercase; margin: 0; text-shadow: 0 0 30px var(--gold); animation: pulse 1s infinite; }
+  .win-amount { font-size: 80px; font-weight: 900; color: #fff; font-family: monospace; margin: 20px 0; }
+
+  #shark-overlay { position: fixed; inset: 0; background: #600; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+  #shark-warning { position: fixed; top: 0; left: 0; right: 0; background: #d00; color: #fff; text-align: center; padding: 5px; font-weight: bold; z-index: 2500; display: none; }
+  #shark-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2800; display: none; align-items: center; justify-content: center; flex-direction: column; }
+  #shark-popup img { font-size: 120px; animation: pulse 0.2s infinite; }
+
+  /* HEIST OVERLAY */
+  .heist-box { background: linear-gradient(145deg, #2a0000, #110000); border: 2px solid var(--danger); padding: 30px; border-radius: 16px; text-align: center; width: 300px; box-shadow: 0 0 50px rgba(255,0,0,0.3); }
+  .heist-bar { width: 100%; height: 10px; background: #000; margin: 20px 0; border-radius: 5px; overflow: hidden; border: 1px solid #555; }
+  .heist-fill { width: 0%; height: 100%; background: var(--danger); transition: width 0.1s linear; }
+
+  #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 30px; opacity: 0; transition: 0.3s; z-index: 3000; pointer-events: none; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+  /* STATS MODAL */
+  #stats-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 4000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+  .stats-content { width: 90%; max-width: 400px; background: #111; border: 1px solid #333; border-radius: 16px; padding: 20px; box-shadow: 0 0 50px #000; }
+  .stats-row { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 10px 0; font-family: monospace; font-size: 14px; }
+  .stats-label { color: #888; }
+  .stats-val { color: var(--secondary); font-weight: bold; }
+
+  /* --- SKILLS & ACHIEVEMENTS & PRESTIGE OVERLAYS --- */
+  #skills-overlay, #ach-overlay, #prestige-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+    z-index: 4500; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    backdrop-filter: blur(15px);
+  }
+  .modal-content {
+    width: 92%; max-width: 520px;
+    background: #111; border: 1px solid #333;
+    border-radius: 16px; padding: 18px;
+    box-shadow: 0 0 50px #000;
+  }
+  .modal-title {
+    margin: 0 0 10px 0;
+    color: var(--gold);
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: #ddd;
+  }
+  .skill-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .skill-card {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 12px;
+    background: rgba(0,0,0,0.35);
+    display:flex; gap:12px; align-items:flex-start;
+  }
+  .skill-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display:grid; place-items:center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .skill-meta { flex:1; }
+  .skill-name { font-weight: 900; margin: 0; }
+  .skill-desc { margin: 4px 0 0 0; color: #aaa; font-size: 12px; line-height: 1.25; }
+  .skill-bar { margin-top: 8px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .skill-lvl { font-family: monospace; color: var(--secondary); font-weight: bold; }
+  .skill-btn {
+    height: 32px; padding: 0 12px; border-radius: 10px;
+    background: var(--sp-color); border: none; color: #000;
+    font-weight: 900; cursor: pointer;
+  }
+  .skill-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+
+  .ach-row {
+    display:flex; justify-content:space-between; gap:10px; align-items:center;
+    border-bottom: 1px solid #222; padding: 10px 0;
+  }
+  .ach-left { display:flex; gap:10px; align-items:center; }
+  .ach-ico { width:36px; height:36px; border-radius: 12px; display:grid; place-items:center; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); }
+  .ach-name { font-weight: 900; }
+  .ach-desc { color:#999; font-size: 11px; margin-top: 2px; }
+  .ach-pill {
+    font-size: 11px; padding: 4px 10px; border-radius: 999px;
+    background: rgba(0,255,255,0.10); border: 1px solid rgba(0,255,255,0.25);
+    color: var(--secondary); font-weight: 900; white-space: nowrap;
+  }
+  .ach-pill.locked {
+    background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12);
+    color: #777;
+  }
+</style>
+</head>
+
+<body>
+<canvas id="fx-canvas"></canvas>
+
+<div id="stats-overlay">
+  <div class="stats-content">
+    <h2 style="color:var(--gold); margin-top:0; border-bottom:1px solid #333; padding-bottom:10px;">SESSION STATS</h2>
+    <div id="stats-container"></div>
+    <button onclick="document.getElementById('stats-overlay').style.display='none'" style="margin-top:20px; width:100%; background:var(--secondary); color:#000;">SCHLIESSEN</button>
+  </div>
+</div>
+
+<!-- SKILLS OVERLAY -->
+<div id="skills-overlay">
+  <div class="modal-content">
+    <div class="modal-title">
+      <div>SKILL TREE</div>
+      <div class="badge" id="skills-sp-badge">0 SP</div>
+    </div>
+    <div id="skills-container" class="skill-grid"></div>
+    <button onclick="Skills.close()" style="margin-top:14px; width:100%; background:var(--secondary); color:#000; border:none;">SCHLIESSEN</button>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS OVERLAY -->
+<div id="ach-overlay">
+  <div class="modal-content">
+    <div class="modal-title">
+      <div>ACHIEVEMENTS</div>
+      <div class="badge" id="ach-badge">0/0</div>
+    </div>
+    <div id="ach-container"></div>
+    <button onclick="Achievements.close()" style="margin-top:14px; width:100%; background:var(--secondary); color:#000; border:none;">SCHLIESSEN</button>
+  </div>
+</div>
+
+<!-- PRESTIGE OVERLAY -->
+<div id="prestige-overlay">
+  <div class="modal-content">
+    <div class="modal-title">
+      <div>PRESTIGE</div>
+      <div class="badge" id="prestige-badge">P0</div>
+    </div>
+    <div style="color:#aaa; font-size:12px; line-height:1.3">
+      Prestige setzt Level und Geld zurück, gibt dir aber permanente Boni.
+      <br><br>
+      <b style="color:#fff">Du behältst:</b> Prestige-Level, Achievements, Skills.
+      <br>
+      <b style="color:#fff">Du verlierst:</b> Balance, Debt, XP/Level, Freispiele.
+    </div>
+
+    <div style="margin-top:14px; padding:12px; border:1px solid #222; border-radius:12px; background:rgba(0,0,0,0.35)">
+      <div style="display:flex; justify-content:space-between; font-family:monospace;">
+        <span>BONUS XP</span><span id="prestige-xp">+0%</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-family:monospace; margin-top:8px;">
+        <span>SHARK GRACE</span><span id="prestige-shark">+0s</span>
+      </div>
+    </div>
+
+    <button onclick="Prestige.doPrestige()" style="margin-top:14px; width:100%; background:var(--gold); color:#000; border:none;">PRESTIGE AUSFÜHREN</button>
+    <button onclick="Prestige.close()" style="margin-top:10px; width:100%; background:var(--secondary); color:#000; border:none;">SCHLIESSEN</button>
+  </div>
+</div>
+
+<div id="shark-warning">⚠️ ZAHL DEINE SCHULDEN! ⚠️</div>
+
+<div id="shark-popup">
+  <div style="font-size:120px">🦈</div>
+  <h1 style="color:#f00; text-shadow:2px 2px 0 #000; font-size: 40px;">GELD GELIEHEN!</h1>
+</div>
+
+<div id="shark-overlay">
+  <div style="font-size:100px">☠️</div>
+  <h1 style="color:#fff; font-size: 50px;">GAME OVER</h1>
+  <p style="color:#fff; font-size: 20px;">Der Hai hat dich erwischt.</p>
+  <button onclick="App.hardReset()" style="margin-top:30px; font-size: 20px; padding: 15px 40px; background: #fff; color: #000;">NEUSTART</button>
+</div>
+
+<div id="heist-overlay" class="gamble-overlay">
+  <div class="heist-box">
+      <h2 style="color:var(--danger); margin:0;">TRESOR KNACKEN...</h2>
+      <div style="font-size:60px; margin: 20px 0;">🔓</div>
+      <div class="heist-bar"><div class="heist-fill" id="heist-progress"></div></div>
+      <div id="heist-status" style="color:#aaa; font-size:12px;">Hacking...</div>
+  </div>
+</div>
+
+<div class="hud">
+  <div class="xp-container">
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="btn-small" onclick="App.goLobby()">🏠 LOBBY</button>
+      <button class="btn-small" onclick="Skills.open()" style="background:var(--sp-color); color:#000; border:none;">🧬 SKILLS</button>
+      <button class="btn-small" onclick="Achievements.open()" style="background:#fff; color:#000; border:none;">🏆</button>
+      <button class="btn-small" onclick="App.showStats()" style="background:var(--secondary); color:#000; border:none;">📊 STATS</button>
+      <div class="xp-label" id="hud-lvl">LVL 1</div>
+    </div>
+    <div class="xp-bar-bg"><div class="xp-bar-fill" id="hud-xp"></div></div>
+  </div>
+
+  <div class="balance-container">
+     <div style="display:flex; align-items:center; justify-content: flex-end;">
+        <button id="btn-reset" class="btn-small btn-reset" onclick="App.hardReset()">RESET</button>
+        <div class="balance-val" id="hud-balance">100,00 €</div>
+     </div>
+     <div style="font-size:12px; color:var(--sp-color); font-weight:bold; margin-top:2px;" id="hud-sp">0 SP</div>
+     <div class="debt-box" id="debt-box" style="display:none">
+       <span>SCHULD: <span id="hud-debt">0</span> €</span>
+       <div class="btn-small" style="background:#a00; border-color:#f00" onclick="Shark.repay()">ZAHLEN</div>
+     </div>
+  </div>
+</div>
+
+<div id="screen-lobby" class="screen active">
+  <h1 style="color:var(--secondary); text-shadow:0 0 20px var(--secondary); font-size: 40px; margin-bottom: 30px;">NEON CASINO <span style="font-size:12px; color:#fff; vertical-align:middle; background:var(--primary); padding:2px 6px; border-radius:4px;">PRESTIGE</span></h1>
+
+  <div style="width:100%; max-width:900px;">
+    <h3 style="color:#888; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:15px;">SLOTS</h3>
+    <div class="lobby-grid" id="slot-list"></div>
+
+    <h3 style="color:#888; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:15px; margin-top:30px;">TISCHSPIELE</h3>
+    <div class="lobby-grid">
+      <div class="game-tile" onclick="App.loadGame('bj')">
+        <div style="font-size:50px">🃏</div>
+        <h3>BLACK JACK</h3>
+      </div>
+      <div class="game-tile" onclick="App.loadGame('roulette')">
+        <div style="font-size:50px">🎡</div>
+        <h3>ROULETTE</h3>
+      </div>
+      <div class="game-tile" onclick="App.loadGame('race')">
+        <div style="font-size:50px">🐎</div>
+        <h3>NEON TURF</h3>
+      </div>
+    </div>
+
+    <h3 style="color:#888; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:15px; margin-top:30px;">SIDE QUESTS</h3>
+    <div class="lobby-grid">
+      <div class="game-tile heist-tile" onclick="Shark.startHeist()">
+        <div style="font-size:50px">💰</div>
+        <h3 style="color:var(--danger)">TRESOR KNACKEN</h3>
+        <div style="font-size:10px; color:#aaa">High Risk / Reward</div>
+      </div>
+
+      <div class="game-tile" id="shark-tile" style="border:1px solid #f00;" onclick="Shark.borrow()">
+        <div style="font-size:50px">🦈</div>
+        <h3 style="color:#f55">KREDIT HAI</h3>
+      </div>
+
+      <div class="game-tile" onclick="Prestige.open()" style="border:1px solid var(--gold);">
+        <div style="font-size:50px">🏆</div>
+        <h3 style="color:var(--gold)">PRESTIGE</h3>
+        <div style="font-size:10px; color:#aaa">Reset für permanente Boni</div>
+      </div>
+    </div>
+
+    <h3 style="color:var(--sp-color); border-bottom:1px solid var(--sp-color); padding-bottom:5px; margin-bottom:15px; margin-top:30px;">SCHWARZMARKT (SP)</h3>
+    <div class="lobby-grid">
+      <div class="game-tile shop-item" onclick="Shop.buy('fs_small')">
+          <div style="font-size:40px">♻️</div>
+          <h3>10 FREISPIELE</h3>
+          <div style="font-size:10px; color:#aaa">0,50€ Wert</div>
+          <div class="price-tag">1 SP</div>
+      </div>
+
+      <div class="game-tile shop-item" onclick="Shop.buy('fs_big')">
+          <div style="font-size:40px">🔥</div>
+          <h3>25 FREISPIELE</h3>
+          <div style="font-size:10px; color:#aaa">0,50€ Wert</div>
+          <div class="price-tag">3 SP</div>
+      </div>
+
+      <div class="game-tile shop-item" id="shop-gold" onclick="Shop.buy('gold')">
+          <div style="font-size:40px">👑</div>
+          <h3>GOLD STATUS</h3>
+          <div class="price-tag">5 SP</div>
+      </div>
+
+      <div class="game-tile shop-item" id="shop-matrix" onclick="Shop.buy('matrix')">
+          <div style="font-size:40px">💻</div>
+          <h3>MATRIX MODE</h3>
+          <div class="price-tag">5 SP</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-slot" class="screen">
+  <div class="glass-panel slot-machine">
+    <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center">
+      <h2 id="slot-title" style="margin:0; color:var(--primary); text-transform:uppercase;">SLOT</h2>
+      <div id="slot-win" style="font-size:24px; color:var(--gold); font-weight:bold; font-family:monospace;">0,00 €</div>
+    </div>
+
+    <div style="position:relative">
+        <svg class="paylines-svg" id="lines-svg"></svg>
+        <div class="reels-container" id="reels-container"></div>
+    </div>
+
+    <div id="fs-info" style="text-align:center; color:var(--success); font-weight:bold; margin-top:10px; display:none; animation:pulse 1s infinite">
+      🌀 FREISPIELE AKTIV! (x3)
+    </div>
+
+    <div class="controls-area">
+      <div class="bet-controls">
+         <span style="font-size:12px; font-weight:bold; color:#888">EINSATZ:</span>
+         <select id="slot-bet"></select>
+         <button class="btn-multi" onclick="SlotGame.setMaxBet()">MAX</button>
+      </div>
+
+      <div class="action-controls" id="slot-controls-normal">
+         <button class="btn-spin" id="btn-spin" onclick="SlotGame.spin()">SPIN</button>
+         <button id="btn-auto" onclick="SlotGame.toggleAuto()">AUTO</button>
+      </div>
+
+      <div class="action-controls" id="slot-controls-win" style="display:none">
+         <button class="btn-collect" onclick="Gamble.collect()">NEHMEN</button>
+         <button class="btn-gamble" onclick="Gamble.start()">RISIKO</button>
+      </div>
+    </div>
+
+    <div id="slot-gamble-overlay" class="gamble-overlay" style="border-radius:16px;">
+       <h3 style="color:var(--gold); margin-bottom:20px;">RISIKO LEITER</h3>
+       <div class="ladder-steps" id="gamble-ladder"></div>
+       <button class="btn-spin" style="margin-bottom:10px" onclick="Gamble.climb()">DRÜCKEN</button>
+       <button class="btn-collect" onclick="Gamble.collect()">TEILEN / NEHMEN</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-bj" class="screen">
+  <div class="round-info">
+      <span>Einsatz: <span id="bj-display-bet">0,00 €</span></span>
+      <span id="bj-round-result"></span>
+  </div>
+
+  <div class="bj-table">
+     <div style="text-align:center;">
+        <div style="font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:5px">DEALER</div>
+        <div class="card-area" id="bj-dealer"></div>
+        <div class="score-bubble" id="score-dealer">0</div>
+     </div>
+
+     <div style="text-align:center; font-size:30px; font-weight:900; color:#fff; text-shadow:0 2px 10px #000; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:20; display:none" id="bj-msg">WIN</div>
+
+     <div style="text-align:center;">
+        <div class="score-bubble" id="score-player">0</div>
+        <div class="card-area" id="bj-player"></div>
+        <div style="font-size:10px; color:rgba(255,255,255,0.5); margin-top:5px">PLAYER</div>
+     </div>
+  </div>
+
+  <div class="controls-area">
+    <div class="bet-controls" id="bj-controls-bet">
+       <button class="btn-multi" onclick="BJGame.adjBet(0.5)">-</button>
+       <input type="number" id="bj-bet-input" value="10" step="1">
+       <button class="btn-multi" onclick="BJGame.adjBet(2)">+</button>
+       <div style="width:10px"></div>
+       <button class="btn-multi" onclick="BJGame.mulBet(2)">x2</button>
+       <button class="btn-multi" onclick="BJGame.setMax()">ALL</button>
+       <button class="btn-spin" style="margin-left:10px" onclick="BJGame.deal()">DEAL</button>
+    </div>
+
+    <div class="action-controls" id="bj-controls-play" style="display:none">
+       <button onclick="BJGame.hit()" style="background:#0066cc">HIT</button>
+       <button onclick="BJGame.stand()" style="background:#cc0000">STAND</button>
+       <button id="bj-btn-double" onclick="BJGame.double()" style="background:#cc7a00">DOUBLE</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-roulette" class="screen">
+  <div class="round-info">
+      <span>Gesetzt: <span id="r-display-bet">0,00 €</span></span>
+      <span id="r-round-result"></span>
+  </div>
+
+  <div class="roulette-container">
+    <div class="r-left-col">
+       <div class="wheel-frame">
+          <div class="wheel-pointer"></div>
+          <div class="wheel-outer" id="r-wheel"></div>
+       </div>
+       <div id="r-msg" style="margin-top:20px; font-weight:bold; color:var(--gold); height:20px; text-shadow:0 0 10px #000;">PLATZIERE DEINE WETTEN</div>
+       <div class="roulette-history" id="r-history" style="display:flex; gap:5px; margin-top:10px; height:30px;"></div>
+    </div>
+
+    <div class="r-right-col">
+       <div class="betting-board" id="r-table"></div>
+
+       <div class="chip-selector">
+          <div class="chip-btn" onclick="RouletteGame.selChip(0.1, this)">0.1</div>
+          <div class="chip-btn" onclick="RouletteGame.selChip(1, this)">1</div>
+          <div class="chip-btn active" onclick="RouletteGame.selChip(10, this)" style="background:#fff">10</div>
+          <div class="chip-btn" onclick="RouletteGame.selChip(50, this)" style="background:#d00; color:#fff; border-color:#fff">50</div>
+          <div class="chip-btn" onclick="RouletteGame.selChip(100, this)" style="background:#000; color:gold; border-color:gold">100</div>
+       </div>
+
+       <div class="controls-area">
+          <div class="action-controls">
+             <button onclick="RouletteGame.clearBets()">LÖSCHEN</button>
+             <div id="r-controls-normal">
+               <button class="btn-spin" id="r-spin-btn" onclick="RouletteGame.spin()">DREHEN</button>
+             </div>
+             <div id="r-controls-win" style="display:none; gap:10px">
+               <button class="btn-collect" onclick="Gamble.collect()">NEHMEN</button>
+               <button class="btn-gamble" onclick="Gamble.start()">RISIKO</button>
+             </div>
+          </div>
+       </div>
+    </div>
+  </div>
+
+  <div id="roulette-gamble-overlay" class="gamble-overlay" style="border-radius:16px; width:300px; height:500px; left:50%; top:50%; transform:translate(-50%,-50%);">
+       <h3 style="color:var(--gold); margin-bottom:20px;">RISIKO LEITER</h3>
+       <div class="ladder-steps" id="gamble-ladder-r"></div>
+       <button class="btn-spin" style="margin-bottom:10px" onclick="Gamble.climb()">DRÜCKEN</button>
+       <button class="btn-collect" onclick="Gamble.collect()">NEHMEN</button>
+  </div>
+</div>
+
+<div id="screen-race" class="screen">
+  <div class="round-info">
+      <span>Wette: <span id="race-display-bet">0,00 €</span></span>
+      <span id="race-round-result"></span>
+  </div>
+
+  <div class="race-container">
+     <div class="race-track" id="race-track"></div>
+  </div>
+
+  <div class="controls-area">
+     <div class="bet-controls">
+         <button class="btn-multi" onclick="RaceGame.adjBet(0.5)">-</button>
+         <input type="number" id="race-bet" value="10">
+         <button class="btn-multi" onclick="RaceGame.adjBet(2)">+</button>
+         <div style="width:10px"></div>
+         <button class="btn-multi" onclick="RaceGame.mulBet(2)">x2</button>
+     </div>
+
+     <div class="action-controls">
+        <div id="race-controls-normal">
+          <button class="btn-spin" id="race-start-btn" onclick="RaceGame.start()" disabled>START</button>
+        </div>
+        <div id="race-controls-win" style="display:none; gap:10px">
+          <button class="btn-collect" onclick="Gamble.collect()">NEHMEN</button>
+          <button class="btn-gamble" onclick="Gamble.start()">RISIKO</button>
+        </div>
+     </div>
+  </div>
+
+  <div class="lobby-grid" id="race-list" style="margin-top:20px;"></div>
+
+  <div id="race-gamble-overlay" class="gamble-overlay" style="border-radius:16px; width:300px; height:500px; left:50%; top:50%; transform:translate(-50%,-50%);">
+       <h3 style="color:var(--gold); margin-bottom:20px;">RISIKO LEITER</h3>
+       <div class="ladder-steps" id="gamble-ladder-race"></div>
+       <button class="btn-spin" style="margin-bottom:10px" onclick="Gamble.climb()">DRÜCKEN</button>
+       <button class="btn-collect" onclick="Gamble.collect()">NEHMEN</button>
+  </div>
+</div>
+
+<div id="win-overlay" onclick="App.hideWin()">
+  <div class="win-title">BIG WIN</div>
+  <div class="win-amount" id="wo-amount">0,00 €</div>
+  <div style="color:#aaa; animation:pulse 1s infinite">Tippen zum Fortfahren</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// --- STATS SYSTEM ---
+const Stats = {
+    totalWagered: 0,
+    totalWon: 0,
+    slotSpins: 0,
+    bjHands: 0,
+    rouletteSpins: 0,
+    raceEntries: 0,
+    heistSuccess: 0,
+    sharkLoans: 0,
+    maxWin: 0,
+    addWager(amt) { this.totalWagered += amt; },
+    addWin(amt) { 
+        this.totalWon += amt; 
+        if (amt > this.maxWin) this.maxWin = amt;
+    }
+};
+
+// --- FX SYSTEM ---
+const FX={
+  canvas:document.getElementById('fx-canvas'),
+  ctx:null,coins:[],running:false,
+  init(){this.ctx=this.canvas.getContext('2d');this.resize();window.addEventListener('resize',()=>this.resize())},
+  resize(){this.canvas.width=window.innerWidth;this.canvas.height=window.innerHeight},
+  explode(amount){
+    const cnt=Math.min(150,Math.max(20,amount*1.5));
+    for(let i=0;i<cnt;i++){
+      this.coins.push({x:window.innerWidth/2,y:window.innerHeight/2,vx:(Math.random()-0.5)*25,vy:-Math.random()*20-5,g:0.8,color:`hsl(${45+Math.random()*15}, 100%, 60%)`,size:4+Math.random()*6})
+    }
+    if(!this.running){this.running=true;this.loop()}
+  },
+  loop(){
+    if(this.coins.length===0){this.running=false;this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);return}
+    this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    for(let i=this.coins.length-1;i>=0;i--){
+      let c=this.coins[i];
+      c.x+=c.vx;c.y+=c.vy;c.vy+=c.g;
+      this.ctx.beginPath();
+      this.ctx.arc(c.x,c.y,c.size,0,Math.PI*2);
+      this.ctx.fillStyle=c.color;
+      this.ctx.fill();
+      this.ctx.shadowBlur=10;
+      this.ctx.shadowColor=c.color;
+      if(c.y>this.canvas.height+20)this.coins.splice(i,1)
+    }
+    requestAnimationFrame(()=>this.loop())
+  }
+};
+FX.init();
+
+// --- AUDIO SYSTEM ---
+const Audio={
+  ctx:null,
+  init(){if(!this.ctx)this.ctx=new(window.AudioContext||window.webkitAudioContext)()},
+  play(f,t,d,v=0.1){
+    if(!this.ctx)this.init();
+    const o=this.ctx.createOscillator(),g=this.ctx.createGain();
+    o.type=t;o.frequency.setValueAtTime(f,this.ctx.currentTime);
+    g.gain.setValueAtTime(v,this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+d);
+    o.connect(g).connect(this.ctx.destination);
+    o.start();o.stop(this.ctx.currentTime+d)
+  },
+  click(){this.play(1000,'sine',0.05,0.05)},
+  win(){this.play(600,'triangle',0.2,0.1);setTimeout(()=>this.play(800,'triangle',0.4,0.1),100);FX.explode(10)},
+  tick(){this.play(800,'square',0.01,0.02)},
+  gallop(){this.play(100,'sawtooth',0.05,0.05);setTimeout(()=>this.play(120,'sawtooth',0.05,0.05),100)},
+  jumpscare(){this.play(50,'sawtooth',1.0,0.5);this.play(80,'square',0.8,0.3)},
+  bigWin(){FX.explode(100);let i=0;const t=setInterval(()=>{this.play(400+(i*50),'sawtooth',0.1,0.1);i++;if(i>15)clearInterval(t)},80)}
+};
+
+// --- CONFIG & STATE ---
+const MACHINES=[
+  {id:'neon',name:'Neon City',color:'#ff0055',symbols:['🍒','🍋','⚡','💎','7️⃣','🌆','🟣'],req:1},
+  {id:'egypt',name:'Golden Tomb',color:'#ffcc00',symbols:['🦂','👁️','🏺','🐍','🦅','☥','👹'],req:2},
+  {id:'space',name:'Cosmic Luck',color:'#5588ff',symbols:['☄️','🌕','🛸','🪐','👾','👽','🛰️'],req:3}
+];
+
+const Player={
+  balance:100.00,
+  debt:0,
+  level:1,
+  xp:0,
+  nextXP:50,
+  sp:0,
+  prestige:0,
+  pBoni:{xpMult:1, sharkGraceMs:0},
+  addXP(n){
+    this.xp+=(n*0.7);
+    if(this.xp>=this.nextXP){
+      this.level++;
+      this.xp-=this.nextXP;
+      this.nextXP*=1.8;
+      this.sp++;
+      App.toast(`LEVEL UP! +1 SP`);
+      App.renderLobby()
+    }
+    App.updateHUD()
+  }
+};
+
+const fmt=(n)=>n.toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+
+// --- CORE APP ---
+const App={
+  activeGame:null,
+  init(){
+    this.updateHUD();
+    this.renderLobby();
+    SlotGame.init();
+    RouletteGame.init();
+    RaceGame.init();
+    setInterval(()=>{
+      Shark.check();
+      const sBtn=document.getElementById('shark-tile');
+      if(sBtn) sBtn.style.display='block';
+    },1000)
+  },
+  goLobby(){
+    SlotGame.stopAuto();
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-lobby').classList.add('active');
+    this.activeGame=null;
+    Gamble.close()
+  },
+  loadGame(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(`screen-${id}`).classList.add('active');
+    this.activeGame=id;
+    if(id==='slot')SlotGame.setup(MACHINES[0]);
+    if(id==='race')RaceGame.reset()
+  },
+  loadSlot(idx){ this.loadGame('slot'); SlotGame.setup(MACHINES[idx]) },
+  updateHUD(){
+      document.getElementById('hud-balance').innerText=fmt(Player.balance);
+      document.getElementById('hud-sp').innerText=`${Player.sp} SP`;
+      document.getElementById('hud-lvl').innerText=`LVL ${Player.level}`;
+      document.getElementById('hud-xp').style.width=`${Math.min(100,(Player.xp/Player.nextXP)*100)}%`;
+      const d=document.getElementById('debt-box');
+      if(Player.debt>0){
+        d.style.display='flex';
+        document.getElementById('hud-debt').innerText=Player.debt.toFixed(2)
+      } else d.style.display='none';
+      const r=document.getElementById('btn-reset');
+      if(Player.balance<2.00)r.style.display='block'; else r.style.display='none'
+  },
+  hardReset(){
+    if(!confirm("Wirklich alles zurücksetzen? (inkl. Save)"))return;
+    Save.wipe();
+    location.reload()
+  },
+  renderLobby(){
+    const list=document.getElementById('slot-list');
+    list.innerHTML='';
+    MACHINES.forEach((m,i)=>{
+      const locked=Player.level<m.req;
+      list.innerHTML+=`<div class="game-tile ${locked?'locked':''}" onclick="${locked?'':'App.loadSlot('+i+')'}">${locked?'<div class="lock-overlay">🔒 LVL '+m.req+'</div>':''}<div style="font-size:40px; margin-bottom:10px">${m.symbols[5]}</div><h3>${m.name}</h3></div>`
+    })
+  },
+  toast(msg){
+    const t=document.getElementById('toast');
+    t.innerText=msg;
+    t.style.opacity=1;
+    t.style.bottom='100px';
+    setTimeout(()=>{t.style.opacity=0;t.style.bottom='80px'},2000)
+  },
+  setResult(id,win,bet){
+    const el=document.getElementById(id);
+    if(win>bet)el.innerHTML=`Gewinn: <span class="round-val pos">+${fmt(win-bet)}</span>`;
+    else el.innerHTML=`Verlust: <span class="round-val neg">-${fmt(bet)}</span>`
+  },
+  animateWin(start,end){
+    document.getElementById('win-overlay').classList.add('active');
+    const el=document.getElementById('wo-amount');
+    let current=start;
+    const step=(end-start)/50;
+    const t=setInterval(()=>{
+      current+=step;
+      if(current>=end){current=end;clearInterval(t)}
+      el.innerText=fmt(current)
+    },30);
+    Audio.bigWin()
+  },
+  hideWin(){document.getElementById('win-overlay').classList.remove('active')},
+  showStats() {
+    const net = Stats.totalWon - Stats.totalWagered;
+    const data = [
+      ["Einsatz (Gesamt)", fmt(Stats.totalWagered)],
+      ["Gewinn (Gesamt)", fmt(Stats.totalWon)],
+      ["Netto Ergebnis", `<span style="color:${net>=0?'var(--success)':'var(--danger)'}">${fmt(net)}</span>`],
+      ["Höchster Einzelwin", fmt(Stats.maxWin)],
+      ["Slot Spins", Stats.slotSpins],
+      ["Blackjack Hände", Stats.bjHands],
+      ["Roulette Spins", Stats.rouletteSpins],
+      ["Pferderennen", Stats.raceEntries],
+      ["Erfolgreiche Heists", Stats.heistSuccess],
+      ["Hai Kredite", Stats.sharkLoans]
+    ];
+    document.getElementById('stats-container').innerHTML = data.map(r => `
+      <div class="stats-row"><span class="stats-label">${r[0]}</span><span class="stats-val">${r[1]}</span></div>
+    `).join('');
+    document.getElementById('stats-overlay').style.display = 'flex';
+  }
+};
+
+// --- SHOP LOGIC (SP) ---
+const Shop={
+  items:{gold:false,matrix:false},
+  buy(id){
+    let cost=0; let success=false;
+    if(id==='fs_small'){ cost=1; if(Player.sp>=cost){ Player.sp-=cost; SlotGame.addFS(10); App.toast("10 Freispiele gekauft!"); success=true; }}
+    else if(id==='fs_big'){ cost=3; if(Player.sp>=cost){ Player.sp-=cost; SlotGame.addFS(25); App.toast("25 Freispiele gekauft!"); success=true; }}
+    else if(id==='gold' && !this.items.gold){ cost=5; if(Player.sp>=cost){ Player.sp-=cost; document.body.className='theme-gold'; this.items.gold=true; document.getElementById('shop-gold').classList.add('sold-out'); success=true; }}
+    else if(id==='matrix' && !this.items.matrix){ cost=5; if(Player.sp>=cost){ Player.sp-=cost; document.body.className='theme-matrix'; this.items.matrix=true; document.getElementById('shop-matrix').classList.add('sold-out'); success=true; }}
+    if(success) { Audio.click(); App.updateHUD(); Save.save(); Achievements.checkAll(); }
+    else App.toast("Nicht genug SP oder bereits gekauft!");
+  }
+};
+
+// --- SHARK & HEIST ---
+const Shark={
+  deadline:0,
+  borrow(){
+    if(Player.debt>5000)return App.toast("Kreditlimit erreicht!");
+    Player.balance+=1000;
+    Player.debt+=1500;
+    this.deadline=Date.now()+(180*1000);
+    // Skills/Prestige grace
+    this.deadline += Skills.eff.sharkGraceMs();
+
+    document.body.classList.add('shark-attack');
+    const pop=document.getElementById('shark-popup');
+    pop.style.display='flex';
+    Audio.jumpscare();
+    setTimeout(()=>{pop.style.display='none';document.body.classList.remove('shark-attack')},2000);
+    App.updateHUD();
+    Stats.sharkLoans++;
+    Achievements.checkAll();
+    Save.save();
+  },
+  repay(){
+    if(Player.debt<=0)return;
+    const pay=Math.min(Player.balance,Player.debt);
+    Player.balance-=pay;
+    Player.debt-=pay;
+    if(Player.debt<=0.01){
+      Player.debt=0;
+      this.deadline=0;
+      document.getElementById('shark-warning').style.display='none'
+    }
+    App.updateHUD();
+    App.toast(`Rückzahlung: ${fmt(pay)}`);
+    Save.save();
+  },
+  check(){
+    if(Player.debt>0&&this.deadline>0){
+      const left=this.deadline-Date.now();
+      const w=document.getElementById('shark-warning');
+      if(left<0)this.kill();
+      else if(left<90000){
+        w.style.display='block';
+        w.innerText=`HAI WARNUNG: ${Math.ceil(left/1000)}s`;
+        if(left<10000)w.style.background=(Math.floor(Date.now()/200)%2===0)?'#f00':'#000'
+      } else w.style.display='none'
+    }
+  },
+  kill(){
+    document.getElementById('shark-overlay').style.display='flex';
+    Audio.jumpscare();
+    Player.balance=0;
+    Player.debt=0;
+    App.updateHUD();
+    Save.save();
+  },
+  startHeist(){
+    document.getElementById('heist-overlay').classList.add('active');
+    const bar=document.getElementById('heist-progress'); 
+    const stat=document.getElementById('heist-status');
+    bar.style.width='0%'; 
+    stat.innerText="Verbindung herstellen...";
+    let p=0;
+    const int=setInterval(()=>{
+      p++; bar.style.width=p+"%";
+      if(p===40) stat.innerText="Code knacken...";
+      if(p===80) stat.innerText="Tresor öffnen...";
+      if(p>=100){
+        clearInterval(int);
+        document.getElementById('heist-overlay').classList.remove('active');
+        if(Math.random()>0.5){
+          const loot=Math.floor(Math.random()*1500)+500;
+          Player.balance+=loot;
+          App.animateWin(0,loot);
+          App.toast("ERFOLGREICH!");
+          Stats.heistSuccess++;
+          Stats.addWin(loot);
+        } else {
+          const fine=Math.floor(Player.balance*0.5);
+          Player.balance-=fine;
+          Player.debt+=1000;
+          App.toast(`ERWISCHT! -${fmt(fine)} & +1000€ Schulden`);
+          Audio.jumpscare();
+        }
+        App.updateHUD();
+        Achievements.checkAll();
+        Save.save();
+      }
+    },40);
+  }
+};
+
+// --- GAMBLE LOGIC ---
+const Gamble={
+  active:false,val:0,timer:null,steps:[],currentIndex:0,
+  offer(amount){
+    if(amount<=0)return;
+    this.steps=[0,amount,amount*2,amount*4,amount*8,amount*16].map(x=>parseFloat(x.toFixed(2)));
+    this.currentIndex=1;
+    if(App.activeGame==='slot'&&(SlotGame.auto||SlotGame.fs>0)){
+      this.collect(amount);
+      return
+    }
+    if(amount>=50)App.animateWin(0,amount);
+    else{Audio.win();App.toast(`GEWINN: ${fmt(amount)}`)}
+    this.showButtons(true)
+  },
+  showButtons(show){
+    const game=App.activeGame;
+    const wins=document.getElementById(game==='roulette'?'r-controls-win':(game==='race'?'race-controls-win':'slot-controls-win'));
+    const norms=document.getElementById(game==='roulette'?'r-controls-normal':(game==='race'?'race-controls-normal':'slot-controls-normal'));
+    if(wins&&norms){
+      wins.style.display=show?'flex':'none';
+      norms.style.display=show?'none':'block';
+      if(game==='roulette'&&!show)norms.style.display='inline-block'
+    }
+  },
+  start(){
+    this.active=true;
+    App.hideWin();
+    let overlayId='slot-gamble-overlay';
+    let containerId='gamble-ladder';
+    if(App.activeGame==='roulette'){overlayId='roulette-gamble-overlay';containerId='gamble-ladder-r'}
+    if(App.activeGame==='race'){overlayId='race-gamble-overlay';containerId='gamble-ladder-race'}
+    document.getElementById(overlayId).classList.add('active');
+    this.renderLadder(containerId);
+    this.cycle()
+  },
+  renderLadder(containerId){
+    const el=document.getElementById(containerId);
+    el.innerHTML='';
+    for(let i=0;i<this.steps.length;i++){
+      const step=document.createElement('div');
+      step.className='ladder-step';
+      step.innerText=fmt(this.steps[i]);
+      if(i===this.currentIndex)step.classList.add('active');
+      el.appendChild(step)
+    }
+  },
+  cycle(){
+    if(!this.active)return;
+    let containerId='gamble-ladder';
+    if(App.activeGame==='roulette')containerId='gamble-ladder-r';
+    if(App.activeGame==='race')containerId='gamble-ladder-race';
+    const stepsEls=document.getElementById(containerId).children;
+    let state=0;
+    clearInterval(this.timer);
+    this.timer=setInterval(()=>{
+      for(let c of stepsEls)c.classList.remove('blink');
+      let targetIdx=state===0?Math.max(0,this.currentIndex-1):Math.min(this.steps.length-1,this.currentIndex+1);
+      if(stepsEls[targetIdx])stepsEls[targetIdx].classList.add('blink');
+      state=1-state;
+      Audio.tick()
+    },200)
+  },
+  climb(){
+    clearInterval(this.timer);
+    const win=Math.random()>0.5;
+    let containerId='gamble-ladder';
+    if(App.activeGame==='roulette')containerId='gamble-ladder-r';
+    if(App.activeGame==='race')containerId='gamble-ladder-race';
+    if(win){
+      this.currentIndex++;
+      Audio.win();
+      if(this.currentIndex>=this.steps.length-1)this.collect(this.steps[this.currentIndex]);
+      else{this.renderLadder(containerId);this.cycle()}
+    } else {
+      this.currentIndex=Math.max(0,this.currentIndex-1);
+      if(this.currentIndex===0){
+        Audio.play(200,'sawtooth',0.5);
+        this.renderLadder(containerId);
+        setTimeout(()=>this.collect(0),1000)
+      } else {
+        this.renderLadder(containerId);
+        this.cycle()
+      }
+    }
+  },
+  collect(amount){
+    const final=amount!==undefined?amount:this.steps[this.currentIndex];
+    this.close();
+    if(final>0){
+      Player.balance+=final;
+      App.toast(`GEWONNEN: ${fmt(final)}`);
+      Audio.click();
+      FX.explode(20);
+      Stats.addWin(final);
+    } else App.toast("Verloren.");
+    App.updateHUD();
+    if(App.activeGame==='slot')document.getElementById('slot-win').innerText=fmt(final);
+    if(Player.debt>0&&final>0){
+      const tax=final*0.5;
+      Player.debt-=tax;
+      Player.balance-=tax;
+      App.toast(`Hai nimmt ${fmt(tax)}`);
+      App.updateHUD()
+    }
+    if(App.activeGame==='race')RaceGame.reset();
+    Achievements.checkAll();
+    Save.save();
+  },
+  close(){
+    this.active=false;
+    clearInterval(this.timer);
+    document.querySelectorAll('.gamble-overlay').forEach(el=>el.classList.remove('active'));
+    this.showButtons(false);
+    App.hideWin();
+    if(App.activeGame==='race')RaceGame.reset()
+  }
+};
+
+// --- RACE GAME ---
+const RaceGame={
+  horses:[{id:0,name:'Thunder',color:'#ff3333'},{id:1,name:'Neon',color:'#33ff33'},{id:2,name:'Cyber',color:'#3333ff'},{id:3,name:'Void',color:'#ffff33'},{id:4,name:'Solar',color:'#ff33ff'}],
+  selectedHorse:null,running:false,finishMode:false,
+  init(){this.reset()},
+  reset(){
+    this.running=false;this.finishMode=false;this.selectedHorse=null;document.getElementById('race-start-btn').disabled=true;
+    document.getElementById('race-bet').disabled=false;
+    const t=document.getElementById('race-track');t.innerHTML='<div class="finish-line"></div>';document.getElementById('race-round-result').innerText='';
+    const list=document.getElementById('race-list');list.innerHTML='';
+    this.horses.forEach((h,i)=>{
+      h.odds=parseFloat((Math.random()*5+1.2).toFixed(1));
+      const lane=document.createElement('div');lane.className='race-lane';
+      lane.innerHTML=`<div class="lane-num">${i+1}</div><div style="flex:1;position:relative;height:100%"><div class="horse" id="h-${i}" style="color:${h.color}; left:0%">🐎</div></div>`;
+      t.appendChild(lane);
+      const tile=document.createElement('div');tile.className='game-tile';
+      tile.innerHTML=`<div style="font-size:30px;color:${h.color}">🐎</div><h3 style="font-size:14px">${h.name}</h3><div style="color:var(--gold);font-weight:bold;font-size:18px">x${h.odds}</div>`;
+      tile.onclick=()=>RaceGame.select(i,tile);
+      list.appendChild(tile)
+    });
+    this.updateBetDisplay();
+    Gamble.showButtons(false);
+  },
+  adjBet(m){if(this.running)return;const i=document.getElementById('race-bet');let v=parseFloat(i.value)+m;if(v<1)v=1;i.value=v;this.updateBetDisplay()},
+  mulBet(m){if(this.running)return;const i=document.getElementById('race-bet');i.value=parseFloat(i.value)*m;this.updateBetDisplay()},
+  updateBetDisplay(){document.getElementById('race-display-bet').innerText=fmt(parseFloat(document.getElementById('race-bet').value))},
+  select(idx,el){if(this.running)return;this.selectedHorse=this.horses[idx];document.querySelectorAll('.game-tile').forEach(t=>t.style.border='1px solid rgba(255,255,255,0.1)');el.style.border='2px solid var(--gold)';document.getElementById('race-start-btn').disabled=false},
+  start(){
+    const bet=parseFloat(document.getElementById('race-bet').value);
+    if(Player.balance<bet)return App.toast("Kein Geld!");
+    Stats.addWager(bet); Stats.raceEntries++;
+    Player.balance-=bet;App.updateHUD();this.running=true;this.finishMode=false;
+    document.getElementById('race-start-btn').disabled=true;
+    document.getElementById('race-bet').disabled=true;
+    let tickCount=0;let finishCounter=0;
+    const raceInt=setInterval(()=>{
+      let firstWinner=-1;tickCount++;if(tickCount%5===0)Audio.gallop();
+      this.horses.forEach((h,i)=>{
+        const el=document.getElementById(`h-${i}`);let currentPos=parseFloat(el.style.left||0);
+        let speed=(Math.random()*1.5)+(10/h.odds*0.2);if(this.finishMode)speed*=0.5;
+        currentPos+=speed;el.style.left=currentPos+'%';
+        if(currentPos>=90&&firstWinner===-1&&!this.finishMode){firstWinner=i;this.finishMode=true}
+      });
+      if(this.finishMode){
+        finishCounter++;
+        if(finishCounter>25){
+          let finalWinner=-1;let maxDist=0;
+          this.horses.forEach((h,i)=>{
+            const dist=parseFloat(document.getElementById(`h-${i}`).style.left);
+            if(dist>maxDist){maxDist=dist;finalWinner=i}
+          });
+          clearInterval(raceInt);
+          this.finish(finalWinner,bet)
+        }
+      }
+    },50)
+  },
+  finish(winnerIdx,bet){
+    const winner=this.horses[winnerIdx];
+    if(this.selectedHorse && this.selectedHorse.id===winner.id){
+      const win=Math.round(bet*winner.odds*100)/100;
+      App.toast(`SIEG! ${winner.name} gewinnt!`);
+      App.setResult('race-round-result',win,bet);
+      Gamble.offer(win)
+    } else {
+      App.toast(`Sieger: ${winner.name}`);
+      App.setResult('race-round-result',0,bet);
+      setTimeout(()=>this.reset(),3000)
+    }
+    Achievements.checkAll();
+    Save.save();
+  }
+};
+
+// --- SLOT GAME ---
+const SlotGame={
+  activeMachine:null,spinning:false,auto:false,fs:0,bets:[0.10,0.20,0.50,1.00,2.00,5.00,10.00],
+  init(){
+    const c=document.getElementById('reels-container');
+    for(let i=0;i<5;i++){
+      const col=document.createElement('div');
+      col.className='reel-col';
+      col.innerHTML=`<div class="reel-strip" id="reel-${i}"></div>`;
+      c.appendChild(col)
+    }
+  },
+  setup(m){
+    this.activeMachine=m;
+    this.auto=false;
+    document.getElementById('slot-title').innerText=m.name;
+    document.documentElement.style.setProperty('--primary',m.color);
+    document.getElementById('lines-svg').innerHTML='';
+    const s=document.getElementById('slot-bet');s.innerHTML='';
+    this.bets.forEach(b=>{
+      const opt=document.createElement('option');
+      opt.value=b.toFixed(2);
+      opt.innerText=fmt(b);
+      s.appendChild(opt)
+    });
+    for(let i=0;i<5;i++)this.fillStrip(document.getElementById(`reel-${i}`));
+    this.updateInfo();
+  },
+  fillStrip(el){
+    let h='';
+    for(let i=0;i<20;i++)h+=this.renderSym(this.randSym());
+    el.innerHTML=h;
+    el.style.transform='translateY(0)'
+  },
+  renderSym(char){return char==='SCATTER'?`<div class="symbol scatter-orb"></div>`:`<div class="symbol">${char}</div>`},
+  // scatter chance is driven by Skills now (default base is 1.5%)
+  randSym(){
+    const p = Skills ? Skills.eff.scatterChance() : 0.015;
+    return Math.random()<p ? 'SCATTER' : this.activeMachine.symbols[Math.floor(Math.random()*this.activeMachine.symbols.length)]
+  },
+  addFS(n){this.fs+=n; this.updateInfo(); Save.save();},
+  updateInfo(){ 
+    const i=document.getElementById('fs-info'); 
+    if(this.fs>0) { i.style.display='block'; i.innerText=`🌀 FREISPIELE: ${this.fs} (WERT: 0,50€)`; }
+    else { i.style.display='none'; }
+  },
+  toggleAuto(){
+    this.auto=!this.auto;
+    const b=document.getElementById('btn-auto');
+    b.innerText=this.auto?'STOP':'AUTO';
+    if(this.auto)b.style.background='var(--secondary)'; else b.style.background='';
+    if(this.auto&&!this.spinning)this.spin()
+  },
+  stopAuto(){
+    this.auto=false;
+    document.getElementById('btn-auto').innerText='AUTO';
+    document.getElementById('btn-auto').style.background=''
+  },
+  setMaxBet(){document.getElementById('slot-bet').selectedIndex=this.bets.length-1},
+  spin(){
+    if(this.spinning) return;
+    let bet=0;
+
+    // FS Logic: Fixed to 0.50€
+    if(this.fs > 0) {
+      bet = 0.50;
+      this.fs--;
+      this.updateInfo();
+    } else {
+      bet = parseFloat(document.getElementById('slot-bet').value);
+      if(Player.balance<bet) { this.stopAuto(); return App.toast("Kein Geld!"); }
+      Player.balance-=bet;
+      Player.addXP(bet*3);
+      Stats.addWager(bet);
+    }
+
+    Stats.slotSpins++;
+    Gamble.showButtons(false);
+    this.spinning=true;
+    document.getElementById('btn-spin').disabled=true;
+    document.getElementById('lines-svg').innerHTML='';
+    document.getElementById('slot-win').innerText='0,00 €';
+    App.updateHUD();
+
+    const grid=[];
+    for(let c=0;c<5;c++){
+      let col=[];
+      for(let r=0;r<3;r++)col.push(this.randSym());
+      grid.push(col)
+    }
+    for(let i=0;i<5;i++){
+      const el=document.getElementById(`reel-${i}`);
+      let h='';
+      grid[i].forEach(s=>h+=this.renderSym(s));
+      el.innerHTML=h+el.innerHTML;
+      el.style.transition='none';
+      el.style.transform='translateY(-1000px)';
+      setTimeout(()=>{
+        Audio.play(150,'square',0.1);
+        el.style.transition='transform 0.8s cubic-bezier(0.2,1,0.3,1)';
+        el.style.transform='translateY(0)'
+      },50+i*150)
+    }
+    setTimeout(()=>{
+      this.checkWin(grid,bet);
+      this.spinning=false;
+      document.getElementById('btn-spin').disabled=false;
+      if(this.fs>0)setTimeout(()=>this.spin(),800);
+      else if(this.auto)setTimeout(()=>this.spin(),500);
+      Achievements.checkAll();
+      Save.save();
+    },1500)
+  },
+  checkWin(grid,bet){
+    let win=0;
+    let scatters=0;
+    grid.flat().forEach(s=>{if(s==='SCATTER')scatters++});
+
+    // Scatter -> FS
+    if(scatters>=3){
+      const extra = Skills.eff.fsExtra(); // +1 per lvl
+      this.fs += (10 + extra);
+      this.updateInfo();
+      Audio.play(800,'sawtooth',0.3);
+      this.stopAuto();
+      if(extra>0) App.toast(`🌀 10 FREISPIELE! +${extra} Skill Bonus`);
+      else App.toast("🌀 10 FREISPIELE!");
+    }
+
+    const lines=[[0,0,0,0,0],[1,1,1,1,1],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2]];
+    const svg=document.getElementById('lines-svg');
+    lines.forEach((l,li)=>{
+      const syms=l.map((r,c)=>grid[c][r]);
+      const first=syms[0];
+      if(first==='SCATTER')return;
+      let count=0;
+      for(let i=0;i<5;i++){ if(syms[i]===first)count++; else break }
+      if(count>=3){
+        let val=5;
+        const idx=this.activeMachine.symbols.indexOf(first);
+        if(idx>4)val=50; else if(idx>2)val=20;
+        win += val*count*(bet/10);
+
+        let d="M";
+        for(let c=0;c<count;c++){
+          const colEl=document.getElementById(`reels-container`).children[c];
+          const x=(c*(colEl.offsetWidth+5))+(colEl.offsetWidth/2);
+          const y=(l[c]*80)+40;
+          d+=`${x},${y} `;
+          if(c<count-1)d+="L"
+        }
+        const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+        path.setAttribute("d",d);
+        path.setAttribute("class","laser-line");
+        path.setAttribute("stroke",["#f00","#0f0","#00f","#ff0","#0ff"][li]);
+        svg.appendChild(path)
+      }
+    });
+    if(win>0){
+      document.getElementById('slot-win').innerText=fmt(win);
+      Gamble.offer(win)
+    }
+  }
+};
+
+// --- BJ & ROULETTE LOGIC ---
+const BJGame={
+  deck:[],pHand:[],dHand:[],bet:0,active:false,
+  suits:['♠','♥','♣','♦'],
+  values:['2','3','4','5','6','7','8','9','10','J','Q','K','A'],
+  createDeck(){
+    this.deck=[];
+    for(let s of this.suits)for(let v of this.values)this.deck.push({s,v,val:this.cardVal(v)});
+    this.deck.sort(()=>Math.random()-.5)
+  },
+  cardVal(v){if(['J','Q','K'].includes(v))return 10;if(v==='A')return 11;return parseInt(v)},
+  calc(hand){
+    let sum=0,aces=0;
+    hand.forEach(c=>{sum+=c.val;if(c.v==='A')aces++});
+    while(sum>21&&aces>0){sum-=10;aces--}
+    return sum
+  },
+  adjBet(m){const i=document.getElementById('bj-bet-input');let v=parseFloat(i.value)+m;if(v<1)v=1;i.value=v;this.updateBetDisplay()},
+  mulBet(m){const i=document.getElementById('bj-bet-input');i.value=parseFloat(i.value)*m;this.updateBetDisplay()},
+  setMax(){document.getElementById('bj-bet-input').value=Math.floor(Player.balance);this.updateBetDisplay()},
+  updateBetDisplay(){document.getElementById('bj-display-bet').innerText=fmt(parseFloat(document.getElementById('bj-bet-input').value))},
+  deal(){
+    this.bet=parseFloat(document.getElementById('bj-bet-input').value);
+    if(Player.balance<this.bet)return App.toast("Kein Geld!");
+    Stats.addWager(this.bet); Stats.bjHands++;
+    Player.balance-=this.bet;
+    App.updateHUD();
+    this.createDeck();
+    this.pHand=[this.deck.pop(),this.deck.pop()];
+    this.dHand=[this.deck.pop(),this.deck.pop()];
+    this.active=true;
+    this.render(false);
+    document.getElementById('bj-round-result').innerText='';
+    document.getElementById('bj-controls-bet').style.display='none';
+    document.getElementById('bj-controls-play').style.display='flex';
+    document.getElementById('bj-btn-double').disabled=false;
+    document.getElementById('bj-msg').style.display='none';
+    if(this.calc(this.pHand)===21){this.endRound();return}
+    Achievements.checkAll(); Save.save();
+  },
+  hit(){
+    document.getElementById('bj-btn-double').disabled=true;
+    this.pHand.push(this.deck.pop());
+    this.render(false);
+    Audio.click();
+    if(this.calc(this.pHand)>21)this.endRound()
+  },
+  stand(){this.active=false;while(this.calc(this.dHand)<17){this.dHand.push(this.deck.pop())}this.endRound()},
+  double(){
+    if(Player.balance<this.bet)return App.toast("Zu wenig Geld!");
+    Stats.addWager(this.bet);
+    Player.balance-=this.bet;
+    this.bet*=2;
+    App.updateHUD();
+    this.pHand.push(this.deck.pop());
+    this.stand()
+  },
+  endRound(){
+    this.render(true);
+    const p=this.calc(this.pHand);
+    const d=this.calc(this.dHand);
+    let win=0; let msg="";
+    if(p>21){msg="BUST"}
+    else if(d>21){msg="DEALER BUST";win=this.bet*2}
+    else if(p>d){
+      if(p===21&&this.pHand.length===2){msg="BLACKJACK!";win=this.bet*2.5}
+      else{msg="WIN";win=this.bet*2}
+    } else if(p===d){msg="PUSH";win=this.bet}
+    else{msg="LOSE"}
+    const msgEl=document.getElementById('bj-msg');
+    msgEl.innerText=msg;
+    msgEl.style.display='block';
+    msgEl.style.color=win>this.bet?'#0f0':(win===this.bet?'#ff0':'#f00');
+    App.setResult('bj-round-result',win,this.bet);
+    if(win>0){Player.balance+=win;Audio.win();Stats.addWin(win)}
+    Player.addXP(this.bet*4);
+    document.getElementById('bj-controls-bet').style.display='flex';
+    document.getElementById('bj-controls-play').style.display='none';
+    App.updateHUD();
+    Achievements.checkAll();
+    Save.save();
+  },
+  render(reveal){
+    const r=(h,el,hideFirst)=>{
+      el.innerHTML=h.map((c,i)=>{
+        if(hideFirst&&i===0)return`<div class="card hidden"></div>`;
+        return`<div class="card ${['♥','♦'].includes(c.s)?'red':''}">${c.v}<div>${c.s}</div></div>`
+      }).join('')
+    };
+    r(this.pHand,document.getElementById('bj-player'),false);
+    r(this.dHand,document.getElementById('bj-dealer'),!reveal&&this.active);
+    document.getElementById('score-player').innerText=this.calc(this.pHand);
+    if(reveal)document.getElementById('score-dealer').innerText=this.calc(this.dHand);
+    else document.getElementById('score-dealer').innerText="?"
+  }
+};
+
+const RouletteGame={
+  currentChip:10,bets:[],spinning:false,
+  wheelNums:[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26],
+  colors:{0:'green'},
+  init(){
+    this.wheelNums.forEach(n=>{
+      if(!this.colors[n])this.colors[n]=['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36'].includes(n+'')?'red':'black'
+    });
+    this.createWheel();
+    this.createTable()
+  },
+  createWheel(){
+    const w=document.getElementById('r-wheel');
+    w.innerHTML='';
+    const angle=360/37;
+    let bg=`conic-gradient(`;
+    this.wheelNums.forEach((n,i)=>{
+      const slice=document.createElement('div');
+      slice.className='wheel-number';
+      slice.style.transform=`rotate(${i*angle}deg)`;
+      const col=this.colors[n];
+      slice.innerHTML=`<span style="color:${col==='black'?'#fff':(col==='red'?'#ffcccc':'#ccffcc')};text-shadow:0 0 2px #000">${n}</span>`;
+      w.appendChild(slice);
+      let bgCol=col==='red'?'#d00':(col==='black'?'#222':'#060');
+      bg+=`${bgCol} ${(i-0.5)*angle}deg ${(i+0.5)*angle}deg,`;
+    });
+    w.style.background=bg.slice(0,-1)+')'
+  },
+  createTable(){
+    const t=document.getElementById('r-table');
+    t.innerHTML='';
+    t.innerHTML+=`<div class="bet-cell zero" onclick="RouletteGame.placeBet('num', 0, this)">0</div>`;
+    for(let i=1;i<=36;i++){
+      let col=this.colors[i];
+      t.innerHTML+=`<div class="bet-cell ${col}" onclick="RouletteGame.placeBet('num', ${i}, this)">${i}</div>`
+    }
+    const extras=[{l:'EVEN',t:'even',c:'black'},{l:'RED',t:'color',val:'red',c:'red'},{l:'BLACK',t:'color',val:'black',c:'black'},{l:'ODD',t:'odd',c:'red'}];
+    t.innerHTML+=`<div style="grid-column:span 3; display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:2px; width:100%">${extras.map(e=>`<div class="bet-cell ${e.c}" onclick="RouletteGame.placeBet('${e.t}', '${e.val||''}', this)">${e.l}</div>`).join('')}</div>`
+  },
+  selChip(val,el){
+    this.currentChip=val;
+    document.querySelectorAll('.chip-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    Audio.click()
+  },
+  placeBet(type,val,el){
+    if(this.spinning)return;
+    if(Player.balance<this.currentChip)return App.toast("Kein Geld!");
+    Stats.addWager(this.currentChip);
+    Player.balance-=this.currentChip;
+    App.updateHUD();
+    Audio.click();
+    this.bets.push({type,val,amt:this.currentChip});
+    const chip=document.createElement('div');
+    chip.className='chip';
+    chip.innerText=this.currentChip>=1?Math.floor(this.currentChip):this.currentChip;
+    chip.style.left=(el.offsetLeft+el.offsetWidth/2-11+Math.random()*6-3)+'px';
+    chip.style.top=(el.offsetTop+el.offsetHeight/2-11+Math.random()*6-3)+'px';
+    if(this.currentChip>=50){chip.style.background='#000';chip.style.color='gold';chip.style.borderColor='gold'}
+    else if(this.currentChip>=10){chip.style.background='#fff';chip.style.color='#000'}
+    else{chip.style.background='#00f';chip.style.color='#fff'}
+    el.parentNode.appendChild(chip);
+    this.updateBetTotal();
+    Achievements.checkAll();
+    Save.save();
+  },
+  updateBetTotal(){
+    const total=this.bets.reduce((a,b)=>a+b.amt,0);
+    document.getElementById('r-display-bet').innerText=fmt(total)
+  },
+  clearBets(){
+    if(this.spinning)return;
+    const amt = this.bets.reduce((a,b)=>a+b.amt,0);
+    Player.balance+=amt;
+    Stats.addWager(-amt);
+    App.updateHUD();
+    this.bets=[];
+    document.querySelectorAll('.chip').forEach(c=>c.remove());
+    this.updateBetTotal();
+    Save.save();
+  },
+  spin(){
+    if(this.bets.length===0)return App.toast("Kein Einsatz!");
+    if(this.spinning)return;
+    this.spinning=true;
+    Stats.rouletteSpins++;
+    document.getElementById('r-spin-btn').disabled=true;
+    document.getElementById('r-round-result').innerText='';
+    Gamble.showButtons(false);
+    const winIdx=Math.floor(Math.random()*37);
+    const winNum=this.wheelNums[winIdx];
+    const angle=360/37;
+    const targetRot=(360*5)-(winIdx*angle);
+    const w=document.getElementById('r-wheel');
+    w.style.transform=`rotate(${targetRot}deg)`;
+    const spinAudio=setInterval(()=>{Audio.tick()},100);
+    setTimeout(()=>clearInterval(spinAudio),4800);
+    setTimeout(()=>{
+      this.resolve(winNum);
+      w.style.transition='none';
+      w.style.transform=`rotate(${targetRot%360}deg)`;
+      setTimeout(()=>w.style.transition='transform 5s cubic-bezier(0.1, 0.9, 0.1, 1)',50);
+      this.spinning=false;
+      document.getElementById('r-spin-btn').disabled=false;
+      Achievements.checkAll();
+      Save.save();
+    },5000)
+  },
+  resolve(num){
+    const color=this.colors[num];
+    document.getElementById('r-msg').innerText=`${num} (${color.toUpperCase()})`;
+    document.getElementById('r-msg').style.color=color;
+    const hDiv=document.createElement('div');
+    hDiv.className=`score-bubble`;
+    hDiv.innerText=num;
+    hDiv.style.background=color==='red'?'#d00':(color==='black'?'#222':'#060');
+    document.getElementById('r-history').prepend(hDiv);
+    if(document.getElementById('r-history').children.length>8)document.getElementById('r-history').lastChild.remove();
+    let winTotal=0;
+    let betTotal=this.bets.reduce((a,b)=>a+b.amt,0);
+    this.bets.forEach(b=>{
+      let win=0;
+      if(b.type==='num'&&b.val==num)win=b.amt*36;
+      else if(b.type==='color'&&b.val===color)win=b.amt*2;
+      else if(b.type==='even'&&num!==0&&num%2===0)win=b.amt*2;
+      else if(b.type==='odd'&&num!==0&&num%2!==0)win=b.amt*2;
+      winTotal+=win
+    });
+    document.querySelectorAll('.chip').forEach(c=>c.remove());
+    this.bets=[];
+    this.updateBetTotal();
+    App.setResult('r-round-result',winTotal,betTotal);
+    if(winTotal>0)Gamble.offer(winTotal);
+    else App.toast("Nichts.");
+    Player.addXP(betTotal*4);
+    Achievements.checkAll();
+    Save.save();
+  }
+};
+
+// ===============================
+// SKILLS / ACHIEVEMENTS / PRESTIGE / SAVE SYSTEM
+// ===============================
+const Skills = {
+  state: { scatterBoost:0, fsBoost:0, xpBoost:0, sharkGrace:0 },
+  defs: [
+    { id:"xpBoost", icon:"🧠", name:"XP Boost", max:10, desc:"Mehr XP pro Einsatz. +3% XP pro Level.", cost:(lvl)=>1 },
+    { id:"scatterBoost", icon:"🌀", name:"Scatter Magnet", max:10, desc:"Slots: höhere Scatter Chance. +0,2% pro Level (additiv).", cost:(lvl)=>1 },
+    { id:"fsBoost", icon:"♻️", name:"FreeSpin Plus", max:10, desc:"Slots: mehr Freispiele bei Scatter-Trigger. +1 FS pro Level.", cost:(lvl)=>1 },
+    { id:"sharkGrace", icon:"🦈", name:"Shark Grace", max:10, desc:"Mehr Zeit, um Schulden zu zahlen. +10 Sekunden pro Level.", cost:(lvl)=>1 }
+  ],
+  get(id){ return Number(this.state[id] || 0); },
+  canBuy(def){
+    const lvl=this.get(def.id);
+    if(lvl>=def.max) return false;
+    const c=def.cost(lvl);
+    return Player.sp>=c;
+  },
+  buy(id){
+    const def=this.defs.find(d=>d.id===id);
+    if(!def) return;
+    const lvl=this.get(id);
+    if(lvl>=def.max) return App.toast("Max Level erreicht!");
+    const cost=def.cost(lvl);
+    if(Player.sp<cost) return App.toast("Nicht genug SP!");
+    Player.sp-=cost;
+    this.state[id]=lvl+1;
+    Audio.click();
+    App.updateHUD();
+    this.render();
+    App.toast(`Skill Up! ${def.name} Lvl ${lvl+1}`);
+    Achievements.checkAll();
+    Save.save();
+  },
+  eff: {
+    xpMult(){
+      const base = 1 + (Skills.get("xpBoost")*0.03);
+      const p = (Player.pBoni?.xpMult || 1);
+      return base * p;
+    },
+    scatterChance(){
+      return 0.015 + (Skills.get("scatterBoost")*0.002);
+    },
+    fsExtra(){ return Skills.get("fsBoost"); },
+    sharkGraceMs(){
+      const s = Skills.get("sharkGrace")*10000;
+      const p = Player.pBoni?.sharkGraceMs || 0;
+      return s + p;
+    }
+  },
+  open(){ this.render(); document.getElementById("skills-overlay").style.display="flex"; },
+  close(){ document.getElementById("skills-overlay").style.display="none"; },
+  render(){
+    const cont=document.getElementById("skills-container");
+    const badge=document.getElementById("skills-sp-badge");
+    badge.innerText=`${Player.sp} SP`;
+    cont.innerHTML=this.defs.map(def=>{
+      const lvl=this.get(def.id);
+      const cost=def.cost(lvl);
+      const disabled=!this.canBuy(def);
+      return `
+        <div class="skill-card">
+          <div class="skill-icon">${def.icon}</div>
+          <div class="skill-meta">
+            <p class="skill-name">${def.name}</p>
+            <p class="skill-desc">${def.desc}</p>
+            <div class="skill-bar">
+              <div class="skill-lvl">LVL ${lvl}/${def.max} | COST ${cost} SP</div>
+              <button class="skill-btn" onclick="Skills.buy('${def.id}')" ${disabled?'disabled':''}>UP</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+};
+
+const Achievements = {
+  state:{ unlocked:{}, claimed:{} },
+  defs:[
+    { id:"wager_1k",  icon:"💸", name:"Warm-Up", desc:"Insgesamt 1.000 € eingesetzt.", rewardSP:1, check:()=>Stats.totalWagered>=1000 },
+    { id:"wager_10k", icon:"🔥", name:"Gambler", desc:"Insgesamt 10.000 € eingesetzt.", rewardSP:2, check:()=>Stats.totalWagered>=10000 },
+    { id:"wager_100k",icon:"👑", name:"High Roller", desc:"Insgesamt 100.000 € eingesetzt.", rewardSP:5, check:()=>Stats.totalWagered>=100000 },
+
+    { id:"maxwin_500",icon:"💎", name:"Nice Hit", desc:"Einzelgewinn 500 €+.", rewardSP:2, check:()=>Stats.maxWin>=500 },
+    { id:"maxwin_2000",icon:"🚀", name:"Mega Win", desc:"Einzelgewinn 2.000 €+.", rewardSP:4, check:()=>Stats.maxWin>=2000 },
+
+    { id:"slots_200", icon:"🎰", name:"Spinner", desc:"200 Slot Spins.", rewardSP:1, check:()=>Stats.slotSpins>=200 },
+    { id:"bj_50",    icon:"🃏", name:"Card Shark", desc:"50 Blackjack Hände.", rewardSP:1, check:()=>Stats.bjHands>=50 },
+    { id:"rou_100",  icon:"🎡", name:"Wheel Lover", desc:"100 Roulette Spins.", rewardSP:1, check:()=>Stats.rouletteSpins>=100 },
+    { id:"race_50",  icon:"🐎", name:"Track Regular", desc:"50 Pferderennen.", rewardSP:1, check:()=>Stats.raceEntries>=50 },
+
+    { id:"heist_3",  icon:"🔓", name:"Breaker", desc:"3 erfolgreiche Heists.", rewardSP:2, check:()=>Stats.heistSuccess>=3 },
+    { id:"shark_1",  icon:"🦈", name:"Loan Taker", desc:"1x Kredit beim Hai.", rewardSP:1, check:()=>Stats.sharkLoans>=1 },
+
+    { id:"prestige_1", icon:"🏆", name:"Reborn", desc:"1x Prestige gemacht.", rewardSP:3, check:()=> (Player.prestige||0)>=1 },
+    { id:"prestige_3", icon:"🏅", name:"Veteran", desc:"3x Prestige gemacht.", rewardSP:5, check:()=> (Player.prestige||0)>=3 }
+  ],
+  isUnlocked(id){ return !!this.state.unlocked[id]; },
+  unlock(id){
+    if(this.isUnlocked(id)) return;
+    this.state.unlocked[id]=true;
+    Audio.win();
+    const nm=this.defs.find(x=>x.id===id)?.name || id;
+    App.toast(`ACHIEVEMENT: ${nm}`);
+  },
+  claim(id){
+    if(!this.isUnlocked(id)) return;
+    if(this.state.claimed[id]) return;
+    const def=this.defs.find(d=>d.id===id);
+    if(!def) return;
+    this.state.claimed[id]=true;
+    Player.sp += (def.rewardSP||0);
+    Audio.click();
+    App.updateHUD();
+    this.render();
+    App.toast(`Belohnung: +${def.rewardSP} SP`);
+    Save.save();
+  },
+  checkAll(){
+    this.defs.forEach(def=>{
+      if(!this.isUnlocked(def.id) && def.check()) this.unlock(def.id);
+    });
+  },
+  open(){
+    this.checkAll();
+    this.render();
+    document.getElementById("ach-overlay").style.display="flex";
+  },
+  close(){ document.getElementById("ach-overlay").style.display="none"; },
+  render(){
+    const cont=document.getElementById("ach-container");
+    const badge=document.getElementById("ach-badge");
+    const total=this.defs.length;
+    const unlockedCount=Object.keys(this.state.unlocked).length;
+    badge.innerText=`${unlockedCount}/${total}`;
+
+    cont.innerHTML=this.defs.map(def=>{
+      const unlocked=this.isUnlocked(def.id);
+      const claimed=!!this.state.claimed[def.id];
+      const pillClass=unlocked?"ach-pill":"ach-pill locked";
+      const pillText=unlocked?(claimed?"GECLAIMT":`+${def.rewardSP} SP`):"LOCKED";
+      const right = (unlocked && !claimed)
+        ? `<button class="skill-btn" onclick="Achievements.claim('${def.id}')" style="height:32px; background:var(--gold);">CLAIM</button>`
+        : `<div class="${pillClass}">${pillText}</div>`;
+      return `
+        <div class="ach-row">
+          <div class="ach-left">
+            <div class="ach-ico">${def.icon}</div>
+            <div>
+              <div class="ach-name" style="color:${unlocked?'#fff':'#777'}">${def.name}</div>
+              <div class="ach-desc">${def.desc}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">${right}</div>
+        </div>
+      `;
+    }).join('');
+  }
+};
+
+const Prestige = {
+  eligible(){ return (Player.level>=20) || (Stats.totalWagered>=100000); },
+  open(){
+    if(!this.eligible()){
+      App.toast("Prestige noch nicht verfügbar (LVL 20 oder 100.000€ Einsatz).");
+      return;
+    }
+    document.getElementById("prestige-badge").innerText=`P${Player.prestige||0}`;
+    document.getElementById("prestige-xp").innerText=`+${Math.round(((Player.pBoni?.xpMult||1)-1)*100)}%`;
+    document.getElementById("prestige-shark").innerText=`+${Math.round((Player.pBoni?.sharkGraceMs||0)/1000)}s`;
+    document.getElementById("prestige-overlay").style.display="flex";
+  },
+  close(){ document.getElementById("prestige-overlay").style.display="none"; },
+  doPrestige(){
+    if(!this.eligible()) return App.toast("Nicht verfügbar.");
+    if(!confirm("Prestige wirklich ausführen? Level & Geld werden zurückgesetzt.")) return;
+
+    if(!Player.prestige) Player.prestige=0;
+    if(!Player.pBoni) Player.pBoni={xpMult:1, sharkGraceMs:0};
+
+    Player.prestige += 1;
+    Player.pBoni.xpMult = Number((Player.pBoni.xpMult + 0.05).toFixed(4)); // +5% XP each
+    Player.pBoni.sharkGraceMs = (Player.pBoni.sharkGraceMs || 0) + 5000;   // +5s each
+
+    // Reset run
+    Player.balance=100.00;
+    Player.debt=0;
+    Player.level=1;
+    Player.xp=0;
+    Player.nextXP=50;
+
+    // Wipe volatile
+    SlotGame.stopAuto();
+    SlotGame.fs=0;
+    SlotGame.updateInfo();
+    Shark.deadline=0;
+    document.getElementById('shark-warning').style.display='none';
+    document.getElementById('shark-overlay').style.display='none';
+
+    App.updateHUD();
+    App.renderLobby();
+    this.close();
+
+    Achievements.checkAll();
+    App.toast(`PRESTIGE! Du bist jetzt P${Player.prestige}`);
+    Save.save();
+  }
+};
+
+const Save = {
+  key:"NEON_CASINO_SAVE_V1",
+  load(){
+    try{
+      const raw=localStorage.getItem(this.key);
+      if(!raw) return;
+      const data=JSON.parse(raw);
+
+      if(data.player){
+        Player.balance = Number(data.player.balance ?? Player.balance);
+        Player.debt = Number(data.player.debt ?? Player.debt);
+        Player.level = Number(data.player.level ?? Player.level);
+        Player.xp = Number(data.player.xp ?? Player.xp);
+        Player.nextXP = Number(data.player.nextXP ?? Player.nextXP);
+        Player.sp = Number(data.player.sp ?? Player.sp);
+        Player.prestige = Number(data.player.prestige ?? Player.prestige);
+        Player.pBoni = data.player.pBoni || Player.pBoni || {xpMult:1, sharkGraceMs:0};
+      }
+
+      if(data.stats) Object.assign(Stats, data.stats);
+      if(data.shop) Object.assign(Shop.items, data.shop);
+      if(data.skills) Skills.state = data.skills;
+      if(data.ach) Achievements.state = data.ach;
+
+      // Apply themes after load
+      if(Shop.items.gold) document.body.className="theme-gold";
+      if(Shop.items.matrix) document.body.className="theme-matrix";
+
+      // mark sold-out
+      if(Shop.items.gold) document.getElementById('shop-gold')?.classList.add('sold-out');
+      if(Shop.items.matrix) document.getElementById('shop-matrix')?.classList.add('sold-out');
+    } catch(e){ /* ignore */ }
+  },
+  save(){
+    try{
+      const payload={
+        player:{
+          balance:Player.balance,debt:Player.debt,level:Player.level,
+          xp:Player.xp,nextXP:Player.nextXP,sp:Player.sp,
+          prestige:Player.prestige||0,pBoni:Player.pBoni||{xpMult:1, sharkGraceMs:0}
+        },
+        stats:{...Stats},
+        shop:{...Shop.items},
+        skills:Skills.state,
+        ach:Achievements.state
+      };
+      localStorage.setItem(this.key, JSON.stringify(payload));
+    } catch(e){ /* ignore */ }
+  },
+  wipe(){ localStorage.removeItem(this.key); }
+};
+
+setInterval(()=>Save.save(), 2500);
+
+// Hook XP multiplier (skills + prestige)
+const _origAddXP = Player.addXP.bind(Player);
+Player.addXP = function(n){
+  const mult = Skills.eff.xpMult();
+  _origAddXP(n * mult);
+  Achievements.checkAll();
+  Save.save();
+};
+
+// Hook Stats functions to keep achievements updated even if called elsewhere
+const _origAddWin = Stats.addWin.bind(Stats);
+Stats.addWin = function(amt){
+  _origAddWin(amt);
+  Achievements.checkAll();
+  Save.save();
+};
+const _origAddWager = Stats.addWager.bind(Stats);
+Stats.addWager = function(amt){
+  _origAddWager(amt);
+  Achievements.checkAll();
+  Save.save();
+};
+
+// Load Save BEFORE init
+Save.load();
+Achievements.checkAll();
+
+// Start
+App.init();
+</script>
+</body>
+</html>
