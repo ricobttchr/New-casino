@@ -2,428 +2,358 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VGH WINSEN: PLATINUM EDITION</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>VGH Winsen Pro</title>
     <style>
         /* ==========================================
-           1. CSS STYLES (DESIGN)
+           1. iOS PRO DESIGN SYSTEM
            ========================================== */
-        :root { --bg: #030407; --pnl: #0b101a; --prm: #e30613; --sec: #004a99; --acc: #00e5ff; --gld: #ffd700; --suc: #0f6; --err: #f33; --font-ui: 'Segoe UI', system-ui, sans-serif; --font-mono: monospace; }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #e2e8f0; font-family: var(--font-ui); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
-        header { height: 65px; background: #000; border-bottom: 2px solid var(--prm); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; z-index: 500; }
-        .logo-area { display: flex; align-items: center; gap: 15px; }
-        .menu-toggle { font-size: 26px; color: var(--prm); cursor: pointer; display: none; }
-        .logo-text { font-size: 20px; font-weight: 900; letter-spacing: -1px; }
-        .hud-area { display: flex; gap: 15px; align-items: center; }
-        .hud-stat { display: flex; flex-direction: column; align-items: flex-end; }
-        .hud-lbl { font-size: 9px; color: #888; font-weight: 800; text-transform: uppercase; }
-        .hud-val { font-size: 15px; font-weight: 900; color: var(--gld); }
-        .vgh-badge { background: #222; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #444; }
-        .vgh-badge.act { background: var(--sec); border-color: #00aaff; }
-
-        .app-container { display: flex; flex: 1; position: relative; overflow: hidden; }
-        aside { width: 260px; background: rgba(0,0,0,0.95); border-right: 1px solid #222; display: flex; flex-direction: column; overflow-y: auto; z-index: 400; transition: 0.3s; }
-        .nav-header { padding: 15px 20px 5px; font-size: 10px; color: #555; font-weight: 900; }
-        .nav-item { padding: 12px 20px; color: #aaa; font-size: 12px; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; text-transform: uppercase; }
-        .nav-item.active { background: rgba(227,6,19,0.1); color: #fff; border-left-color: var(--prm); }
-
-        #mob-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; }
-        main.viewport { flex: 1; overflow-y: auto; padding: 15px; background: radial-gradient(circle at top left, #0e1420, var(--bg)); }
-        .screen { display: none; flex-direction: column; gap: 15px; max-width: 1000px; margin: 0 auto; animation: fIn 0.3s; padding-bottom: 50px; }
-        .screen.active { display: flex; }
-        @keyframes fIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
-
-        .panel { background: var(--pnl); border: 1px solid #222; border-radius: 10px; padding: 18px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
-        .title { font-size: 18px; color: var(--acc); font-weight: 900; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 8px; }
-        .msg-box { font-size: 20px; font-weight: 900; color: var(--gld); background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 8px; text-align: center; }
-
-        input, select { background: #000; border: 1px solid #444; color: var(--acc); padding: 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 14px; width: 100%; outline: none; }
-        label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
-        .btn { padding: 12px 15px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; border: none; color: #fff; font-size: 13px; width: 100%; transition: 0.2s; }
-        .b-prm { background: linear-gradient(135deg, var(--prm), #800000); } .b-sec { background: linear-gradient(135deg, var(--sec), #001a4d); } .b-acc { background: var(--acc); color: #000; } .b-drk { background: #111; border: 1px solid #333; }
-        .btn:active:not(:disabled) { transform: scale(0.98); } .btn:disabled { opacity: 0.5; filter: grayscale(1); }
-        .ctrl-row { display: flex; gap: 10px; margin-top: 15px; }
-
-        /* SLOTS */
-        .slot-machine { width: 100%; aspect-ratio: 2/1; max-height: 350px; background: #000; border: 4px solid #222; border-radius: 12px; display: flex; gap: 6px; padding: 8px; position: relative; overflow: hidden; }
-        #sl-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; width: 100%; height: 100%; }
-        .slot-reel { flex: 1; display: flex; flex-direction: column; will-change: transform; }
-        .slot-sym { flex: 0 0 33.333%; display: flex; align-items: center; justify-content: center; font-size: 5vw; background: rgba(255,255,255,0.03); margin-bottom: 4px; border-radius: 6px; }
-
-        /* PLINKO */
-        #pl-cvs { background: #020305; border: 1px solid #222; border-radius: 10px 10px 0 0; width: 100%; height: auto; aspect-ratio: 4/3; display: block; }
-        .pl-m { display: flex; width: 100%; height: 30px; border-radius: 0 0 10px 10px; overflow: hidden; }
-        .pl-b { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px; color: #000; border-right: 1px solid rgba(0,0,0,0.3); }
-
-        /* CARDS & HORSES */
-        .card-table { background: radial-gradient(circle, #0f3d23, #05140b); border: 8px solid #2e1a10; border-radius: 60px; min-height: 300px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
-        .card-hand { display: flex; gap: -15px; }
-        .play-card { width: 60px; height: 90px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #111; border: 1px solid #ccc; box-shadow: -2px 2px 8px rgba(0,0,0,0.5); will-change: transform; }
-        .play-card.red { color: #d00; } .play-card.back { background: repeating-linear-gradient(45deg, #111, #111 8px, #222 8px, #222 16px); }
-        .play-card.held { transform: translateY(-15px); border: 2px solid var(--acc); }
-        .track-bg { background: #3d2f22; border: 2px solid #1a150f; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; margin-top: 15px; }
-        .track-lane { height: 35px; background: rgba(0,0,0,0.4); border-radius: 17px; position: relative; display: flex; align-items: center; }
-        .horse-icon { width: 25px; height: 25px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; position: absolute; left: 0; will-change: transform; }
-        .track-fin { position: absolute; right: 30px; top: 0; bottom: 0; width: 5px; background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px); }
-
-        /* CHARTS */
-        .chart-box { background: #000; border: 1px solid #222; border-radius: 6px; height: 60px; width: 100%; margin: 8px 0; }
-        .chart-svg { width: 100%; height: 100%; }
-        .mkt-row { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; padding: 10px; border-bottom: 1px solid #1a1a1a; align-items: center; }
-
-        /* FX & TOAST */
-        #debug-overlay { position: fixed; top: 5px; left: 5px; background: rgba(0,0,0,0.8); border: 1px solid var(--suc); color: var(--suc); font-family: var(--font-mono); font-size: 10px; padding: 5px; z-index: 9999; display: none; pointer-events: none; }
-        #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; }
-        #toast-box { position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; align-items: center; pointer-events: none; }
-        .tst { background: #fff; color: #000; padding: 12px 20px; border-radius: 6px; font-weight: 900; font-size: 11px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-left: 5px solid var(--prm); animation: sUp 0.3s forwards; max-width: 300px; width: 100%; text-align: center; }
-        @keyframes sUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-
-        @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .desktop-only { display: none; }
-            aside { position: absolute; left: -280px; height: 100%; box-shadow: 5px 0 20px rgba(0,0,0,0.9); }
-            aside.open { left: 0; }
-            aside.open + #mob-overlay { display: block; }
-            .slot-sym { font-size: 25px; }
-            .mkt-row { grid-template-columns: 1fr; text-align: center; }
+        :root { 
+            --bg: #000000; --pnl: rgba(15, 20, 28, 0.85); --prm: #e30613; --sec: #004a99; 
+            --acc: #00e5ff; --gld: #ffd700; --suc: #0f6; --err: #f33; 
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-bot: env(safe-area-inset-bottom, 20px);
         }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { background: var(--bg); color: #e2e8f0; font-family: var(--font-ui); height: 100vh; display: flex; flex-direction: column; overflow: hidden; -webkit-font-smoothing: antialiased; }
+
+        /* HEADER & DYNAMIC ISLAND SAFE AREA */
+        header { 
+            padding-top: var(--safe-top); height: calc(60px + var(--safe-top)); 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(227,6,19,0.5); display: flex; justify-content: space-between; align-items: center; padding-left: 15px; padding-right: 15px; z-index: 500; 
+        }
+        .logo { font-size: 22px; font-weight: 900; letter-spacing: -1px; }
+        .hud { display: flex; gap: 12px; align-items: flex-end; flex-direction: column; }
+        .hud-val { font-size: 18px; font-weight: 900; color: var(--gld); }
+        .hud-pas { font-size: 12px; color: var(--suc); font-weight: bold; }
+
+        /* VIEWPORT & SCREENS */
+        main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 15px; padding-bottom: calc(80px + var(--safe-bot)); -webkit-overflow-scrolling: touch; }
+        .screen { display: none; flex-direction: column; gap: 15px; animation: fIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-width: 600px; margin: 0 auto; }
+        .screen.act { display: flex; }
+        @keyframes fIn { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* PANELS & UI ELEMENTS */
+        .pnl { background: var(--pnl); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .ttl { font-size: 18px; color: var(--acc); font-weight: 900; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+
+        /* FORMS */
+        input, select { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: var(--acc); padding: 14px; border-radius: 10px; font-family: monospace; font-size: 16px; width: 100%; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--prm); }
+        .btn { padding: 16px; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; border: none; color: #fff; font-size: 14px; width: 100%; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn:active:not(:disabled) { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; filter: grayscale(1); }
+        .b-prm { background: linear-gradient(135deg, var(--prm), #800); } .b-sec { background: linear-gradient(135deg, var(--sec), #002); } .b-acc { background: var(--acc); color: #000; } .b-drk { background: #111; border: 1px solid #333; }
+
+        /* GAMES SPECIFIC */
+        canvas { width: 100%; height: 100%; display: block; }
+        .slot-box { width: 100%; aspect-ratio: 16/9; background: #000; border: 3px solid #222; border-radius: 14px; display: flex; gap: 4px; padding: 6px; position: relative; overflow: hidden; }
+        #sl-cvs { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+        .sl-rl { flex: 1; display: flex; flex-direction: column; will-change: transform; }
+        .sl-sym { flex: 0 0 33.333%; display: flex; align-items: center; justify-content: center; font-size: 8vw; background: rgba(255,255,255,0.03); margin-bottom: 2px; border-radius: 6px; }
+
+        #pl-cvs-wrap { background: #050508; border-radius: 14px 14px 0 0; width: 100%; aspect-ratio: 4/3; position: relative; border: 1px solid #222; overflow: hidden; }
+        .pl-m { display: flex; width: 100%; height: 35px; border-radius: 0 0 14px 14px; overflow: hidden; }
+        .pl-b { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px; border-right: 1px solid rgba(0,0,0,0.2); }
+
+        .tbl { background: radial-gradient(circle, #0f3d23, #05140b); border: 6px solid #2e1a10; border-radius: 40px; min-height: 280px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+        .hnd { display: flex; gap: -20px; }
+        .crd { width: 65px; height: 95px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: #111; border: 1px solid #ccc; box-shadow: -2px 2px 10px rgba(0,0,0,0.6); will-change: transform; }
+        .crd.red { color: #d00; } .crd.bck { background: repeating-linear-gradient(45deg, #111, #111 8px, #222 8px, #222 16px); }
+
+        .trk-bg { background: #2a2015; border: 2px solid #111; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; margin-top: 15px; }
+        .trk-ln { height: 35px; background: rgba(0,0,0,0.3); border-radius: 17px; position: relative; display: flex; align-items: center; }
+        .hrs-icn { width: 28px; height: 28px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; position: absolute; left: 0; will-change: transform; box-shadow: 2px 2px 5px #000; }
+        .fin-ln { position: absolute; right: 35px; top: 0; bottom: 0; width: 6px; background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px); }
+
+        .mkt-rw { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .chrt-bx { background: #000; border: 1px solid #222; border-radius: 8px; height: 70px; width: 100%; position: relative; overflow: hidden; }
+
+        /* iOS BOTTOM NAVIGATION BAR */
+        nav { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1); 
+            display: flex; overflow-x: auto; padding: 10px 10px calc(10px + var(--safe-bot)) 10px; gap: 10px; z-index: 600;
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        nav::-webkit-scrollbar { display: none; }
+        .nav-it { 
+            flex: 0 0 auto; padding: 12px 20px; border-radius: 20px; font-size: 13px; font-weight: 800; 
+            color: #888; background: rgba(255,255,255,0.05); text-transform: uppercase; transition: 0.2s; 
+        }
+        .nav-it.act { background: var(--prm); color: #fff; box-shadow: 0 4px 15px rgba(227,6,19,0.4); }
+
+        /* FX & TOASTS */
+        #fx-lyr { position: fixed; inset: 0; pointer-events: none; z-index: 8000; }
+        #tst-bx { position: fixed; top: calc(80px + var(--safe-top)); left: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; align-items: center; }
+        .tst { background: rgba(255,255,255,0.95); color: #000; padding: 14px 24px; border-radius: 30px; font-weight: 900; font-size: 12px; text-transform: uppercase; box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: sDwn 0.4s cubic-bezier(0.16,1,0.3,1) forwards; backdrop-filter: blur(10px); }
+        @keyframes sDwn { from{transform:translateY(-20px) scale(0.9);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
     </style>
 </head>
 <body>
 
-    <div id="debug-overlay"></div>
-    <canvas id="fx-layer"></canvas>
+    <canvas id="fx-lyr"></canvas>
 
     <header>
-        <div class="logo-area">
-            <div class="menu-toggle" id="btn-menu">☰</div>
-            <div class="logo-text" id="btn-logo"><span style="color:#fff;">VGH</span><span style="color:var(--prm);">WINSEN</span></div>
-        </div>
-        <div class="hud-area">
-            <div class="hud-stat desktop-only"><span class="hud-lbl">Kapital</span><span class="hud-val" id="hud-money">1.000 €</span></div>
-            <div class="hud-stat desktop-only"><span class="hud-lbl">Cashflow</span><span class="hud-val" id="hud-passive" style="color:var(--suc); font-size:14px;">+0 €</span></div>
-            <div class="vgh-badge" id="hud-vgh">VGH INAKTIV</div>
+        <div class="logo"><span style="color:#fff;">VGH</span><span style="color:var(--prm);">WINSEN</span></div>
+        <div class="hud">
+            <div class="hud-val" id="h-mny">1.000 €</div>
+            <div class="hud-pas" id="h-pas">+0 € / 10s</div>
         </div>
     </header>
 
-    <div class="app-container">
-        <aside id="sidebar">
-            <div class="nav-header">ZENTRALE</div>
-            <div class="nav-item active" data-target="lobby">🏠 Lobby / HQ</div>
-            <div class="nav-header">CASINO FLOOR</div>
-            <div class="nav-item" data-target="slots">🎰 5x3 Slots</div>
-            <div class="nav-item" data-target="bj">🃏 Blackjack</div>
-            <div class="nav-item" data-target="poker">♠️ Video Poker</div>
-            <div class="nav-item" data-target="plinko">🟢 Plinko Physics</div>
-            <div class="nav-item" data-target="horses">🐎 Winsen Derby</div>
-            <div class="nav-header">ECONOMY & ASSETS</div>
-            <div class="nav-item" data-target="markets">📈 Trading Terminal</div>
-            <div class="nav-item" data-target="realestate">🏙️ Immobilien</div>
-            <div class="nav-item" data-target="pets">🐕 Pet Zucht</div>
-            <div class="nav-header">VERWALTUNG</div>
-            <div class="nav-item" data-target="vgh">🛡️ VGH Büro</div>
-            <div class="nav-item" data-target="bank">🏦 Syndikat Bank</div>
-            <div class="nav-item" data-target="stats">📊 Statistik</div>
-            <div class="nav-item" data-target="settings">⚙️ System</div>
-        </aside>
+    <main id="vp">
+        <div id="scr-lb" class="screen act">
+            <div class="pnl" style="border-color:var(--prm); background: rgba(227,6,19,0.05);">
+                <h1 style="font-size:26px; margin-bottom:8px;">Neon Sovereign Pro</h1>
+                <p style="color:#888; font-size:13px; line-height:1.4;">iPhone 15 Pro Build geladen. Retina-Rendering, Delta-Time Physik & 120Hz Animationen aktiv.</p>
+            </div>
+            <div class="grid">
+                <div class="pnl" style="text-align:center;"><h3 style="color:var(--sec); margin-bottom:15px;">VGH Policen</h3><button class="btn b-sec" onclick="App.nav('vgh')">BÜRO ÖFFNEN</button></div>
+                <div class="pnl" style="text-align:center;"><h3 style="color:var(--acc); margin-bottom:15px;">Pro 5x3 Slots</h3><button class="btn b-acc" onclick="App.nav('sl')">AUTOMAT STARTEN</button></div>
+            </div>
+        </div>
 
-        <div id="mob-overlay"></div>
-
-        <main class="viewport" id="viewport">
-            <div id="scr-lobby" class="screen active">
-                <div class="panel" style="border-color:var(--prm); background: rgba(227,6,19,0.05);">
-                    <h1 style="font-size:28px; margin-bottom:5px;">Neon Sovereign OS</h1>
-                    <p style="color:#888; font-size:14px;">Single-File GitHub Edition aktiv. Delta-Time & GPU-Acceleration geladen.</p>
+        <div id="scr-sl" class="screen">
+            <div class="pnl">
+                <div class="ttl">5x3 Slots (RTP: 95%)</div>
+                <div class="slot-box" id="sl-bx">
+                    <canvas id="sl-cvs"></canvas>
+                    <div class="sl-rl" id="sl-r0"></div><div class="sl-rl" id="sl-r1"></div><div class="sl-rl" id="sl-r2"></div><div class="sl-rl" id="sl-r3"></div><div class="sl-rl" id="sl-r4"></div>
                 </div>
-                <div class="grid">
-                    <div class="panel" style="text-align:center;"><h3 style="color:var(--sec);">VGH HQ</h3><button class="btn b-sec" style="margin-top:15px;" data-nav="vgh">POLICEN PRÜFEN</button></div>
-                    <div class="panel" style="text-align:center;"><h3 style="color:var(--acc);">Pro Slots</h3><button class="btn b-acc" style="margin-top:15px;" data-nav="slots">ZUM AUTOMATEN</button></div>
+                <div id="sl-msg" style="text-align:center; font-size:24px; color:var(--gld); font-weight:900; margin:20px 0;">BEREIT</div>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <div style="flex:1"><label>Einsatz/Linie</label><input type="number" id="sl-bt" value="10"></div>
+                    <div style="flex:1"><label>Linien (1-20)</label><input type="number" id="sl-ln" value="10" max="20"></div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn b-drk" id="sl-btn-au" style="flex:1;">AUTO</button>
+                    <button class="btn b-prm" id="sl-btn-sp" style="flex:2;">SPIN (<span id="sl-tot">100</span>€)</button>
                 </div>
             </div>
+        </div>
 
-            <div id="scr-slots" class="screen">
-                <div class="panel" style="max-width:900px; margin:0 auto;">
-                    <div class="title">5x3 Pro Slots</div>
-                    <div class="slot-machine" id="sl-container">
-                        <canvas id="sl-canvas"></canvas>
-                        <div class="slot-reel" id="sl-r0"></div><div class="slot-reel" id="sl-r1"></div>
-                        <div class="slot-reel" id="sl-r2"></div><div class="slot-reel" id="sl-r3"></div><div class="slot-reel" id="sl-r4"></div>
-                    </div>
-                    <div id="sl-msg" style="text-align:center; font-size:24px; color:var(--gld); font-weight:900; margin:15px 0;">BEREIT</div>
-                    <div class="grid" style="grid-template-columns: 1fr 1fr 2fr; gap:10px;">
-                        <div><label>EINSATZ / LINIE</label><input type="number" id="sl-bet" value="10"></div>
-                        <div><label>LINIEN (1-20)</label><input type="number" id="sl-lines" value="10" max="20"></div>
-                        <div style="display:flex; gap:10px; align-items:flex-end;">
-                            <button class="btn b-drk" id="sl-btn-auto">AUTO</button>
-                            <button class="btn b-prm" id="sl-btn-spin">SPIN (<span id="sl-tot">100</span>€)</button>
-                        </div>
-                    </div>
+        <div id="scr-pl" class="screen">
+            <div class="pnl">
+                <div class="ttl">Plinko (120Hz Physics)</div>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="number" id="pl-bt" value="50">
+                    <button class="btn b-acc" id="pl-btn">DROP BALL</button>
                 </div>
+                <div id="pl-cvs-wrap"><canvas id="pl-cvs"></canvas></div>
+                <div class="pl-m" id="pl-mlt"></div>
             </div>
+        </div>
 
-            <div id="scr-plinko" class="screen">
-                <div class="panel">
-                    <div class="title">Plinko Gravity <span style="font-size:12px;color:#888;">(Delta-Time Physics)</span></div>
-                    <div style="display:flex; gap:10px; margin-bottom:15px;">
-                        <input type="number" id="pl-bet" value="50">
-                        <button class="btn b-acc" id="pl-btn">DROP BALL</button>
-                    </div>
-                    <canvas id="pl-cvs"></canvas>
-                    <div class="pl-m" id="pl-mults"></div>
-                </div>
-            </div>
+        <div id="scr-bj" class="screen"><div class="pnl"><div class="ttl">Blackjack (Stand on 17)</div><div class="tbl"><div id="bj-d" class="hnd"></div><div id="bj-msg" style="color:var(--gld); font-weight:900; font-size:24px; background:rgba(0,0,0,0.8); padding:5px 20px; border-radius:10px;">PLACE BET</div><div id="bj-p" class="hnd"></div></div><div style="margin-top:20px; display:flex; gap:10px;"><input type="number" id="bj-bt" value="100"><button class="btn b-prm" id="bj-btn-dl">DEAL</button></div><div id="bj-act" style="display:none; gap:10px; margin-top:20px;"><button class="btn b-drk" id="bj-btn-ht">HIT</button><button class="btn b-sec" id="bj-btn-st">STAND</button><button class="btn b-acc" id="bj-btn-db">DBL</button></div></div></div>
+        
+        <div id="scr-pk" class="screen"><div class="pnl"><div class="ttl">Video Poker</div><div class="tbl" style="min-height:220px;"><div id="pk-h" class="hnd" style="flex-wrap:wrap;justify-content:center;gap:5px;"></div></div><div id="pk-msg" style="text-align:center; font-size:20px; color:var(--acc); font-weight:900; margin:20px 0; height:24px;"></div><div style="display:flex; gap:10px;"><input type="number" id="pk-bt" value="50"><button class="btn b-prm" id="pk-btn-ac">DEAL</button></div></div></div>
+        
+        <div id="scr-hr" class="screen"><div class="pnl"><div class="ttl">Winsen Derby</div><select id="hr-sl" style="margin-bottom:15px;"><option value="0">Neon Blitz (2x)</option><option value="1">VGH Star (4x)</option><option value="2">Cyber Hoof (7x)</option><option value="3">Dark Horse (15x)</option><option value="4">Wörns Pride (30x)</option></select><div style="display:flex; gap:10px;"><input type="number" id="hr-bt" value="100"><button class="btn b-prm" id="hr-btn">START</button></div><div class="trk-bg"><div class="fin-ln"></div><div class="trk-ln"><div class="hrs-icn" id="hr-0">🐎</div></div><div class="trk-ln"><div class="hrs-icn" id="hr-1">🐎</div></div><div class="trk-ln"><div class="hrs-icn" id="hr-2">🐎</div></div><div class="trk-ln"><div class="hrs-icn" id="hr-3">🐎</div></div><div class="trk-ln"><div class="hrs-icn" id="hr-4">🐎</div></div></div><div id="hr-rs" style="text-align:center; font-size:22px; color:var(--gld); margin-top:20px; font-weight:900; height:26px;"></div></div></div>
+        
+        <div id="scr-mk" class="screen"><div class="pnl"><div class="ttl">Trading Terminal</div><div style="display:flex; gap:10px; margin-bottom:15px;"><button class="btn b-sec" onclick="Ec.swM('st')">AKTIEN</button><button class="btn b-acc" onclick="Ec.swM('cr')">KRYPTO</button></div><div id="mk-lst"></div></div></div>
+        
+        <div id="scr-re" class="screen"><div class="pnl"><div class="ttl">Immobilien</div><div class="grid" id="re-lst"></div></div></div>
+        <div id="scr-pt" class="screen"><div class="pnl"><div class="ttl">Haustiere</div><div class="grid" id="pt-lst"></div></div></div>
+        
+        <div id="scr-vgh" class="screen"><div class="pnl" style="border-color:var(--sec); background:rgba(0,74,153,0.1);"><div class="ttl" style="color:var(--sec);">VGH Büro (M. Wörns)</div><div class="grid" id="vgh-lst"></div></div></div>
+        <div id="scr-bk" class="screen"><div class="pnl" style="border-color:var(--prm);"><div class="ttl" style="color:var(--prm);">Syndikat Bank</div><div style="font-size:26px;color:var(--prm);font-weight:900;margin-bottom:20px;">Schulden: <span id="bk-db">0 €</span></div><button class="btn b-prm" id="bk-br" style="margin-bottom:10px;">+50.000 € LEIHEN (10%)</button><button class="btn b-acc" id="bk-py">TILGEN</button></div></div>
+        
+        <div id="scr-st" class="screen"><div class="pnl"><div class="ttl">BWA / Statistik</div><div id="st-bd" style="font-family:monospace; line-height:2.2; font-size:14px;"></div></div></div>
+        <div id="scr-stg" class="screen"><div class="pnl"><div class="ttl">System</div><button class="btn b-sec" id="opt-sn" style="margin-bottom:10px;">SOUND: ON</button><button class="btn b-sec" id="opt-fx" style="margin-bottom:20px;">FX: ON</button><button class="btn b-acc" id="opt-ex" style="margin-bottom:10px;">💾 EXPORT</button><button class="btn b-prm" id="opt-rs">⚠️ RESET</button></div></div>
+    </main>
 
-            <div id="scr-bj" class="screen"><div class="panel"><div class="title">Blackjack</div><div class="card-table"><div id="bj-d" class="card-hand"></div><div id="bj-msg" class="msg-box">PLACE BET</div><div id="bj-p" class="card-hand"></div></div><div class="ctrl-row"><input type="number" id="bj-bet" value="100"><button class="btn b-prm" id="bj-btn-deal">DEAL</button></div><div class="ctrl-row" id="bj-acts" style="display:none;"><button class="btn b-drk" id="bj-btn-hit">HIT</button><button class="btn b-sec" id="bj-btn-stand">STAND</button><button class="btn b-acc" id="bj-btn-dbl">DBL</button></div></div></div>
-            <div id="scr-poker" class="screen"><div class="panel"><div class="title">Video Poker</div><div class="card-table" style="min-height:250px;"><div id="pk-h" class="card-hand" style="flex-wrap:wrap;justify-content:center;"></div></div><div id="pk-msg" class="msg-box" style="margin:15px 0;background:transparent;"></div><div class="ctrl-row"><input type="number" id="pk-bet" value="50"><button class="btn b-prm" id="pk-btn-act">DEAL</button></div></div></div>
-            <div id="scr-horses" class="screen"><div class="panel"><div class="title">Winsen Derby</div><select id="hr-sel"><option value="0">Neon Blitz (2x)</option><option value="1">VGH Star (4x)</option><option value="2">Cyber Hoof (7x)</option><option value="3">Dark Horse (15x)</option><option value="4">Wörns Pride (30x)</option></select><div class="ctrl-row" style="margin-top:10px;"><input type="number" id="hr-bet" value="100"><button class="btn b-prm" id="hr-btn">START</button></div><div class="track-bg" id="hr-trk"><div class="track-fin"></div><div class="track-lane"><div class="horse-icon" id="hr-0">🐎</div></div><div class="track-lane"><div class="horse-icon" id="hr-1">🐎</div></div><div class="track-lane"><div class="horse-icon" id="hr-2">🐎</div></div><div class="track-lane"><div class="horse-icon" id="hr-3">🐎</div></div><div class="track-lane"><div class="horse-icon" id="hr-4">🐎</div></div></div><div id="hr-res" class="msg-box" style="background:transparent;margin-top:15px;"></div></div></div>
-            <div id="scr-markets" class="screen"><div class="panel"><div class="title">Trading</div><div style="display:flex;gap:10px;margin-bottom:15px;"><button class="btn b-sec" data-mkt="st">AKTIEN</button><button class="btn b-acc" data-mkt="cr">KRYPTO</button></div><div id="mk-list"></div></div></div>
-            <div id="scr-realestate" class="screen"><div class="panel"><div class="title">Immobilien</div><div class="grid" id="re-list"></div></div></div>
-            <div id="scr-pets" class="screen"><div class="panel"><div class="title">Haustiere</div><div class="grid" id="pt-list"></div></div></div>
-            <div id="scr-vgh" class="screen"><div class="panel" style="border-color:var(--sec);"><div class="title" style="color:var(--sec);">VGH Büro</div><div class="grid" id="vgh-list"></div></div></div>
-            <div id="scr-bank" class="screen"><div class="panel" style="border-color:var(--prm);"><div class="title" style="color:var(--prm);">Bank</div><div style="font-size:24px;color:var(--prm);font-weight:900;margin-bottom:15px;">Schulden: <span id="bk-dbt">0 €</span></div><div class="ctrl-row"><button class="btn b-prm" id="bk-brw">+50k LEIHEN</button><button class="btn b-acc" id="bk-pay">TILGEN</button></div></div></div>
-            <div id="scr-stats" class="screen"><div class="panel"><div class="title">BWA</div><div id="st-brd" style="font-family:var(--font-mono);line-height:2;"></div></div></div>
-            <div id="scr-settings" class="screen"><div class="panel"><div class="title">System</div><button class="btn b-sec" id="opt-snd" style="margin-bottom:10px;">SOUND: ON</button><button class="btn b-sec" id="opt-fx" style="margin-bottom:20px;">FX: ON</button><button class="btn b-acc" id="opt-exp" style="margin-bottom:10px;">EXPORT</button><button class="btn b-prm" id="opt-rst">RESET</button></div></div>
-        </main>
-    </div>
+    <nav id="nav-br">
+        <div class="nav-it act" data-tg="lb">🏠 Lobby</div>
+        <div class="nav-it" data-tg="sl">🎰 Slots</div>
+        <div class="nav-it" data-tg="pl">🟢 Plinko</div>
+        <div class="nav-it" data-tg="bj">🃏 Blackjack</div>
+        <div class="nav-it" data-tg="pk">♠️ Poker</div>
+        <div class="nav-it" data-tg="hr">🐎 Derby</div>
+        <div class="nav-it" data-tg="mk">📈 Trading</div>
+        <div class="nav-it" data-tg="re">🏙️ Immo</div>
+        <div class="nav-it" data-tg="pt">🐕 Pets</div>
+        <div class="nav-it" data-tg="vgh">🛡️ VGH</div>
+        <div class="nav-it" data-tg="bk">🏦 Bank</div>
+        <div class="nav-it" data-tg="st">📊 BWA</div>
+        <div class="nav-it" data-tg="stg">⚙️ System</div>
+    </nav>
 
-    <div id="toast-box"></div>
+    <div id="tst-bx"></div>
 
     <script>
         /* ==========================================
-           3. JAVASCRIPT (LOGIC)
+           2. RETINA & DELTA-TIME ENGINE
            ========================================== */
-        
         const CFG = {
-            DBG: true, KEY: 'VGH_WINSEN_GITHUB', TICK_MS: 10000,
-            sl: { rtp: 0.952, sym: ['🍒','🍒','🍒','🍋','🍋','🔔','🔔','💎','7️⃣'], spd: 3000 },
-            pl: { m: [100,15,3,1.2,0.2,0.2,1.2,3,15,100], g: 0.2, dX: 1.5, dY: 1.0 },
-            hr: { o: [2,4,7,15,30] },
-            ec: { loanRate: 0.10 }
+            K: 'VGH_PRO_IOS', T: 10000,
+            sl: { rtp: 0.95, s: ['🍒','🍒','🍋','🍋','🔔','💎','7️⃣'], d: 2500, l: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0],[2,1,1,1,2],[0,2,0,2,0],[2,0,2,0,2],[1,0,1,0,1],[1,2,1,2,1],[0,0,2,0,0],[2,2,0,2,2],[1,1,0,1,1],[1,1,2,1,1],[0,2,2,2,0]] },
+            pl: { m: [100,15,3,1.2,0.2,0.2,1.2,3,15,100], g: 0.25, dx: 1.5, dy: 1.0 },
+            hr: { o: [2,4,7,15,30] }
+        };
+
+        const $ = id => document.getElementById(id);
+        const DPR = window.devicePixelRatio || 1; // iPhone 15 Pro = 3
+        
+        // Setup Retina Canvas Helper
+        const fixDPR = (cvs, ctx) => {
+            const rect = cvs.parentElement.getBoundingClientRect();
+            cvs.width = rect.width * DPR; cvs.height = rect.height * DPR;
+            ctx.scale(DPR, DPR); return rect;
         };
 
         const App = {
-            s: { m:1000, dbt:0, re:[0,0,0,0], p:{j:0,t:0}, v:[], st:{st:{NEON:0,VGH:0,CYB:0},cr:{BTC:0,ETH:0}} },
-            st: { w:0, l:0, sl:0, bj:0, pk:0, pl:0, hr:0 }, cfg: { snd:true, fx:true },
-            dbg: { f:0, t:0, fps:0, bl:0 },
+            s: { m:1000, dbt:0, re:[0,0,0,0], p:{j:0,t:0}, v:[], mk:{st:{NEON:0,VGH:0,CYB:0},cr:{BTC:0,ETH:0}} },
+            st: { w:0, l:0, sl:0, bj:0, pk:0, pl:0, hr:0 }, cfg: { sn:true, fx:true },
 
             init() {
                 this.ld(); UI.init(); Aud.init(); Vfx.init();
-                Sl.init(); Pl.init(); Hr.init(); Bj.init(); Pk.init(); Ec.init();
-                
-                setInterval(()=>this.tick(), CFG.TICK_MS);
-                setInterval(()=>this.sv(), 15000);
-                requestAnimationFrame((t)=>this.loop(t));
+                Sl.init(); Pl.init(); Bj.init(); Pk.init(); Hr.init(); Ec.init();
+                setInterval(()=>this.tk(), CFG.T); setInterval(()=>this.sv(), 15000);
             },
-            sv() { try { localStorage.setItem(CFG.KEY, JSON.stringify({s:this.s, st:this.st, cfg:this.cfg})); } catch(e){} },
-            ld() { try { const d=JSON.parse(localStorage.getItem(CFG.KEY)); if(d){this.s={...this.s,...d.s}; this.st={...this.st,...d.st}; this.cfg={...this.cfg,...d.cfg};} } catch(e){console.warn("Save Error");} },
-            add(v, t=1) { this.s.m+=v; if(t){if(v>0)this.st.w+=v; else this.st.l+=Math.abs(v);} UI.hud(); if(v>=500)Vfx.b(); },
+            sv() { try{localStorage.setItem(CFG.K, JSON.stringify({s:this.s,st:this.st,cfg:this.cfg}));}catch(e){} },
+            ld() { try{const d=JSON.parse(localStorage.getItem(CFG.K)); if(d){this.s={...this.s,...d.s};this.st={...this.st,...d.st};this.cfg={...this.cfg,...d.cfg};}}catch(e){} },
+            add(v,t=1) { this.s.m+=v; if(t){if(v>0)this.st.w+=v; else this.st.l+=Math.abs(v);} UI.upd(); if(v>=500)Vfx.b(); },
             
-            tick() {
-                Ec.sim();
-                let inc=0; Ec.reD.forEach((r,i)=>inc+=r.i*this.s.re[i]); if(this.s.p.t>0)inc*=(1+(this.s.p.t*0.1)); if(inc>0)this.add(inc,0);
-                if(this.s.dbt>0){ const i=this.s.dbt*CFG.ec.loanRate; this.s.dbt+=i; if(this.s.m>=i)this.add(-i,0); else{UI.tst("Pfändung!","var(--err)"); for(let j=3;j>=0;j--)if(this.s.re[j]>0){this.s.re[j]--;break;}} UI.D.bkDbt.innerText=UI.f(this.s.dbt); }
-                if(this.s.m<100 && this.s.v.includes(1)){ UI.tst("VGH Schutz: +5000€","var(--sec)"); this.add(5000,0); this.s.v=this.s.v.filter(x=>x!==1); Ec.rndV(); }
-                UI.hud();
+            tk() {
+                Ec.sm(); let i=0; Ec.rD.forEach((r,idx)=>i+=r.i*this.s.re[idx]); if(this.s.p.t>0)i*=(1+(this.s.p.t*0.1)); if(i>0)this.add(i,0);
+                if(this.s.dbt>0){ const inR=this.s.dbt*0.1; this.s.dbt+=inR; if(this.s.m>=inR)this.add(-inR,0); else{UI.tst("Pfändung!","var(--err)"); for(let j=3;j>=0;j--)if(this.s.re[j]>0){this.s.re[j]--;break;}} UI.D.bkD.innerText=UI.f(this.s.dbt); }
+                if(this.s.m<100 && this.s.v.includes(1)){ UI.tst("VGH Schutz: +5000€","var(--sec)"); this.add(5000,0); this.s.v=this.s.v.filter(x=>x!==1); Ec.rV(); }
+                UI.upd();
             },
-
-            loop(t) {
-                if(CFG.DBG){ this.dbg.f++; if(t-this.dbg.t>=1000){this.dbg.fps=this.dbg.f; this.dbg.f=0; this.dbg.t=t; UI.D.dbg.innerHTML=`FPS: ${this.dbg.fps}<br>Balls: ${this.dbg.bl}<br>Mem: ${performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576)+'MB':'N/A'}`; UI.D.dbg.style.display='block';} }
-                requestAnimationFrame((t)=>this.loop(t));
+            nav(id) {
+                document.querySelectorAll('.screen, .nav-it').forEach(e=>e.classList.remove('act'));
+                $(`scr-${id}`).classList.add('act'); const n=document.querySelector(`.nav-it[data-tg="${id}"]`); if(n){n.classList.add('act'); n.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
+                if(id==='st')UI.D.stB.innerHTML=`WIN: <span style="color:var(--suc)">${UI.f(this.st.w)}</span><br>LOST: <span style="color:var(--err)">${UI.f(this.st.l)}</span><br>NET: ${UI.f(this.st.w-this.st.l)}<br><br>Spins: ${this.st.sl} | BJ: ${this.st.bj} | PK: ${this.st.pk} | PL: ${this.st.pl} | Derby: ${this.st.hr}`;
+                if(id==='bk')UI.D.bkD.innerText=UI.f(this.s.dbt);
+                $('vp').scrollTop=0; Aud.p('c');
             }
         };
 
         const UI = {
-            D: {},
+            D:{},
             init() {
-                this.D = {
-                    m: $('hud-money'), p: $('hud-passive'), v: $('hud-vgh'), s: $('sidebar'), o: $('mob-overlay'), t: $('toast-box'), dbg: $('debug-overlay'), bkDbt: $('bk-dbt'),
-                    stBrd: $('st-brd'), btnM: $('btn-menu')
-                };
-                document.querySelectorAll('.nav-item').forEach(e=>e.addEventListener('click', (ev)=>this.nav(ev.currentTarget.dataset.target)));
-                document.querySelectorAll('[data-nav]').forEach(e=>e.addEventListener('click', (ev)=>this.nav(ev.currentTarget.dataset.nav)));
-                this.D.btnM.addEventListener('click', ()=>this.tgl()); this.D.o.addEventListener('click', ()=>this.tgl());
-                $('opt-snd').addEventListener('click', ()=>this.tCfg('snd')); $('opt-fx').addEventListener('click', ()=>this.tCfg('fx'));
-                $('opt-exp').addEventListener('click', ()=>{const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(btoa(JSON.stringify({s:App.s,st:App.st}))); a.download="winsen.txt"; a.click();});
-                $('opt-rst').addEventListener('click', ()=>{if(confirm("Alles löschen?")){localStorage.removeItem(CFG.KEY);location.reload();}});
-                this.hud(); $('opt-snd').innerText=`SOUND: ${App.cfg.snd?'ON':'OFF'}`; $('opt-fx').innerText=`FX: ${App.cfg.fx?'ON':'OFF'}`;
+                this.D = { m:$('h-mny'), p:$('h-pas'), t:$('tst-bx'), bkD:$('bk-db'), stB:$('st-bd') };
+                document.querySelectorAll('.nav-it').forEach(e=>e.addEventListener('click', (ev)=>App.nav(ev.currentTarget.dataset.tg)));
+                $('opt-sn').addEventListener('click', ()=>{App.cfg.sn=!App.cfg.sn; $('opt-sn').innerText=`SOUND: ${App.cfg.sn?'ON':'OFF'}`;});
+                $('opt-fx').addEventListener('click', ()=>{App.cfg.fx=!App.cfg.fx; $('opt-fx').innerText=`FX: ${App.cfg.fx?'ON':'OFF'}`;});
+                $('opt-ex').addEventListener('click', ()=>{const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(btoa(JSON.stringify({s:App.s,st:App.st}))); a.download="vgh.json"; a.click();});
+                $('opt-rs').addEventListener('click', ()=>{if(confirm("Löschen?")){localStorage.removeItem(CFG.K);location.reload();}});
+                $('opt-sn').innerText=`SOUND: ${App.cfg.sn?'ON':'OFF'}`; $('opt-fx').innerText=`FX: ${App.cfg.fx?'ON':'OFF'}`; this.upd();
             },
-            tgl() { this.D.s.classList.toggle('open'); },
-            nav(id) {
-                document.querySelectorAll('.screen, .nav-item').forEach(e=>e.classList.remove('active'));
-                $(`scr-${id}`).classList.add('active'); const n=document.querySelector(`.nav-item[data-target="${id}"]`); if(n)n.classList.add('active');
-                if(id==='stats')this.D.stBrd.innerHTML=`WIN: <span style="color:var(--suc)">${this.f(App.st.w)}</span><br>LOST: <span style="color:var(--err)">${this.f(App.st.l)}</span><br>NET: ${this.f(App.st.w-App.st.l)}<br><br>Spins: ${App.st.sl} | BJ: ${App.st.bj} | PK: ${App.st.pk} | PL: ${App.st.pl} | HR: ${App.st.hr}`;
-                if(id==='bank')this.D.bkDbt.innerText=this.f(App.s.dbt);
-                $('viewport').scrollTop=0; this.D.s.classList.remove('open'); Aud.p('c');
-            },
-            hud() { this.D.m.innerText=this.f(App.s.m); let p=0; Ec.reD.forEach((r,i)=>p+=r.i*App.s.re[i]); if(App.s.p.t>0)p*=(1+(App.s.p.t*0.1)); this.D.p.innerText=`+${this.f(p)}`; if(App.s.v.length>0){this.D.v.innerText="VGH AKTIV"; this.D.v.classList.add('act');}else{this.D.v.innerText="VGH INAKTIV"; this.D.v.classList.remove('act');} },
+            upd() { this.D.m.innerText=this.f(App.s.m); let p=0; Ec.rD.forEach((r,i)=>p+=r.i*App.s.re[i]); if(App.s.p.t>0)p*=(1+(App.s.p.t*0.1)); this.D.p.innerText=`+${this.f(p)} / 10s`; },
             f(v) { return v.toLocaleString('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0}); },
-            tst(m,c="#fff") { const t=document.createElement('div'); t.className='tst'; t.innerText=m; t.style.borderLeftColor=c; this.D.t.appendChild(t); setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.remove(),300)}, 2500); }
+            tst(m,c="#fff") { const t=document.createElement('div'); t.className='tst'; t.innerText=m; t.style.borderBottom=`3px solid ${c}`; this.D.t.appendChild(t); setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.remove(),300)}, 2500); }
         };
-        const $ = id => document.getElementById(id);
 
-        const Aud = { c:null, init(){try{this.c=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}, p(t){if(!this.c||!App.cfg.snd)return; const o=this.c.createOscillator(), g=this.c.createGain(); o.connect(g); g.connect(this.c.destination); const n=this.c.currentTime; if(t==='c'){o.frequency.setValueAtTime(800,n); g.gain.setValueAtTime(0.1,n); g.gain.exponentialRampToValueAtTime(0.01,n+0.1); o.start(); o.stop(n+0.1);} if(t==='w'){o.type='square'; o.frequency.setValueAtTime(400,n); o.frequency.exponentialRampToValueAtTime(1200,n+0.5); g.gain.setValueAtTime(0.1,n); g.gain.exponentialRampToValueAtTime(0.01,n+0.5); o.start(); o.stop(n+0.5);}} };
-        const Vfx = { D:{}, ctx:null, p:[], init(){this.D.c=$('fx-layer'); this.ctx=this.D.c.getContext('2d'); window.onresize=()=>this.rs(); this.rs(); this.lp();}, rs(){this.D.c.width=window.innerWidth; this.D.c.height=window.innerHeight;}, b(){if(!App.cfg.fx)return; for(let i=0;i<60;i++)this.p.push({x:window.innerWidth/2,y:window.innerHeight/2,vx:(Math.random()-0.5)*20,vy:(Math.random()-0.5)*20,l:1,s:Math.random()*5+2,c:`hsl(${Math.random()*360},100%,50%)`});}, lp(){this.ctx.clearRect(0,0,this.D.c.width,this.D.c.height); this.p.forEach((pt,i)=>{pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.3; pt.l-=0.02; this.ctx.globalAlpha=pt.l; this.ctx.fillStyle=pt.c; this.ctx.beginPath(); this.ctx.arc(pt.x,pt.y,pt.s,0,Math.PI*2); this.ctx.fill(); if(pt.l<=0)this.p.splice(i,1);}); requestAnimationFrame(()=>this.lp());} };
+        const Aud = { c:null, init(){try{this.c=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}, p(t){if(!this.c||!App.cfg.sn)return; const o=this.c.createOscillator(), g=this.c.createGain(); o.connect(g); g.connect(this.c.destination); const n=this.c.currentTime; if(t==='c'){o.frequency.setValueAtTime(800,n); g.gain.setValueAtTime(0.1,n); g.gain.exponentialRampToValueAtTime(0.01,n+0.1); o.start(); o.stop(n+0.1);} if(t==='w'){o.type='square'; o.frequency.setValueAtTime(400,n); o.frequency.exponentialRampToValueAtTime(1200,n+0.5); g.gain.setValueAtTime(0.1,n); g.gain.exponentialRampToValueAtTime(0.01,n+0.5); o.start(); o.stop(n+0.5);}} };
+        const Vfx = { D:{}, ctx:null, p:[], init(){this.D.c=$('fx-lyr'); this.ctx=this.D.c.getContext('2d'); window.onresize=()=>this.rs(); this.rs(); this.lp();}, rs(){this.D.c.width=window.innerWidth*DPR; this.D.c.height=window.innerHeight*DPR; this.ctx.scale(DPR,DPR);}, b(){if(!App.cfg.fx)return; const w=window.innerWidth, h=window.innerHeight; for(let i=0;i<60;i++)this.p.push({x:w/2,y:h/2,vx:(Math.random()-0.5)*15,vy:(Math.random()-0.5)*15,l:1,s:Math.random()*4+2,c:`hsl(${Math.random()*360},100%,50%)`});}, lp(){this.ctx.clearRect(0,0,window.innerWidth,window.innerHeight); this.p.forEach((pt,i)=>{pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.3; pt.l-=0.02; this.ctx.globalAlpha=pt.l; this.ctx.fillStyle=pt.c; this.ctx.beginPath(); this.ctx.arc(pt.x,pt.y,pt.s,0,Math.PI*2); this.ctx.fill(); if(pt.l<=0)this.p.splice(i,1);}); requestAnimationFrame(()=>this.lp());} };
 
+        /* ==========================================
+           3. GAMES ENGINE (iOS OPTIMIZED)
+           ========================================== */
         const Sl = {
-            D: {}, sp:0, au:0, l: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0],[2,1,1,1,2],[0,2,0,2,0],[2,0,2,0,2],[1,0,1,0,1],[1,2,1,2,1],[0,0,2,0,0],[2,2,0,2,2],[1,1,0,1,1],[1,1,2,1,1],[0,2,2,2,0]],
+            D:{}, sp:0, au:0,
             init() {
-                this.D = { c:$('sl-container'), cv:$('sl-canvas'), r:[$('sl-r0'),$('sl-r1'),$('sl-r2'),$('sl-r3'),$('sl-r4')], m:$('sl-msg'), b:$('sl-bet'), ln:$('sl-lines'), t:$('sl-tot'), btn:$('sl-btn-spin'), aBtn:$('sl-btn-auto') };
-                this.rsz(); window.addEventListener('resize', ()=>this.rsz());
-                this.D.b.addEventListener('input', ()=>this.upd()); this.D.ln.addEventListener('input', ()=>this.upd());
-                this.D.btn.addEventListener('click', ()=>this.spn()); this.D.aBtn.addEventListener('click', ()=>this.tglAu());
-                this.upd(); for(let i=0;i<5;i++)this.D.r[i].innerHTML=`<div class="slot-sym">🎰</div><div class="slot-sym">🎰</div><div class="slot-sym">🎰</div>`;
+                this.D={c:$('sl-bx'), cv:$('sl-cvs'), r:[$('sl-r0'),$('sl-r1'),$('sl-r2'),$('sl-r3'),$('sl-r4')], m:$('sl-msg'), bt:$('sl-bt'), ln:$('sl-ln'), t:$('sl-tot'), btn:$('sl-btn-sp'), au:$('sl-btn-au')};
+                this.ctx = this.D.cv.getContext('2d');
+                window.addEventListener('resize', ()=>this.rs()); this.rs();
+                this.D.bt.addEventListener('input',()=>this.up()); this.D.ln.addEventListener('input',()=>this.up());
+                this.D.btn.addEventListener('click',()=>this.spn()); this.D.au.addEventListener('click',()=>this.tA());
+                for(let i=0;i<5;i++)this.D.r[i].innerHTML=`<div class="sl-sym">🎰</div><div class="sl-sym">🎰</div><div class="sl-sym">🎰</div>`; this.up();
             },
-            rsz() { const r=this.D.c.getBoundingClientRect(); this.D.cv.width=r.width; this.D.cv.height=r.height; },
-            upd() { this.D.t.innerText=UI.f((parseInt(this.D.b.value)||0)*(parseInt(this.D.ln.value)||0)); },
+            rs() { this.rect = fixDPR(this.D.cv, this.ctx); },
+            up() { this.D.t.innerText=UI.f((parseInt(this.D.bt.value)||0)*(parseInt(this.D.ln.value)||0)); },
             spn() {
-                if(this.sp)return; const b=parseInt(this.D.b.value), ln=Math.min(20,Math.max(1,parseInt(this.D.ln.value))), tb=b*ln;
-                if(App.s.m<tb){this.au=0; return UI.tst("Zu wenig Geld!","var(--err)");}
+                if(this.sp)return; const b=parseInt(this.D.bt.value), ln=Math.min(20,Math.max(1,parseInt(this.D.ln.value))), tb=b*ln;
+                if(App.s.m<tb){this.au=0; return UI.tst("Zu wenig Geld","var(--err)");}
                 App.add(-tb); App.st.sl++; this.sp=1; this.D.btn.disabled=1; this.D.m.innerText="ROLLING";
-                const x=this.D.cv.getContext('2d'); x.clearRect(0,0,this.D.cv.width,this.D.cv.height);
+                this.ctx.clearRect(0,0,this.rect.width,this.rect.height);
                 
-                const sY = this.D.r[0].firstElementChild ? this.D.r[0].firstElementChild.getBoundingClientRect().height + 4 : 84;
+                const syH = this.D.r[0].firstElementChild?this.D.r[0].firstElementChild.getBoundingClientRect().height+2:60;
                 let g=[[],[],[],[],[]];
                 
                 for(let i=0;i<5;i++){
-                    let h=''; for(let j=0;j<20;j++)h+=`<div class="slot-sym">${CFG.sl.sym[Math.floor(Math.random()*CFG.sl.sym.length)]}</div>`;
-                    for(let k=0;k<3;k++){ let s=CFG.sl.sym[Math.floor(Math.random()*CFG.sl.sym.length)]; if(App.s.p.j>0&&i>0&&Math.random()<0.05)s=g[0][k]; g[i].push(s); }
-                    h+=`<div class="slot-sym">${g[i][0]}</div><div class="slot-sym">${g[i][1]}</div><div class="slot-sym">${g[i][2]}</div>`;
+                    let h=''; for(let j=0;j<20;j++)h+=`<div class="sl-sym">${CFG.sl.s[Math.floor(Math.random()*CFG.sl.s.length)]}</div>`;
+                    for(let k=0;k<3;k++){let s=CFG.sl.s[Math.floor(Math.random()*CFG.sl.s.length)]; if(App.s.p.j>0&&i>0&&Math.random()<0.05)s=g[0][k]; g[i].push(s);}
+                    h+=`<div class="sl-sym">${g[i][0]}</div><div class="sl-sym">${g[i][1]}</div><div class="sl-sym">${g[i][2]}</div>`;
                     this.D.r[i].innerHTML=h; this.D.r[i].style.transition='none'; this.D.r[i].style.transform='translateY(0)';
-                    setTimeout(()=>{this.D.r[i].style.transition=`transform ${CFG.sl.spd}ms cubic-bezier(0.1,0.7,0.1,1)`; this.D.r[i].style.transform=`translateY(-${20*sY}px)`;}, 50);
+                    setTimeout(()=>{this.D.r[i].style.transition=`transform ${CFG.sl.d}ms cubic-bezier(0.1,0.7,0.1,1)`; this.D.r[i].style.transform=`translateY(-${20*syH}px)`;}, 50);
                 }
-                setTimeout(()=>this.res(g,ln,b), CFG.sl.spd+100);
+                setTimeout(()=>this.ev(g,ln,b), CFG.sl.d+100);
             },
-            res(g,ln,b) {
-                this.sp=0; this.D.btn.disabled=0; let tw=0; const x=this.D.cv.getContext('2d'), cW=this.D.cv.width/5, rH=this.D.cv.height/3;
+            ev(g,ln,b) {
+                this.sp=0; this.D.btn.disabled=0; let tw=0; const cw=this.rect.width/5, rh=this.rect.height/3;
                 for(let i=0;i<ln;i++){
-                    const p=this.l[i]; let s=g[0][p[0]], m=1;
+                    const p=CFG.sl.l[i]; let s=g[0][p[0]], m=1;
                     for(let c=1;c<5;c++){if(g[c][p[c]]===s)m++; else break;}
                     if(m>=3){
                         let mu=0; if(s==='🍒')mu=m===3?2:m===4?5:15; if(s==='🍋')mu=m===3?3:m===4?8:25; if(s==='🔔')mu=m===3?5:m===4?15:50; if(s==='💎')mu=m===3?10:m===4?30:100; if(s==='7️⃣')mu=m===3?25:m===4?100:500;
                         if(mu>0){
-                            tw+=b*mu; x.beginPath(); x.strokeStyle=`hsla(${Math.random()*360},100%,50%,0.8)`; x.lineWidth=4;
-                            for(let c=0;c<m;c++){ const px=(c*cW)+(cW/2), py=(p[c]*rH)+(rH/2); if(c===0)x.moveTo(px,py); else x.lineTo(px,py); } x.stroke();
+                            tw+=b*mu; this.ctx.beginPath(); this.ctx.strokeStyle=`hsla(${Math.random()*360},100%,50%,0.9)`; this.ctx.lineWidth=4;
+                            for(let c=0;c<m;c++){const px=(c*cw)+(cw/2), py=(p[c]*rh)+(rh/2); if(c===0)this.ctx.moveTo(px,py); else this.ctx.lineTo(px,py);} this.ctx.stroke();
                         }
                     }
                 }
                 if(tw>0){App.add(tw); this.D.m.innerText=`WIN: ${UI.f(tw)}`; Aud.p('w'); Vfx.b();} else this.D.m.innerText="NO WIN";
-                if(this.au&&App.s.m>=b*ln)setTimeout(()=>this.spn(),1000); else if(this.au)this.tglAu();
+                if(this.au&&App.s.m>=b*ln)setTimeout(()=>this.spn(), 1000); else if(this.au)this.tA();
             },
-            tglAu() { this.au=!this.au; this.D.aBtn.innerText=this.au?'STOP':'AUTO'; this.D.aBtn.className=this.au?'btn b-prm':'btn b-drk'; if(this.au)this.spn(); }
+            tA() { this.au=!this.au; this.D.au.innerText=this.au?'STOP':'AUTO'; this.D.au.className=this.au?'btn b-prm':'btn b-drk'; if(this.au)this.spn(); }
         };
 
         const Pl = {
-            D: {}, x:null, bl:[], pg:[], r:0, lt:0,
-            init() { 
-                this.D={c:$('pl-cvs'), b:$('pl-btn'), bt:$('pl-bet'), m:$('pl-mults')}; this.x=this.D.c.getContext('2d');
+            D:{}, bl:[], pg:[], lt:0,
+            init() {
+                this.D={c:$('pl-cvs'), b:$('pl-btn'), bt:$('pl-bt'), m:$('pl-mlt')}; this.ctx=this.D.c.getContext('2d');
                 this.D.m.innerHTML=CFG.pl.m.map(m=>`<div class="pl-b" style="background:${m>=15?'#f00':m>=3?'#f90':m>=1?'#ff0':'#222'};color:${m>=15||m<1?'#fff':'#000'}">${m}x</div>`).join('');
-                this.rsz(); this.bp(); window.addEventListener('resize', ()=>{this.rsz();this.bp();});
-                this.D.b.addEventListener('click', ()=>this.drp());
-                this.lt=performance.now(); requestAnimationFrame((t)=>this.lp(t));
+                window.addEventListener('resize', ()=>this.rs()); this.rs();
+                this.D.b.addEventListener('click',()=>this.drp()); this.lt=performance.now(); requestAnimationFrame((t)=>this.lp(t));
             },
-            rsz() { const r=this.D.c.getBoundingClientRect(); this.D.c.width=r.width; this.D.c.height=r.height; },
-            bp() { this.pg=[]; const w=this.D.c.width; for(let r=2;r<14;r++){const c=r+1, sX=w/20, sY=this.D.c.height/16, y=r*sY, stX=(w-(c*sX))/2+(sX/2); for(let i=0;i<c;i++)this.pg.push({x:stX+i*sX,y:y,r:w*0.008});} },
-            drp() { const b=parseFloat(this.D.bt.value); if(App.s.m<b)return UI.tst("Bankroll zu gering!","var(--err)"); App.add(-b); App.st.pl++; this.bl.push({x:this.D.c.width/2+(Math.random()*4-2),y:10,vx:0,vy:0,r:this.D.c.width*0.012,bt:b}); Aud.p('c'); },
+            rs() { this.rect=fixDPR(this.D.c, this.ctx); this.bp(); },
+            bp() { this.pg=[]; const w=this.rect.width, h=this.rect.height; for(let r=2;r<14;r++){const c=r+1, sx=w/20, sy=h/16, y=r*sy, stx=(w-(c*sx))/2+(sx/2); for(let i=0;i<c;i++)this.pg.push({x:stx+i*sx,y:y,r:w*0.01});} },
+            drp() { const b=parseFloat(this.D.bt.value); if(App.s.m<b)return; App.add(-b); App.st.pl++; this.bl.push({x:this.rect.width/2+(Math.random()*4-2),y:5,vx:0,vy:0,r:this.rect.width*0.015,bt:b}); Aud.p('c'); },
             lp(t) {
                 requestAnimationFrame((nt)=>this.lp(nt)); const dt=t-this.lt;
-                if(dt>16){
-                    const nDt=dt/16; for(let i=this.bl.length-1;i>=0;i--){
-                        let b=this.bl[i]; b.vy+=CFG.pl.g*nDt; b.x+=b.vx*nDt; b.y+=b.vy*nDt;
-                        this.pg.forEach(p=>{let dx=b.x-p.x, dy=b.y-p.y, d=Math.sqrt(dx*dx+dy*dy); if(d<b.r+p.r){b.vx+=(dx/d)*CFG.pl.dX; b.vy=(dy/d)*CFG.pl.dY;}});
-                        if(b.x<b.r){b.x=b.r;b.vx*=-0.5;} if(b.x>this.D.c.width-b.r){b.x=this.D.c.width-b.r;b.vx*=-0.5;}
-                        if(b.y>this.D.c.height){this.ev(b); this.bl.splice(i,1);}
+                if(dt>12){
+                    const ndt=dt/16; for(let i=this.bl.length-1;i>=0;i--){
+                        let b=this.bl[i]; b.vy+=CFG.pl.g*ndt; b.x+=b.vx*ndt; b.y+=b.vy*ndt;
+                        this.pg.forEach(p=>{let dx=b.x-p.x, dy=b.y-p.y, d=Math.sqrt(dx*dx+dy*dy); if(d<b.r+p.r){b.vx+=(dx/d)*CFG.pl.dx; b.vy=(dy/d)*CFG.pl.dy;}});
+                        if(b.x<b.r){b.x=b.r;b.vx*=-0.5;} if(b.x>this.rect.width-b.r){b.x=this.rect.width-b.r;b.vx*=-0.5;}
+                        if(b.y>this.rect.height){this.ev(b); this.bl.splice(i,1);}
                     }
-                    this.x.clearRect(0,0,this.D.c.width,this.D.c.height); this.x.fillStyle='#fff'; this.pg.forEach(p=>{this.x.beginPath();this.x.arc(p.x,p.y,p.r,0,Math.PI*2);this.x.fill();}); this.x.fillStyle='var(--acc)'; this.bl.forEach(b=>{this.x.beginPath();this.x.arc(b.x,b.y,b.r,0,Math.PI*2);this.x.fill();});
-                    this.lt=t-(dt%16); App.dbg.bl=this.bl.length;
+                    this.ctx.clearRect(0,0,this.rect.width,this.rect.height); this.ctx.fillStyle='#fff'; this.pg.forEach(p=>{this.ctx.beginPath();this.ctx.arc(p.x,p.y,p.r,0,Math.PI*2);this.ctx.fill();}); this.ctx.fillStyle='var(--acc)'; this.bl.forEach(b=>{this.ctx.beginPath();this.ctx.arc(b.x,b.y,b.r,0,Math.PI*2);this.ctx.fill();});
+                    this.lt=t-(dt%16);
                 }
             },
-            ev(b) { const z=this.D.c.width/10, i=Math.min(9,Math.max(0,Math.floor(b.x/z))), m=CFG.pl.m[i], w=b.bt*m; if(w>0){App.add(w); UI.tst(`PLINKO: ${UI.f(w)}`); if(m>=3)Vfx.b();} }
+            ev(b) { const z=this.rect.width/10, i=Math.min(9,Math.max(0,Math.floor(b.x/z))), m=CFG.pl.m[i], w=b.bt*m; if(w>0){App.add(w); UI.tst(`PLINKO: ${UI.f(w)}`); if(m>=3)Vfx.b();} }
         };
 
-        const Bj = {
-            D:{}, dk:[], p:[], d:[], b:0, s:['♠','♥','♣','♦'], r:['2','3','4','5','6','7','8','9','10','J','Q','K','A'],
-            init() { this.D={p:$('bj-p'), d:$('bj-d'), m:$('bj-msg'), bt:$('bj-bet'), act:$('bj-acts'), cBet:$('bj-bet').parentElement, dl:$('bj-btn-deal'), ht:$('bj-btn-hit'), st:$('bj-btn-stand'), db:$('bj-btn-dbl')}; this.D.dl.addEventListener('click',()=>this.dl()); this.D.ht.addEventListener('click',()=>this.ht()); this.D.st.addEventListener('click',()=>this.st()); this.D.db.addEventListener('click',()=>this.db()); },
-            bd() { this.dk=[]; for(let s of this.s)for(let r of this.r){let v=parseInt(r); if(['J','Q','K'].includes(r))v=10; if(r==='A')v=11; this.dk.push({r,s,v,c:(s==='♥'||s==='♦')?'red':'back'});} this.dk.sort(()=>Math.random()-0.5); },
-            dl() { const b=parseFloat(this.D.bt.value); if(App.s.m<b)return; App.add(-b); this.b=b; App.st.bj++; this.bd(); this.p=[this.dk.pop(),this.dk.pop()]; this.d=[this.dk.pop(),this.dk.pop()]; this.D.cBet.style.display='none'; this.D.act.style.display='flex'; this.D.m.innerText='ACTION'; this.dr(); if(this.sc(this.p)===21)this.st(); },
-            sc(h) { let s=0,a=0; h.forEach(c=>{s+=c.v; if(c.r==='A')a++;}); while(s>21&&a>0){s-=10; a--;} return s; },
-            dr(rv=0) { const mk=(c)=>`<div class="play-card ${c.c}">${c.r}<br><span style="font-size:30px">${c.s}</span></div>`; this.D.p.innerHTML=this.p.map(mk).join(''); this.D.d.innerHTML=rv?this.d.map(mk).join(''):mk(this.d[0])+`<div class="play-card back"></div>`; },
-            ht() { this.p.push(this.dk.pop()); this.dr(); Aud.p('c'); if(this.sc(this.p)>21)this.ed("BUST",0); },
-            db() { if(App.s.m<this.b)return; App.add(-this.b); this.b*=2; this.p.push(this.dk.pop()); this.dr(); if(this.sc(this.p)>21)this.ed("BUST",0); else this.st(); },
-            st() { while(this.sc(this.d)<17)this.d.push(this.dk.pop()); const ps=this.sc(this.p), ds=this.sc(this.d); if(ds>21)this.ed("DEALER BUST",this.b*2); else if(ps>ds)this.ed("WIN",this.b*2); else if(ps<ds)this.ed("LOSE",0); else this.ed("PUSH",this.b); },
-            ed(m,p) { this.D.m.innerText=m; if(p>0){App.add(p); Aud.p('w');} this.dr(1); setTimeout(()=>{this.D.cBet.style.display='flex'; this.D.act.style.display='none';}, 2000); }
-        };
+        const Bj={ D:{}, dk:[], p:[], d:[], b:0, s:['♠','♥','♣','♦'], r:['2','3','4','5','6','7','8','9','10','J','Q','K','A'], init(){this.D={p:$('bj-p'),d:$('bj-d'),m:$('bj-msg'),bt:$('bj-bt'),ac:$('bj-act'),cb:$('bj-bt').parentElement,dl:$('bj-btn-dl'),ht:$('bj-btn-ht'),st:$('bj-btn-st'),db:$('bj-btn-db')}; this.D.dl.addEventListener('click',()=>this.dl()); this.D.ht.addEventListener('click',()=>this.ht()); this.D.st.addEventListener('click',()=>this.st()); this.D.db.addEventListener('click',()=>this.db());}, bd(){this.dk=[];for(let s of this.s)for(let r of this.r){let v=parseInt(r);if(['J','Q','K'].includes(r))v=10;if(r==='A')v=11;this.dk.push({r,s,v,c:(s==='♥'||s==='♦')?'red':'bck'});}this.dk.sort(()=>Math.random()-0.5);}, dl(){const b=parseFloat(this.D.bt.value);if(App.s.m<b)return;App.add(-b);this.b=b;App.st.bj++;this.bd();this.p=[this.dk.pop(),this.dk.pop()];this.d=[this.dk.pop(),this.dk.pop()];this.D.cb.style.display='none';this.D.ac.style.display='flex';this.D.m.innerText='ACTION';this.dr();if(this.sc(this.p)===21)this.st();}, sc(h){let s=0,a=0;h.forEach(c=>{s+=c.v;if(c.r==='A')a++;});while(s>21&&a>0){s-=10;a--;}return s;}, dr(rv=0){const mk=(c)=>`<div class="crd ${c.c}">${c.r}<br><span style="font-size:26px">${c.s}</span></div>`;this.D.p.innerHTML=this.p.map(mk).join('');this.D.d.innerHTML=rv?this.d.map(mk).join(''):mk(this.d[0])+`<div class="crd bck"></div>`;}, ht(){this.p.push(this.dk.pop());this.dr();Aud.p('c');if(this.sc(this.p)>21)this.ed("BUST",0);}, db(){if(App.s.m<this.b)return;App.add(-this.b);this.b*=2;this.p.push(this.dk.pop());this.dr();if(this.sc(this.p)>21)this.ed("BUST",0);else this.st();}, st(){while(this.sc(this.d)<17)this.d.push(this.dk.pop());const ps=this.sc(this.p),ds=this.sc(this.d);if(ds>21)this.ed("DEALER BUST",this.b*2);else if(ps>ds)this.ed("WIN",this.b*2);else if(ps<ds)this.ed("LOSE",0);else this.ed("PUSH",this.b);}, ed(m,p){this.D.m.innerText=m;if(p>0){App.add(p);Aud.p('w');}this.dr(1);setTimeout(()=>{this.D.cb.style.display='flex';this.D.ac.style.display='none';},2000);} };
+        const Pk={ D:{}, h:[], hd:[0,0,0,0,0], st:'D', b:0, init(){this.D={h:$('pk-h'),m:$('pk-msg'),bt:$('pk-bt'),btn:$('pk-btn-ac')};this.D.btn.addEventListener('click',()=>this.ac());}, ac(){if(this.st==='D'){const b=parseFloat(this.D.bt.value);if(App.s.m<b)return;App.add(-b);this.b=b;App.st.pk++;Bj.bd.call(this);this.h=[this.dk.pop(),this.dk.pop(),this.dk.pop(),this.dk.pop(),this.dk.pop()];this.hd=[0,0,0,0,0];this.st='W';this.D.btn.innerText="DRAW";this.D.m.innerText="HOLD CARDS";this.dr();}else{for(let i=0;i<5;i++)if(!this.hd[i])this.h[i]=this.dk.pop();this.st='D';this.D.btn.innerText="DEAL";this.ev();}}, tgl(i){if(this.st!=='W')return;this.hd[i]=!this.hd[i];this.dr();Aud.p('c');}, dr(){this.D.h.innerHTML=this.h.map((c,i)=>`<div class="crd ${c.c}" onclick="Pk.tgl(${i})" style="width:48px;height:72px;font-size:16px;border-color:${this.hd[i]?'var(--acc)':'#ccc'};transform:${this.hd[i]?'translateY(-10px)':'none'}">${c.r}<br><span>${c.s}</span></div>`).join('');}, ev(){this.dr();const c={};this.h.forEach(x=>c[x.r]=(c[x.r]||0)+1);const v=Object.values(c),fl=this.h.every(x=>x.s===this.h[0].s);let m=0,t="NO WIN";if(fl){m=6;t="FLUSH";}if(v.includes(4)){m=25;t="4 OF A KIND";}else if(v.includes(3)&&v.includes(2)){m=9;t="FULL HOUSE";}else if(fl&&this.h.some(x=>x.r==='A')&&this.h.some(x=>x.r==='K')){m=800;t="ROYAL FLUSH";}else if(v.filter(x=>x===2).length===2){m=2;t="TWO PAIR";}else if(v.includes(2)){const p=Object.keys(c).find(k=>c[k]===2);if(['J','Q','K','A'].includes(p)){m=1;t="JACKS OR BETTER";}}if(m>0){const w=this.b*m;App.add(w);this.D.m.innerText=`${t}: ${UI.f(w)}`;Aud.p('w');Vfx.b();}else this.D.m.innerText=t;} };
+        const Hr={ D:{}, r:0, p:[0,0,0,0,0], b:0, s:0, stm:[100,100,100,100,100], init(){this.D={s:$('hr-sl'),bt:$('hr-bt'),btn:$('hr-btn'),rs:$('hr-rs'),h:[$('hr-0'),$('hr-1'),$('hr-2'),$('hr-3'),$('hr-4')]};this.D.btn.addEventListener('click',()=>this.st());}, st(){if(this.r)return;this.b=parseFloat(this.D.bt.value);if(App.s.m<this.b)return;this.s=parseInt(this.D.s.value);App.add(-this.b);App.st.hr++;this.r=1;this.p=[0,0,0,0,0];this.stm=[100,100,100,100,100];this.D.btn.disabled=1;this.D.rs.innerText="RUNNING...";this.lp();}, lp(){let f=0,w=-1;const wD=window.innerWidth-90;for(let i=0;i<5;i++){let sp=(35-CFG.hr.o[i])*0.02,bs=(this.stm[i]>0&&Math.random()<0.05)?(CFG.hr.o[i]*0.15):0;if(bs>0)this.stm[i]-=25;this.p[i]+=sp+bs+(Math.random()*0.5);this.D.h[i].style.transform=`translateX(${(this.p[i]/100)*wD}px)`;if(this.p[i]>=100){f=1;if(w===-1)w=i;}}if(!f)requestAnimationFrame(()=>this.lp());else{this.r=0;this.D.btn.disabled=0;if(w===this.s){const wn=this.b*CFG.hr.o[w];App.add(wn);this.D.rs.innerText=`SIEG: ${UI.f(wn)}`;Vfx.b();}else this.D.rs.innerText=`Verloren (Pferd ${w+1})`;}} };
 
-        const Pk = {
-            D:{}, h:[], hd:[0,0,0,0,0], st:'D', b:0,
-            init() { this.D={h:$('pk-h'), m:$('pk-msg'), bt:$('pk-bet'), btn:$('pk-btn-act')}; this.D.btn.addEventListener('click', ()=>this.act()); },
-            act() {
-                if(this.st==='D'){ const b=parseFloat(this.D.bt.value); if(App.s.m<b)return; App.add(-b); this.b=b; App.st.pk++; Bj.bd.call(this); this.h=[this.dk.pop(),this.dk.pop(),this.dk.pop(),this.dk.pop(),this.dk.pop()]; this.hd=[0,0,0,0,0]; this.st='W'; this.D.btn.innerText="DRAW"; this.D.m.innerText="HOLD CARDS"; this.dr(); }
-                else { for(let i=0;i<5;i++)if(!this.hd[i])this.h[i]=this.dk.pop(); this.st='D'; this.D.btn.innerText="DEAL"; this.ev(); }
-            },
-            tgl(i) { if(this.st!=='W')return; this.hd[i]=!this.hd[i]; this.dr(); Aud.p('c'); },
-            dr() { this.D.h.innerHTML=this.h.map((c,i)=>`<div class="play-card ${c.c} ${this.hd[i]?'held':''}" onclick="Pk.tgl(${i})" style="width:50px;height:75px;font-size:16px;">${c.r}<br><span>${c.s}</span></div>`).join(''); },
-            ev() {
-                this.dr(); const c={}; this.h.forEach(x=>c[x.r]=(c[x.r]||0)+1); const v=Object.values(c), fl=this.h.every(x=>x.s===this.h[0].s); let m=0, t="NO WIN";
-                if(fl){m=6; t="FLUSH";} if(v.includes(4)){m=25; t="4 OF A KIND";} else if(v.includes(3)&&v.includes(2)){m=9; t="FULL HOUSE";} else if(fl&&this.h.some(x=>x.r==='A')&&this.h.some(x=>x.r==='K')){m=800; t="ROYAL FLUSH";} else if(v.filter(x=>x===2).length===2){m=2; t="TWO PAIR";} else if(v.includes(2)){const p=Object.keys(c).find(k=>c[k]===2); if(['J','Q','K','A'].includes(p)){m=1; t="JACKS OR BETTER";}}
-                if(m>0){const w=this.b*m; App.add(w); this.D.m.innerText=`${t}: ${UI.f(w)}`; Aud.p('w'); Vfx.b();} else this.D.m.innerText=t;
-            }
-        };
-
-        const Hr = {
-            D:{}, r:0, p:[0,0,0,0,0], b:0, s:0, stm:[100,100,100,100,100],
-            init() { this.D={s:$('hr-sel'), bt:$('hr-bet'), btn:$('hr-btn'), rs:$('hr-res'), h:[$('hr-0'),$('hr-1'),$('hr-2'),$('hr-3'),$('hr-4')]}; this.D.btn.addEventListener('click',()=>this.srt()); },
-            srt() { if(this.r)return; this.b=parseFloat(this.D.bt.value); if(App.s.m<this.b)return; this.s=parseInt(this.D.s.value); App.add(-this.b); App.st.hr++; this.r=1; this.p=[0,0,0,0,0]; this.stm=[100,100,100,100,100]; this.D.btn.disabled=1; this.D.rs.innerText="RUNNING..."; this.lp(); },
-            lp() {
-                let f=0, w=-1;
-                for(let i=0;i<5;i++){
-                    let spd=(35-CFG.hr.o[i])*0.02, bst=(this.stm[i]>0&&Math.random()<0.05)?(CFG.hr.o[i]*0.15):0; if(bst>0)this.stm[i]-=25;
-                    this.p[i]+=spd+bst+(Math.random()*0.5); this.D.h[i].style.transform=`translateX(${this.p[i]*3}px)`; 
-                    if(this.p[i]>=100){f=1; if(w===-1)w=i;}
-                }
-                if(!f)requestAnimationFrame(()=>this.lp()); else{this.r=0; this.D.btn.disabled=0; if(w===this.s){const wn=this.b*CFG.hr.o[w]; App.add(wn); this.D.rs.innerText=`SIEG: ${UI.f(wn)}`; Vfx.b();} else this.D.rs.innerText=`Verloren (Pferd ${w+1})`;}
-            }
-        };
-
-        const Ec = {
-            D:{}, t:'st',
-            mD: { st:[{i:'NEON',p:120,h:[]},{i:'VGH',p:80,h:[]},{i:'CYB',p:25,h:[]}], cr:[{i:'BTC',p:45000,h:[]},{i:'ETH',p:3000,h:[]}] },
-            reD: [{n:'Studio',p:20000,i:200},{n:'Bar',p:100000,i:1100},{n:'Hotel',p:750000,i:9000},{n:'Casino',p:5000000,i:70000}],
-            vD: [{i:1,n:'Insolvenz (1x)',c:10000},{i:2,n:'Anti-Hack',c:150000}],
-            
-            init() {
-                this.D={ m:$('mk-list'), re:$('re-list'), pt:$('pt-list'), v:$('vgh-list'), brw:$('bk-brw'), pay:$('bk-pay') };
-                this.mD.st.forEach(x=>{x.h=Array(20).fill(x.p); if(App.s.st.st[x.i]==null)App.s.st.st[x.i]=0;}); this.mD.cr.forEach(x=>{x.h=Array(20).fill(x.p); if(App.s.st.cr[x.i]==null)App.s.st.cr[x.i]=0;});
-                document.querySelectorAll('[data-mkt]').forEach(e=>e.addEventListener('click',(ev)=>{this.t=ev.currentTarget.dataset.mkt; this.rndM();}));
-                this.D.brw.addEventListener('click', ()=>{App.s.dbt+=50000; App.add(50000,0); UI.D.bkDbt.innerText=UI.f(App.s.dbt); UI.tst("Kredit erhalten","var(--prm)");});
-                this.D.pay.addEventListener('click', ()=>{if(App.s.m>=App.s.dbt&&App.s.dbt>0){App.add(-App.s.dbt,0); App.s.dbt=0; UI.D.bkDbt.innerText="0 €"; UI.tst("Getilgt","var(--suc)");}});
-                this.rndRE(); this.rndP(); this.rndV(); this.rndM();
-            },
-            sim() {
-                this.mD.st.forEach(s=>{ s.p*=(1+(Math.random()*0.06-0.03)); s.h.push(s.p); s.h.shift(); if(s.p<5&&App.s.v.includes(2)){s.p=5;UI.tst("VGH Hack-Schutz.");} });
-                this.mD.cr.forEach(c=>{ c.p*=(1+(Math.random()*0.2-0.1)); c.h.push(c.p); c.h.shift(); });
-                if($('scr-markets').classList.contains('active'))this.rndM();
-            },
-            svg(h,c) { let p=""; const m=Math.min(...h), M=Math.max(...h), r=(M-m)||1; h.forEach((v,i)=>p+=`${(i/19)*100},${100-((v-m)/r)*100} `); return `<div class="chart-box"><svg class="chart-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${p}" fill="none" stroke="${c}" stroke-width="2"/></svg></div>`; },
-            rndM() {
-                this.D.m.innerHTML=''; const a=this.mD[this.t];
-                a.forEach(s=>{ const inv=App.s.st[this.t][s.i], up=s.p>=s.h[18], c=up?'var(--suc)':'var(--err)';
-                    this.D.m.innerHTML+=`<div class="mkt-row"><div><b>${s.i}</b><br><span style="font-size:10px;color:#888;">Besitz: ${inv}</span></div><div>${this.svg(s.h,c)}</div><div style="text-align:right"><b style="color:${c}">${UI.f(s.p)}</b><br><div style="display:flex;gap:5px;justify-content:flex-end;margin-top:5px;"><button class="btn b-sec" style="padding:5px;font-size:10px;" onclick="Ec.bM('${s.i}')">BUY</button><button class="btn b-drk" style="padding:5px;font-size:10px;" onclick="Ec.sM('${s.i}')">SELL</button></div></div></div>`;
-                });
-            },
-            bM(i) { const s=this.mD[this.t].find(x=>x.i===i); if(App.s.m>=s.p){App.add(-s.p,0); App.s.st[this.t][i]++; this.rndM();} },
-            sM(i) { const s=this.mD[this.t].find(x=>x.i===i); if(App.s.st[this.t][i]>0){App.add(s.p,0); App.s.st[this.t][i]--; this.rndM();} },
-            rndRE() { this.D.re.innerHTML=this.reD.map((r,i)=>`<div class="panel" style="text-align:center;"><h3 style="color:var(--acc)">${r.n}</h3><div style="font-size:11px;color:#888;margin:5px 0">+${UI.f(r.i)}/10s</div><div style="font-size:18px;color:var(--gld);margin-bottom:10px">${UI.f(r.p)}</div><button class="btn b-prm" onclick="Ec.bRE(${i})">KAUFEN (${App.s.re[i]})</button></div>`).join(''); },
-            bRE(i) { if(App.s.m>=this.reD[i].p){App.add(-this.reD[i].p,0); App.s.re[i]++; this.rndRE();} },
-            rndP() {
-                const jl=App.s.p.j, tl=App.s.p.t;
-                this.D.pt.innerHTML=`<div class="panel" style="text-align:center;border-color:var(--acc)"><h2 style="color:var(--acc)">JUSTIN 🐕</h2><div style="color:var(--suc);margin:10px 0;font-weight:bold">LVL ${jl}</div><button class="btn b-drk" onclick="Ec.uP('j')">TRAINIEREN (${150*(jl+1)}k)</button></div><div class="panel" style="text-align:center;border-color:var(--sec)"><h2 style="color:var(--sec)">TOM 🐩</h2><div style="color:var(--suc);margin:10px 0;font-weight:bold">LVL ${tl}</div><button class="btn b-drk" onclick="Ec.uP('t')">TRAINIEREN (${300*(tl+1)}k)</button></div>`;
-            },
-            uP(id) { const c=id==='j'?150000*(App.s.p.j+1):300000*(App.s.p.t+1); if(App.s.m<c)return; App.add(-c); App.s.p[id]++; this.rndP(); Vfx.b(); },
-            rndV() { this.D.v.innerHTML=this.vD.map(x=>{const a=App.s.v.includes(x.i); return `<div class="panel" style="border-color:${a?'var(--suc)':'#222'};text-align:center;"><h3 style="color:var(--sec)">${x.n}</h3><div style="font-size:18px;font-weight:bold;margin:10px 0">${UI.f(x.c)}</div><button class="btn b-sec" ${a?'disabled':''} onclick="Ec.bV(${x.i})">${a?'AKTIV':'KAUFEN'}</button></div>`;}).join(''); },
-            bV(i) { const p=this.vD.find(x=>x.i===i); if(App.s.m>=p.c){App.add(-p.c); App.s.v.push(i); this.rndV(); UI.hud();} }
+        const Ec={
+            D:{}, t:'st', mD:{st:[{i:'NEON',p:120,h:[]},{i:'VGH',p:80,h:[]},{i:'CYB',p:25,h:[]}],cr:[{i:'BTC',p:45000,h:[]},{i:'ETH',p:3000,h:[]}]}, rD:[{n:'Studio',p:20000,i:200},{n:'Bar',p:100000,i:1100},{n:'Hotel',p:750000,i:9000},{n:'Casino',p:5000000,i:70000}], vD:[{i:1,n:'Insolvenz (1x)',c:10000},{i:2,n:'Anti-Hack',c:150000}],
+            init() { this.D={m:$('mk-lst'),re:$('re-lst'),pt:$('pt-lst'),v:$('vgh-lst'),br:$('bk-br'),py:$('bk-py')}; this.mD.st.forEach(x=>{x.h=Array(20).fill(x.p);if(App.s.mk.st[x.i]==null)App.s.mk.st[x.i]=0;}); this.mD.cr.forEach(x=>{x.h=Array(20).fill(x.p);if(App.s.mk.cr[x.i]==null)App.s.mk.cr[x.i]=0;}); this.D.br.addEventListener('click',()=>{App.s.dbt+=50000;App.add(50000,0);UI.D.bkD.innerText=UI.f(App.s.dbt);UI.tst("Kredit erhalten","var(--prm)");}); this.D.py.addEventListener('click',()=>{if(App.s.m>=App.s.dbt&&App.s.dbt>0){App.add(-App.s.dbt,0);App.s.dbt=0;UI.D.bkD.innerText="0 €";UI.tst("Getilgt","var(--suc)");}}); this.rRE();this.rP();this.rV();this.rM(); },
+            sm() { this.mD.st.forEach(s=>{s.p*=(1+(Math.random()*0.06-0.03));s.h.push(s.p);s.h.shift();if(s.p<5&&App.s.v.includes(2)){s.p=5;UI.tst("VGH Hack-Schutz.");}}); this.mD.cr.forEach(c=>{c.p*=(1+(Math.random()*0.2-0.1));c.h.push(c.p);c.h.shift();}); if($('scr-mk').classList.contains('act'))this.rM(); },
+            swM(t) { this.t=t; this.rM(); },
+            svg(h,c) { let p="";const m=Math.min(...h),M=Math.max(...h),r=(M-m)||1;h.forEach((v,i)=>p+=`${(i/19)*100},${100-((v-m)/r)*100} `);return `<div class="chrt-bx"><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:100%;"><polyline points="${p}" fill="none" stroke="${c}" stroke-width="2"/></svg></div>`; },
+            rM() { this.D.m.innerHTML=''; const a=this.mD[this.t]; a.forEach(s=>{const iv=App.s.mk[this.t][s.i],up=s.p>=s.h[18],c=up?'var(--suc)':'var(--err)';this.D.m.innerHTML+=`<div class="mkt-rw"><div style="display:flex;justify-content:space-between"><b>${s.i} <span style="font-size:10px;color:#888;">(x${iv})</span></b><b style="color:${c}">${UI.f(s.p)}</b></div>${this.svg(s.h,c)}<div style="display:flex;gap:5px"><button class="btn b-sec" style="padding:10px" onclick="Ec.bM('${s.i}')">BUY</button><button class="btn b-drk" style="padding:10px" onclick="Ec.sM('${s.i}')">SELL</button></div></div>`;}); },
+            bM(i) { const s=this.mD[this.t].find(x=>x.i===i);if(App.s.m>=s.p){App.add(-s.p,0);App.s.mk[this.t][i]++;this.rM();} }, sM(i) { const s=this.mD[this.t].find(x=>x.i===i);if(App.s.mk[this.t][i]>0){App.add(s.p,0);App.s.mk[this.t][i]--;this.rM();} },
+            rRE() { this.D.re.innerHTML=this.rD.map((r,i)=>`<div class="pnl" style="text-align:center;"><h3 style="color:var(--acc)">${r.n}</h3><div style="font-size:12px;color:#888;margin:5px 0">+${UI.f(r.i)}/10s</div><div style="font-size:20px;color:var(--gld);margin-bottom:15px">${UI.f(r.p)}</div><button class="btn b-prm" onclick="Ec.bRE(${i})">KAUFEN (${App.s.re[i]})</button></div>`).join(''); },
+            bRE(i) { if(App.s.m>=this.rD[i].p){App.add(-this.rD[i].p,0);App.s.re[i]++;this.rRE();} },
+            rP() { const jl=App.s.p.j, tl=App.s.p.t; this.D.pt.innerHTML=`<div class="pnl" style="text-align:center;border-color:var(--acc)"><h3 style="color:var(--acc)">JUSTIN 🐕</h3><div style="color:var(--suc);margin:10px 0;font-weight:bold">LVL ${jl}</div><button class="btn b-drk" onclick="Ec.uP('j')">TRAINIEREN (${150*(jl+1)}k)</button></div><div class="pnl" style="text-align:center;border-color:var(--sec)"><h3 style="color:var(--sec)">TOM 🐩</h3><div style="color:var(--suc);margin:10px 0;font-weight:bold">LVL ${tl}</div><button class="btn b-drk" onclick="Ec.uP('t')">TRAINIEREN (${300*(tl+1)}k)</button></div>`; },
+            uP(id) { const c=id==='j'?150000*(App.s.p.j+1):300000*(App.s.p.t+1);if(App.s.m<c)return;App.add(-c);App.s.p[id]++;this.rP();Vfx.b(); },
+            rV() { this.D.v.innerHTML=this.vD.map(x=>{const a=App.s.v.includes(x.i);return `<div class="pnl" style="border-color:${a?'var(--suc)':'#222'};text-align:center;"><h3 style="color:var(--sec)">${x.n}</h3><div style="font-size:20px;font-weight:bold;margin:15px 0">${UI.f(x.c)}</div><button class="btn b-sec" ${a?'disabled':''} onclick="Ec.bV(${x.i})">${a?'AKTIV':'KAUFEN'}</button></div>`;}).join(''); },
+            bV(i) { const p=this.vD.find(x=>x.i===i);if(App.s.m>=p.c){App.add(-p.c);App.s.v.push(i);this.rV();UI.upd();} }
         };
 
         window.addEventListener("DOMContentLoaded", () => App.init());
