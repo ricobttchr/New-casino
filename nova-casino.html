@@ -730,6 +730,9 @@ const els={
  sheet:$('#sheet'),sheetContent:$('#sheetContent'),toast:$('#toast'),sound:$('#soundToggle'),quick:$('#quickButton'),friendList:$('#friendList'),connectionBadge:$('#connectionBadge'),onlineDot:$('#onlineDot'),liveWinFeed:$('#liveWinFeed'),feedSyncLabel:$('#feedSyncLabel'),gameTitle:$('#gameTitle'),slotLogo:$('#slotLogo'),mainControls:$('#mainControls'),secondaryControls:$('#secondaryControls'),riskPanel:$('#riskPanel'),riskAmount:$('#riskAmount'),riskLadder:$('#riskLadder'),riskCard:$('#riskCard'),riskRed:$('#riskRed'),riskBlack:$('#riskBlack'),riskCollect:$('#riskCollect'),riskModeSwitch:$('#riskModeSwitch'),riskModeCard:$('#riskModeCard'),riskModeLadder:$('#riskModeLadder'),riskCardActions:$('#riskCardActions'),riskLadderActions:$('#riskLadderActions'),riskLadderButton:$('#riskLadderButton'),riskCollectLadder:$('#riskCollectLadder'),riskNote:$('#riskNote')
 };
 let spinning=false,audioCtx=null,toastTimer=null,remoteFriends=[],remoteActivity=[],remotePresence=[],presenceState={},currentGame='shark-abyss',syncTimer=null,syncBusy=false;
+// Tracks in-flight reel-strip Web Animations so a watchdog/force-complete can actually
+// cancel them, instead of leaving them to run out their duration on now-detached nodes.
+const activeReelAnimations=new Set();
 const GAME_DEFS={
   'shark-abyss':{title:'SHARK ABYSS',logo:'<span>SHARK</span><b>ABYSS</b>',symbols:SYMBOLS,rows:4,info:'5 × 4 Walzen · 20 Linien · hohe Volatilität. Der Gesamteinsatz wird auf 20 Linien verteilt. Drei oder mehr Kraken starten 8–12 Freispiele. In Freispielen beginnt der Multiplikator bei x2; Mystery-Reveals erhöhen ihn bis x10.',rtp:'88,43 % simuliert'},
   'fruit-reactor':{title:'FRUIT REACTOR',logo:'<span>FRUIT</span><b>REACTOR</b>',symbols:FRUIT_SYMBOLS,rows:3,info:'5 × 3 Walzen · 5 feste Linien · klassischer Früchte-Slot. Gewinne laufen von links nach rechts; Kirschen zählen bereits ab zwei Treffern. Keine Wilds, Scatter oder Freispiele. Gewinne können per Rot/Schwarz riskiert werden.',rtp:'88,63 % simuliert',gamble:['card']},
@@ -782,10 +785,16 @@ function landReelColumn(reelEl,c,colSymbols,algaeMap,mystery=[]){
 }
 function generateFillerGrid(){return currentGame==='fruit-reactor'?createFruitGrid():currentGame==='fancy-harvest'?createFancyGrid():currentGame==='tomb-of-kings'?createBookGrid():createGrid().grid}
 function renderRandomFrame(){renderGrid(generateFillerGrid())}
-// Decorative-only filler symbols for the spinning reel strip (never scored) — reuses the
+// Decorative-only filler symbols for the spinning reel strips (never scored) — reuses the
 // real, weighted per-game grid generators so filler still looks authentic to the game's
-// actual symbol mix instead of being uniform-random.
-function fillerColumn(col,count){const out=[];while(out.length<count)out.push(...generateFillerGrid()[col]);return out.slice(0,count)}
+// actual symbol mix instead of being uniform-random. Generates all 5 columns from each
+// grid call (instead of discarding 4/5 of it per column), so a full spin needs only a
+// handful of generateFillerGrid() calls rather than one per reel per filler segment.
+function fillerColumnPool(count){
+  const cols=[[],[],[],[],[]];
+  while(cols[0].length<count){const g=generateFillerGrid();for(let c=0;c<5;c++)cols[c].push(...g[c])}
+  return cols.map(c=>c.slice(0,count));
+}
 function hydrateArtwork(){
   $$('[data-lobby-art]').forEach(el=>{el.innerHTML=lobbyArt(el.dataset.lobbyArt)});
   const hero=$('#heroCreature');if(hero)hero.innerHTML=symbolMarkup('shark-abyss','SHARK');
@@ -877,11 +886,10 @@ function currentReelTiming(){
   if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return REEL_TIMING.reduced;
   return store.state.turbo?REEL_TIMING.turbo:REEL_TIMING.normal;
 }
-function spinReelColumn(reelEl,{col,rows,finalSymbols,timing,extraHoldMs=0,onHold,ctrl}){
+function spinReelColumn(reelEl,{col,rows,finalSymbols,timing,before,fill,after,extraHoldMs=0,onHold,ctrl}){
   return new Promise(resolve=>{
     if(ctrl.aborted){resolve();return}
     const cellHeight=reelEl.clientHeight/Math.max(1,rows)||1;
-    const before=fillerColumn(col,rows),fill=fillerColumn(col,timing.fillerCount),after=fillerColumn(col,1);
     const strip=document.createElement('div');strip.className='reel-strip';
     strip.innerHTML=[...before,...fill,...finalSymbols,...after].map(sym=>`<div class="symbol" style="height:${cellHeight}px" data-symbol="${sym}">${symbolMarkup(currentGame,sym)}</div>`).join('');
     reelEl.innerHTML='';reelEl.appendChild(strip);
@@ -908,20 +916,27 @@ function spinReelColumn(reelEl,{col,rows,finalSymbols,timing,extraHoldMs=0,onHol
     let anim;
     try{anim=strip.animate(kf,{duration:totalMs,easing:'cubic-bezier(.22,.1,.2,1)',fill:'forwards'})}
     catch{strip.style.transform=`translateY(${targetY}px)`;resolve();return}
-    const done=()=>resolve();
+    activeReelAnimations.add(anim);
+    const done=()=>{activeReelAnimations.delete(anim);resolve()};
     if(anim.finished?.then)anim.finished.then(done).catch(done);else anim.onfinish=done;
   });
 }
+function cancelActiveReelAnimations(){for(const anim of activeReelAnimations){try{anim.cancel()}catch{}}activeReelAnimations.clear()}
 async function animateSpin(spin,ctrl={aborted:false}){
   clearPaylines();els.overlay.hidden=true;
   const turbo=store.state.turbo,timing=currentReelTiming(),rows=gameDef().rows||3;
   els.reelFrame.classList.add('machine-running');soundFx('spin');
+  // Audible spin-loop texture for the duration the reels are actually moving (the reel
+  // motion itself is a WAAPI timeline with no natural per-frame JS callback to hang a
+  // tick sound off, so this runs on its own short interval alongside it).
+  let tickCount=0;const tickMs=turbo?55:85;const tickTimer=setInterval(()=>{if(ctrl.aborted){clearInterval(tickTimer);return}tone(105+(tickCount++%12)*3,.02,'square',.007)},tickMs);
   const anticipation=!spin.isFreeSpin&&(currentGame==='shark-abyss'||currentGame==='tomb-of-kings')&&Number(spin.scatterCount||0)>=2;
   const algaePresentation=prepareAlgaePresentation(spin);
   const reelEls=$$('.reel');
+  const beforePool=fillerColumnPool(rows),fillPool=fillerColumnPool(timing.fillerCount),afterPool=fillerColumnPool(1);
   const landings=reelEls.map((reelEl,c)=>{
     const isLast=c===reelEls.length-1,extraHoldMs=(anticipation&&isLast)?timing.anticipation:0;
-    return spinReelColumn(reelEl,{col:c,rows,finalSymbols:spin.grid[c],timing,extraHoldMs,ctrl,
+    return spinReelColumn(reelEl,{col:c,rows,finalSymbols:spin.grid[c],timing,before:beforePool[c],fill:fillPool[c],after:afterPool[c],extraHoldMs,ctrl,
       onHold:extraHoldMs>0?()=>{els.reelFrame.classList.add('anticipation');els.feature.textContent='FEATURE CHANCE…';soundFx('anticipation')}:null
     }).then(()=>{
       if(ctrl.aborted)return;
@@ -930,6 +945,7 @@ async function animateSpin(spin,ctrl={aborted:false}){
     });
   });
   await Promise.all(landings);
+  clearInterval(tickTimer);
   if(ctrl.aborted)return;
   els.reelFrame.classList.remove('machine-running','anticipation');
   if(ctrl.aborted)return;
@@ -1046,6 +1062,7 @@ async function recoverPendingRequest(){const p=store.state.pendingRequest;if(!p|
 // idempotent (it no-ops if store.state.pendingSpin no longer matches spin.id).
 function forceCompleteSpin(p){
   if(!p)return;
+  cancelActiveReelAnimations();
   els.reelFrame.classList.remove('machine-running','anticipation','win-shake');
   $$('.reel').forEach(r=>r.classList.remove('in-motion','reel-settle'));
   $$('.symbol').forEach(s=>s.classList.remove('blur'));
