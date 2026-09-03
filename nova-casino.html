@@ -762,7 +762,15 @@ function prepareAlgaePresentation(spin){
   if(currentGame!=='shark-abyss')return {cover:{},tick:[],seeded:[],reveal:[]};
   const cached=store.state.algaePresentation;if(cached?.spinId===spin.id)return cached;
   const existing={...(store.state.algaeStates||{})},next={},tick=[],seeded=[],reveal=[],wins=winningCellKeys(spin),mysteryKeys=new Set((spin.mystery||[]).map(([c,r])=>algaeKey(c,r)));
-  Object.entries(existing).forEach(([key,state])=>{const c=Number(state.col),r=Number(state.row),sym=spin.grid?.[c]?.[r];if(!sym||sym!==state.symbol)return;const remaining=Math.max(0,Number(state.remaining||0)-1),forceReveal=wins.has(key);const evolved={...state,remaining,lastSpinId:spin.id};if(remaining<=0||forceReveal)reveal.push({...evolved,reason:forceReveal?'win':'countdown'});else{next[key]=evolved;tick.push(key)}});
+  // Algae is a pure visual overlay tied to a fixed board position (col,row) — the real
+  // grid underneath is freshly randomized every spin regardless (evaluateGrid() always
+  // scores spin.grid directly, algae never affects it), so persistence must NOT depend on
+  // that invisible symbol happening to repeat. It previously did (checked against
+  // state.symbol) and was discarded otherwise — since a fresh random draw matching a
+  // fixed prior symbol is unlikely, algae almost never survived long enough to actually
+  // count down. Now it always ticks down at that position until it hits 0 or the cell
+  // becomes part of a win, whichever comes first — exactly once per spin, either way.
+  Object.entries(existing).forEach(([key,state])=>{const c=Number(state.col),r=Number(state.row),sym=spin.grid?.[c]?.[r];if(!sym)return;const remaining=Math.max(0,Number(state.remaining||0)-1),forceReveal=wins.has(key);const evolved={...state,symbol:sym,remaining,lastSpinId:spin.id};if(remaining<=0||forceReveal)reveal.push({...evolved,reason:forceReveal?'win':'countdown'});else{next[key]=evolved;tick.push(key)}});
   for(const [c,r] of spin.mystery||[]){const key=algaeKey(c,r);if(next[key]||reveal.some(x=>algaeKey(x.col,x.row)===key))continue;const symbol=spin.grid?.[c]?.[r];if(!symbol)continue;const state={col:c,row:r,remaining:algaeStartValue(),symbol,createdAt:Date.now(),lastSpinId:spin.id};if(wins.has(key))reveal.push({...state,remaining:0,reason:'win'});else{next[key]=state;seeded.push(key)}}
   const cover={...next};reveal.forEach(state=>{cover[algaeKey(state.col,state.row)]={...state,remaining:0}});const presentation={spinId:spin.id,cover,tick,seeded,reveal};store.patch({algaeStates:next,algaePresentation:presentation});return presentation;
 }
