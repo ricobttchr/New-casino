@@ -57,6 +57,25 @@ kanonischen Datei). Vollständiger Audit vor jeder Änderung: `AUDIT.md`.
   tatsächlichen Verbindungsstatus immer Grün; jetzt an `backend.isAuthenticated`
   gekoppelt.
 - **Dev-Banner** standardmäßig ausgeblendet, nur sichtbar mit `?debug=1` (`AUDIT.md` H2).
+- **Phase 4 — echte Reel-Strip-Motion nachgerüstet**: Die Spin-Präsentation zeigte
+  bisher wiederholt volle Zufallsraster (`renderRandomFrame()`-Schleife) statt echter
+  rotierender Streifen. Ersetzt durch pro Walze eine echte vertikale Strip-Animation
+  (Web Animations API, eine Timeline pro Reel: Anziehen → konstante Geschwindigkeit →
+  Bremsen → kontrollierter Overshoot → Settle), gebaut aus den echten gewichteten
+  Symbol-Generatoren plus dem bereits erzeugten Ergebnis am Ende des Streifens — landet
+  pixelgenau auf dem mathematischen Resultat. Nur `transform`/`filter` im Animationspfad,
+  Blur nur während der Cruise-Phase und in Turbo/Reduced-Motion komplett deaktiviert.
+  Jede gelandete Walze wird sofort auf dieselbe statische DOM-Struktur umgeschaltet, die
+  `renderGrid()` immer schon erzeugt hat — Algen-Countdown, Expanding Symbol, Paylines
+  und Gewinnmarkierung bleiben dadurch unverändert und ungefährdet.
+  Dabei gefunden (echter Screenshot im Pflicht-Viewport Landscape 852×393): das
+  Walzenraster war dort vollständig abgeschnitten — behoben mit einer neuen
+  `@media(max-height:460px)`-Regel, mit Screenshots auf einem 4-Reihen- und einem
+  3-Reihen-Spiel verifiziert (`AUDIT.md` B5).
+  Anschließend `/code-review` durchgeführt: 3 Funde (verschwendete Filler-Grid-Generierung,
+  nicht abgebrochene Web-Animations beim Watchdog-Abbruch, weggefallener Spin-Tick-Sound
+  durch den Umbau) — alle behoben und mit erneuten Testläufen verifiziert (`smoke.js`
+  19/19, `soak.js` 346 abgeschlossene Spins, 0 Hänger, 0 Konsolenfehler).
 - **Nicht verändert, bewusst dokumentiert**: Freundes-Aktivitätsfeed zeigt weiterhin
   Beträge (`AUDIT.md` M2, Produktentscheidung, nicht angetastet); Spielmathematik aller
   vier Spiele unverändert (siehe `RTP_REPORT.md` — Abweichungen dokumentiert, nicht
