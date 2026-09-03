@@ -299,6 +299,27 @@ unverändert: kein Zugriff auf das echte Supabase-Projekt aus dieser Sandbox (Eg
 `*.supabase.co` aktiv per `curl` als blockiert bestätigt), daher kein tatsächliches
 Deployment oder eine echte Anmeldung gegen das Live-Projekt möglich.
 
+## Nachtrag (Phase 5 — Grafik-Aufwertung, Nutzer-Anforderung "maximal möglich aufwerten")
+
+Jedes Spiel hat jetzt eine eigenständige, animierte Hintergrund-Atmosphäre statt nur
+eines statischen Farbverlaufs: Shark Abyss (aufsteigende Luftblasen + langsam
+durchziehende Hai-Silhouette, dieselbe SVG-Form wie das Hai-Symbol selbst), Fruit
+Reactor (diagonale Scanline-Textur + aufsteigende Funken, Arcade-Neon-Charakter),
+Fancy Harvest (warme gold-rosa Lichtpartikel, gemütlicher Klassik-Automat), Tomb of
+Kings (Fackel-Flacker-Puls + Staubpartikel statt flacher Abdunkelung). Umgesetzt rein
+in CSS auf den bestehenden `.underwater-bg:before/:after`-Pseudoelementen (ein
+wiederverwendetes Inline-SVG, keine neuen DOM-Elemente, keine externen Assets) —
+funktional folgenlos für Spiel-Mathematik und State Machine.
+→ Explizit geprüft statt nur behauptet: `prefers-reduced-motion` deaktiviert jede neue
+Animation nachweislich, verifiziert per `getComputedStyle(el,'::before'/'::after')
+.animationName` für alle vier Spiele — der bestehende `tests/reduced-motion.js` läuft
+nur über echte DOM-Elemente (`querySelectorAll('*')`) und hätte eine fehlende
+Pseudoelement-Abdeckung allein nicht erkannt. Ein echter CSS-Bug wurde dabei vor dem
+Commit gefunden und behoben: zwei Animationen können nicht unabhängig dieselbe
+`background-position`-Eigenschaft eines Elements steuern (die zweite überschreibt die
+erste vollständig statt sich zu kombinieren) — behoben, indem die Scanline-Ebene
+innerhalb der einen verbleibenden Animation konstant gehalten wird.
+
 ## Nicht abschließend geprüft (ehrliche Lücken dieser Session)
 
 - **Kein Zugriff auf das Supabase-Projekt** (`ucbkmlkxhfghfzgepkbl.supabase.co`): Ob die
