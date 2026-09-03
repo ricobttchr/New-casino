@@ -8,6 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="NOVA Casino" />
   <meta name="format-detection" content="telephone=no" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" href="icons/icon-192.png" />
   <style>
 :root{
   --bg:#070916;--bg2:#0c1020;--card:#12172a;--card2:#171e34;--text:#f7f8ff;--muted:#909ab8;
@@ -72,7 +75,7 @@ button:active{transform:scale(.97)}
 .game-view[data-game="fruit-reactor"] .feature-bar{background:linear-gradient(90deg,rgba(105,21,15,.88),rgba(159,45,15,.94));border-color:rgba(255,210,78,.28)}
 .game-view[data-game="fruit-reactor"] .feature-bar strong{color:#ffe36e}
 
-.risk-panel{padding:8px 0 2px;min-height:126px;display:flex;flex-direction:column;gap:7px}.risk-panel[hidden]{display:none}.risk-topline{display:flex;justify-content:space-between;align-items:center}.risk-topline span{font-size:7px;font-weight:900;letter-spacing:.13em;color:#ffbf64}.risk-topline strong{font-size:16px;letter-spacing:-.03em}.risk-ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.risk-step{height:24px;border-radius:7px;background:#111829;border:1px solid #252f47;display:grid;place-items:center;font-size:7px;color:#6d7896;position:relative}.risk-step.done{background:#18352c;border-color:#265b49;color:#68e9b4}.risk-step.current{background:linear-gradient(135deg,#5d3611,#9b5b15);border-color:#e1a347;color:#fff;box-shadow:0 0 15px rgba(235,160,50,.18)}.risk-card{position:absolute;left:50%;transform:translateX(-50%);margin-top:37px;width:45px;height:55px;border-radius:8px;background:linear-gradient(150deg,#f7f8fc,#d9dfeb);color:#10131b;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 7px 15px rgba(0,0,0,.34);z-index:2;font-weight:950;font-size:20px}.risk-card.red{color:#d42e45}.risk-card.black{color:#111826}.risk-card small{font-size:5px;letter-spacing:.12em;margin-top:1px}.risk-actions{display:grid;grid-template-columns:1fr .82fr 1fr;gap:8px;margin-top:3px}.risk-actions button{height:43px;border-radius:12px;font-weight:900;font-size:9px;letter-spacing:.04em}.risk-choice{display:flex;gap:5px;align-items:center;justify-content:center}.risk-choice span{font-size:17px}.risk-choice.red{background:linear-gradient(145deg,#bb304c,#71182d);border:1px solid #da4962}.risk-choice.black{background:linear-gradient(145deg,#30384b,#161c2a);border:1px solid #465068}.risk-collect{background:linear-gradient(145deg,#e7b34b,#a66a13);color:#161005;border:1px solid #f2cd75}.risk-actions button:disabled{opacity:.45}.risk-note{text-align:center;color:#6f7996;font-size:6px;letter-spacing:.04em}.risk-panel.busy .risk-card{animation:riskFlip .18s linear infinite}@keyframes riskFlip{50%{transform:translateX(-50%) rotateY(90deg)}}
+.risk-panel{position:relative;padding:8px 0 2px;min-height:126px;display:flex;flex-direction:column;gap:7px}.risk-panel[hidden]{display:none}.risk-topline{display:flex;justify-content:space-between;align-items:center}.risk-topline span{font-size:7px;font-weight:900;letter-spacing:.13em;color:#ffbf64}.risk-topline strong{font-size:16px;letter-spacing:-.03em}.risk-ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.risk-step{height:24px;border-radius:7px;background:#111829;border:1px solid #252f47;display:grid;place-items:center;font-size:7px;color:#6d7896;position:relative}.risk-step.done{background:#18352c;border-color:#265b49;color:#68e9b4}.risk-step.current{background:linear-gradient(135deg,#5d3611,#9b5b15);border-color:#e1a347;color:#fff;box-shadow:0 0 15px rgba(235,160,50,.18)}.risk-card{position:absolute;left:50%;transform:translateX(-50%);margin-top:37px;width:45px;height:55px;border-radius:8px;background:linear-gradient(150deg,#f7f8fc,#d9dfeb);color:#10131b;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 7px 15px rgba(0,0,0,.34);z-index:2;font-weight:950;font-size:20px;pointer-events:none}.risk-card.red{color:#d42e45}.risk-card.black{color:#111826}.risk-card small{font-size:5px;letter-spacing:.12em;margin-top:1px}.risk-actions{display:grid;grid-template-columns:1fr .82fr 1fr;gap:8px;margin-top:3px}.risk-actions button{height:43px;border-radius:12px;font-weight:900;font-size:9px;letter-spacing:.04em}.risk-choice{display:flex;gap:5px;align-items:center;justify-content:center}.risk-choice span{font-size:17px}.risk-choice.red{background:linear-gradient(145deg,#bb304c,#71182d);border:1px solid #da4962}.risk-choice.black{background:linear-gradient(145deg,#30384b,#161c2a);border:1px solid #465068}.risk-collect{background:linear-gradient(145deg,#e7b34b,#a66a13);color:#161005;border:1px solid #f2cd75}.risk-actions button:disabled{opacity:.45}.risk-note{text-align:center;color:#6f7996;font-size:6px;letter-spacing:.04em}.risk-panel.busy .risk-card{animation:riskFlip .18s linear infinite}@keyframes riskFlip{50%{transform:translateX(-50%) rotateY(90deg)}}
 @media (max-height:720px){.risk-panel{min-height:112px;gap:5px}.risk-actions button{height:38px}.risk-card{width:40px;height:48px;margin-top:32px}.risk-step{height:21px}}
 
 /* Fancy Harvest — polished classic GAMOMAT-style visual language, original NOVA assets */
@@ -1052,6 +1055,10 @@ async function boot(){
   startSyncLoop();
 }
 boot();
+
+if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('service-worker.js').catch(()=>{})});
+}
 
 })();
 

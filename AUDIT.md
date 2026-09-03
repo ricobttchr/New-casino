@@ -64,6 +64,22 @@ Zeile 884) → Tab wird **neu geladen** (nicht nur backgrounded), bevor `animate
 konkrete Instabilität, die im Code selbst nachweisbar ist — der im Handoff nur allgemein
 befürchtete iPhone-Bug hat hier eine exakte Ursache. Behoben in Phase 1.
 
+### B4 — "NEHMEN"-Button (Gewinn nehmen) im Kartenrisiko auf iPhone 15 Pro nicht antippbar
+Gefunden durch echten End-to-End-Lauf mit Playwright/Chromium auf dem kanonischen
+Viewport 393×852 (siehe `tests/smoke.js`), nicht durch Code-Lektüre. In der
+Drei-Spalten-Aktionsleiste des Kartenrisikos (`#riskCardActions`, Zeile 343: ROT /
+NEHMEN / SCHWARZ) sitzt die rein dekorative Kartenvisualisierung `#riskCard`
+(`position:absolute`, `z-index:2`, kein Klick-Handler in der gesamten App) laut Messung
+über etwa 33 der 43px Höhe des mittleren `#riskCollect`-Buttons — der Button-Text
+"NEHMEN" ist im Screenshot vollständig verdeckt und `page.click('#riskCollect')`
+schlägt fehl, weil `#riskCard` die Pointer-Events abfängt. Ein echter Spieler kann den
+Gewinn im Kartenrisiko auf diesem Layout nicht zuverlässig nehmen — eine
+Kernspielfunktion war unerreichbar.
+→ Ursache: `#riskCard` ist reines Statusdisplay ohne jede Interaktionslogik; Fix ist
+`pointer-events:none` auf `.risk-card` (eine Zeile, keine Layoutänderung, keine
+Auswirkung auf die Optik) — Taps erreichen jetzt den darunterliegenden Button. Mit
+demselben Playwright-Lauf nach dem Fix verifiziert.
+
 ### B3 — Kein Watchdog/keine Deadline in `animateSpin()`
 `animateSpin()` (Zeile 827) ist eine reine `await sleep(ms)`-Kette ohne harte
 Maximaldauer und ohne `AbortController`. Bleibt der Tab während der Animation
@@ -152,6 +168,20 @@ geschickt, Antwort ausstehend) wird beim reinen Boot nicht erneut angestoßen.
 → In Phase 1 mitkorrigiert (gleiche Ursache wie B2).
 
 ---
+
+### H5 — `icon-512.PNG` ist ein generisches Stock-Icon mit Echtgeld-Bildsprache
+Das im Projektordner mitgelieferte `icon-512.PNG` zeigt ein Roulette-Rad, Pokerchips und
+Goldmünzen mit **Dollar-Symbolen**. Das widerspricht direkt der nicht verhandelbaren
+Produktregel "keine ... Verbindung zu Echtgeldcasinos" und "keine Werbung für
+Glücksspiel" — ausgerechnet das App-Icon (der erste Eindruck, noch vor dem Öffnen der
+App) hätte reale Geldsymbole gezeigt. Zusätzlich passt das Motiv zu keinem der vier
+tatsächlichen NOVA-Spiele (kein Roulette im Produkt) und ist kein NOVA-Eigenwerk.
+→ Nicht als Produktions-Icon verwendet. Stattdessen wurde ein eigenständiges Icon-Set
+aus dem bereits vorhandenen NOVA-Artwork erzeugt (dieselbe Hai-SVG aus
+`js/symbol-art.js`, dieselbe Lila-Verlaufsfarbe wie `.brand-mark`/`.hero-card`) — siehe
+Ordner `icons/`, referenziert von `manifest.webmanifest`. Das Original bleibt
+unverändert im Repository-Root liegen (nicht gelöscht), wird aber von
+`manifest.webmanifest` nicht referenziert.
 
 ## POLISH
 
