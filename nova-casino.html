@@ -31,7 +31,7 @@ button:active{transform:scale(.97)}
 .wallet-chip{background:linear-gradient(180deg,#171d32,#111629);border:1px solid rgba(255,255,255,.07);height:40px;border-radius:15px;padding:6px 11px;display:flex;flex-direction:column;justify-content:center;min-width:93px;box-shadow:inset 0 1px rgba(255,255,255,.03)}
 .wallet-chip span{font-size:7px;text-transform:uppercase;color:var(--muted);letter-spacing:.14em}.wallet-chip strong{font-size:13px;margin-top:1px}
 .avatar-button{width:40px;height:40px;border-radius:15px;background:linear-gradient(145deg,#202840,#141a2f);border:1px solid rgba(255,255,255,.07);display:grid;place-items:center;font-weight:850;position:relative}
-.avatar-button i{width:9px;height:9px;border-radius:99px;background:var(--green);border:2px solid var(--bg);position:absolute;right:-1px;bottom:-1px}
+.avatar-button i{width:9px;height:9px;border-radius:99px;background:#5b6480;border:2px solid var(--bg);position:absolute;right:-1px;bottom:-1px}.avatar-button i.live{background:var(--green)}
 .view{padding:0 16px}.lobby-view{max-width:700px;margin:0 auto}
 .hero-card{height:206px;border-radius:26px;position:relative;overflow:hidden;background:linear-gradient(115deg,#1d1745 0%,#102244 47%,#073e4a 100%);border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 45px rgba(0,0,0,.25);margin-top:7px}
 .hero-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,7,17,.05),transparent 60%),linear-gradient(0deg,rgba(3,5,14,.3),transparent 50%);pointer-events:none}
@@ -207,7 +207,7 @@ button:focus-visible,input:focus-visible,.game-card:focus-visible{outline:2px so
 </style>
   <title>NOVA Casino · Pro Polish 6.4</title>
 </head>
-<body><div id="previewBanner" style="position:fixed;z-index:99999;left:50%;transform:translateX(-50%);top:max(8px,env(safe-area-inset-top));padding:6px 10px;border-radius:999px;background:#11182dcc;border:1px solid #ffffff22;font:700 10px/1.2 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:.08em;color:#b9c7e9;backdrop-filter:blur(12px);pointer-events:none">V6.4 PRO POLISH · SERVER-MODUS</div>
+<body><div id="previewBanner" hidden style="position:fixed;z-index:99999;left:50%;transform:translateX(-50%);top:max(8px,env(safe-area-inset-top));padding:6px 10px;border-radius:999px;background:#11182dcc;border:1px solid #ffffff22;font:700 10px/1.2 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:.08em;color:#b9c7e9;backdrop-filter:blur(12px);pointer-events:none">V6.4 PRO POLISH</div>
   <div id="app" class="app-shell" data-view="lobby">
     <header class="topbar">
       <button class="brand" id="brandButton" aria-label="Zur Lobby">
@@ -479,25 +479,28 @@ window.__gameMath={STAKES_CENTS, GAME_KEY, PAYLINES, SYMBOLS, cryptoFloat, rando
 })();
 
 
-/* js/backend.js — NOVA v6.3 direct REST reliability backend */
+/* js/backend.js — NOVA v6.4 direct REST reliability backend */
 (function(){
-const BUILD_VERSION='6.3.0';
-const DEVICE_STORAGE_KEY='nova-v63-device-id';
-const AUTH_STORAGE_KEY='nova-v63-auth';
+const BUILD_VERSION='6.4.0';
+const DEVICE_STORAGE_KEY='nova-v64-device-id';
+const AUTH_STORAGE_KEY='nova-v64-auth';
+const LEGACY_DEVICE_STORAGE_KEY='nova-v63-device-id';
+const LEGACY_AUTH_STORAGE_KEY='nova-v63-auth';
+const NETWORK_TIMEOUT_MS=12000;
 const configured=()=>Boolean(window.NOVA_CONFIG?.supabaseUrl&&window.NOVA_CONFIG?.supabasePublishableKey);
 const safeJson=async r=>{const t=await r.text();if(!t)return null;try{return JSON.parse(t)}catch{return {message:t}}};
 const errMessage=(data,status)=>{const code=String(data?.error||data?.code||'');if(code==='device_conflict')return 'Dieser Account ist bereits auf einem anderen Gerät aktiv.';if(code==='client_update_required')return 'Diese NOVA-Version ist veraltet. Bitte Seite neu laden.';if(code==='maintenance')return 'NOVA wird gerade gewartet. Bitte später erneut versuchen.';if(code==='insufficient_balance')return 'Nicht genug Simulationsguthaben.';if(code==='gamble_pending')return 'Erst den offenen Risikogewinn abschließen.';return data?.msg||data?.message||data?.error_description||data?.error||`Serverfehler ${status}`};
 class CasinoBackend{
-  constructor(){this.mode=configured()?'remote':'offline';this.user=null;this.session=null;this.listeners=new Set();this.lastSnapshot=null;this.deviceConflict=false;let d=localStorage.getItem(DEVICE_STORAGE_KEY);if(!d){d=crypto.randomUUID();localStorage.setItem(DEVICE_STORAGE_KEY,d)}this.deviceId=d}
+  constructor(){this.mode=configured()?'remote':'offline';this.user=null;this.session=null;this.listeners=new Set();this.lastSnapshot=null;this.deviceConflict=false;let d=localStorage.getItem(DEVICE_STORAGE_KEY)||localStorage.getItem(LEGACY_DEVICE_STORAGE_KEY);if(!d){d=crypto.randomUUID()}localStorage.setItem(DEVICE_STORAGE_KEY,d);this.deviceId=d}
   get base(){return String(window.NOVA_CONFIG?.supabaseUrl||'').replace(/\/$/,'')} get key(){return window.NOVA_CONFIG?.supabasePublishableKey||''} get isRemote(){return this.mode==='remote'} get isAuthenticated(){return !!this.session?.access_token&&!!this.user}
   onChange(fn){this.listeners.add(fn);return()=>this.listeners.delete(fn)} emit(){for(const fn of this.listeners)try{fn(this)}catch{}}
   saveSession(v){this.session=v||null;this.user=v?.user||null;if(v)localStorage.setItem(AUTH_STORAGE_KEY,JSON.stringify(v));else localStorage.removeItem(AUTH_STORAGE_KEY)}
-  loadSession(){try{const s=JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY)||'null');if(s?.access_token&&s?.refresh_token)this.saveSession(s)}catch{this.saveSession(null)}}
+  loadSession(){try{const s=JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY)||localStorage.getItem(LEGACY_AUTH_STORAGE_KEY)||'null');if(s?.access_token&&s?.refresh_token)this.saveSession(s);localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY)}catch{this.saveSession(null)}}
   tokenExp(){try{return Number(JSON.parse(atob(this.session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp||0)}catch{return 0}}
   async init(){if(!configured()){this.mode='offline';return this}this.mode='remote';this.loadSession();if(this.session&&(this.tokenExp()*1000-Date.now()<90000)){try{await this.refresh()}catch{this.saveSession(null)}}return this}
-  async publicFetch(path,{method='POST',body=null}={}){let r;try{r=await fetch(this.base+path,{method,headers:{apikey:this.key,'Content-Type':'application/json','Cache-Control':'no-store'},body:body==null?undefined:JSON.stringify(body)})}catch{throw new Error('Keine Verbindung zum NOVA-Server.')}const data=await safeJson(r);if(!r.ok)throw new Error(errMessage(data,r.status));return data}
+  async publicFetch(path,{method='POST',body=null}={}){const ac=new AbortController();const timer=setTimeout(()=>ac.abort(),NETWORK_TIMEOUT_MS);let r;try{r=await fetch(this.base+path,{method,headers:{apikey:this.key,'Content-Type':'application/json','Cache-Control':'no-store'},body:body==null?undefined:JSON.stringify(body),signal:ac.signal})}catch(e){throw new Error(e?.name==='AbortError'?'Zeitüberschreitung beim NOVA-Server.':'Keine Verbindung zum NOVA-Server.')}finally{clearTimeout(timer)}const data=await safeJson(r);if(!r.ok)throw new Error(errMessage(data,r.status));return data}
   async refresh(){if(!this.session?.refresh_token)throw new Error('Keine Sitzung.');const data=await this.publicFetch('/auth/v1/token?grant_type=refresh_token',{body:{refresh_token:this.session.refresh_token}});this.saveSession(data);this.emit();return data}
-  async authFetch(path,{method='POST',body=null,headers={},retry=true}={}){if(!this.session?.access_token)throw new Error('Bitte zuerst anmelden.');if(this.tokenExp()*1000-Date.now()<90000)await this.refresh();let r;try{r=await fetch(this.base+path,{method,headers:{apikey:this.key,Authorization:`Bearer ${this.session.access_token}`,'Content-Type':'application/json','Cache-Control':'no-store',...headers},body:body==null?undefined:JSON.stringify(body)})}catch{throw new Error('Keine Verbindung zum NOVA-Server.')}if(r.status===401&&retry&&this.session?.refresh_token){await this.refresh();return this.authFetch(path,{method,body,headers,retry:false})}const data=await safeJson(r);if(!r.ok)throw new Error(errMessage(data,r.status));return data}
+  async authFetch(path,{method='POST',body=null,headers={},retry=true}={}){if(!this.session?.access_token)throw new Error('Bitte zuerst anmelden.');if(this.tokenExp()*1000-Date.now()<90000)await this.refresh();const ac=new AbortController();const timer=setTimeout(()=>ac.abort(),NETWORK_TIMEOUT_MS);let r;try{r=await fetch(this.base+path,{method,headers:{apikey:this.key,Authorization:`Bearer ${this.session.access_token}`,'Content-Type':'application/json','Cache-Control':'no-store',...headers},body:body==null?undefined:JSON.stringify(body),signal:ac.signal})}catch(e){throw new Error(e?.name==='AbortError'?'Zeitüberschreitung beim NOVA-Server.':'Keine Verbindung zum NOVA-Server.')}finally{clearTimeout(timer)}if(r.status===401&&retry&&this.session?.refresh_token){await this.refresh();return this.authFetch(path,{method,body,headers,retry:false})}const data=await safeJson(r);if(!r.ok)throw new Error(errMessage(data,r.status));return data}
   rpc(name,body={}){return this.authFetch(`/rest/v1/rpc/${name}`,{body})}
   async signUp({email,password,displayName}){if(!this.isRemote)throw new Error('NOVA-Server nicht erreichbar.');const data=await this.publicFetch('/auth/v1/signup',{body:{email,password,data:{display_name:displayName}}});if(data?.access_token)this.saveSession(data);else this.saveSession(null);this.emit();return data}
   async signIn({email,password}){if(!this.isRemote)throw new Error('NOVA-Server nicht erreichbar.');const data=await this.publicFetch('/auth/v1/token?grant_type=password',{body:{email,password}});this.saveSession(data);this.emit();return data}
@@ -719,7 +722,7 @@ const els={
  app:$('#app'),lobby:$('#lobbyView'),game:$('#gameView'),nav:$('#bottomNav'),balance:$('#walletBalance'),gameBalance:$('#gameBalance'),stake:$('#stakeValue'),lastWin:$('#lastWin'),
  reels:$('#reels'),reelFrame:$('#reelFrame'),paylineLayer:$('#paylineLayer'),spin:$('#spinButton'),spinText:$('#spinText'),overlay:$('#winOverlay'),winAmount:$('#winAmount'),winLabel:$('#winLabel'),winMultiplier:$('#winMultiplier'),paylineFlash:$('#paylineFlash'),
  statWagered:$('#statWagered'),statWon:$('#statWon'),statSpins:$('#statSpins'),stakeDown:$('#stakeDown'),stakeUp:$('#stakeUp'),feature:$('#featureText'),multiplier:$('#multiplierLabel'),
- sheet:$('#sheet'),sheetContent:$('#sheetContent'),toast:$('#toast'),sound:$('#soundToggle'),quick:$('#quickButton'),friendList:$('#friendList'),connectionBadge:$('#connectionBadge'),liveWinFeed:$('#liveWinFeed'),feedSyncLabel:$('#feedSyncLabel'),gameTitle:$('#gameTitle'),slotLogo:$('#slotLogo'),mainControls:$('#mainControls'),secondaryControls:$('#secondaryControls'),riskPanel:$('#riskPanel'),riskAmount:$('#riskAmount'),riskLadder:$('#riskLadder'),riskCard:$('#riskCard'),riskRed:$('#riskRed'),riskBlack:$('#riskBlack'),riskCollect:$('#riskCollect'),riskModeSwitch:$('#riskModeSwitch'),riskModeCard:$('#riskModeCard'),riskModeLadder:$('#riskModeLadder'),riskCardActions:$('#riskCardActions'),riskLadderActions:$('#riskLadderActions'),riskLadderButton:$('#riskLadderButton'),riskCollectLadder:$('#riskCollectLadder'),riskNote:$('#riskNote')
+ sheet:$('#sheet'),sheetContent:$('#sheetContent'),toast:$('#toast'),sound:$('#soundToggle'),quick:$('#quickButton'),friendList:$('#friendList'),connectionBadge:$('#connectionBadge'),onlineDot:$('#onlineDot'),liveWinFeed:$('#liveWinFeed'),feedSyncLabel:$('#feedSyncLabel'),gameTitle:$('#gameTitle'),slotLogo:$('#slotLogo'),mainControls:$('#mainControls'),secondaryControls:$('#secondaryControls'),riskPanel:$('#riskPanel'),riskAmount:$('#riskAmount'),riskLadder:$('#riskLadder'),riskCard:$('#riskCard'),riskRed:$('#riskRed'),riskBlack:$('#riskBlack'),riskCollect:$('#riskCollect'),riskModeSwitch:$('#riskModeSwitch'),riskModeCard:$('#riskModeCard'),riskModeLadder:$('#riskModeLadder'),riskCardActions:$('#riskCardActions'),riskLadderActions:$('#riskLadderActions'),riskLadderButton:$('#riskLadderButton'),riskCollectLadder:$('#riskCollectLadder'),riskNote:$('#riskNote')
 };
 let spinning=false,audioCtx=null,toastTimer=null,remoteFriends=[],remoteActivity=[],remotePresence=[],presenceState={},currentGame='shark-abyss',syncTimer=null,syncBusy=false;
 const GAME_DEFS={
@@ -734,6 +737,11 @@ function patchGameState(key,patch){const current=getGameState(key);store.patch({
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const RISK_GAMES=new Set(['fruit-reactor','fancy-harvest']);
 const hasPendingGamble=()=>store.state.pendingGamble?.status==='active';
+// Hard ceiling on how long a spin's presentation may run. If the tab was throttled/frozen
+// in the background and the animation's own sleep() chain never reports back in time, the
+// spin is force-completed instead of leaving the UI stuck mid-blur (Phase 1 watchdog).
+const ANIMATION_DEADLINE_MS=9000;
+function withDeadline(promise,ms){let timer;const timeout=new Promise(resolve=>{timer=setTimeout(()=>resolve('__deadline__'),ms)});return Promise.race([promise,timeout]).then(v=>{clearTimeout(timer);return v})}
 const gambleActive=()=>RISK_GAMES.has(currentGame)&&hasPendingGamble()&&store.state.pendingGamble?.gameKey===currentGame;
 const riskSpinBlocked=()=>hasPendingGamble();
 const localCard=()=>{const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'],suits=[['♥','red'],['♦','red'],['♠','black'],['♣','black']];const n=Math.floor(cryptoFloat()*52),[suit,color]=suits[Math.floor(n/13)],rank=ranks[n%13];return {rank,suit,color}};
@@ -784,6 +792,7 @@ function renderState(){
   const risk=gambleActive(),blocked=riskSpinBlocked();els.stakeDown.disabled=spinning||featureActive()||blocked;els.stakeUp.disabled=spinning||featureActive()||blocked;els.spin.disabled=spinning||blocked;
   els.mainControls.hidden=risk;els.secondaryControls.hidden=risk;els.riskPanel.hidden=!risk;renderRisk();
   if(els.connectionBadge){els.connectionBadge.textContent=backend.isAuthenticated?'LIVE':backend.isRemote?'LOGIN':'OFFLINE';els.connectionBadge.dataset.mode=backend.isAuthenticated?'live':backend.isRemote?'ready':'offline'}
+  els.onlineDot?.classList.toggle('live',backend.isAuthenticated);
 }
 function toast(msg){els.toast.textContent=msg;els.toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>els.toast.classList.remove('show'),2200)}
 function ensureAudio(){if(!store.state.sound)return null;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}}
@@ -815,8 +824,11 @@ async function executeGamble(action,choice=null,resume=null){
   if(!resume&&!store.state.pendingGambleAction)store.patch({pendingGambleAction:pending});renderState();
   try{
     let result;
-    if(!backend.isAuthenticated)throw new Error('Bitte zuerst anmelden.');
-    result=await backend.resolveGamble({roundId:pending.roundId,action:pending.action,choice:pending.choice,idempotencyKey:pending.requestId});
+    if(backend.isAuthenticated){
+      result=await backend.resolveGamble({roundId:pending.roundId,action:pending.action,choice:pending.choice,idempotencyKey:pending.requestId});
+    }else{
+      result=resolveLocalGamble(g,pending.action,pending.choice);
+    }
     const next=normalizeGamble({...g,...result});store.patch({balanceCents:Number(result.balanceCents??store.state.balanceCents),pendingGamble:next?.status==='active'?next:null,pendingGambleAction:null});renderState();
     if(result.card){tone(result.won?620:150,.18,result.won?'sine':'sawtooth',.06);haptic(result.won?[12,35,12]:35);toast(result.won?`Treffer! ${moneyCents(result.currentCents)}`:'Risiko verloren.')}else{tone(430,.12,'triangle',.04);toast(`Gewinn genommen: ${moneyCents(g.currentCents)}`)}
     if(result.status==='capped')toast(`Risikoleiter geschafft: ${moneyCents(result.currentCents)} automatisch gebucht.`);
@@ -824,24 +836,32 @@ async function executeGamble(action,choice=null,resume=null){
 }
 function resumeGambleAction(){const p=store.state.pendingGambleAction;if(p&&store.state.pendingGamble?.status==='active')executeGamble(p.action,p.choice,p)}
 
-async function animateSpin(spin){
+async function animateSpin(spin,ctrl={aborted:false}){
   clearPaylines();els.overlay.hidden=true;const turbo=store.state.turbo;const base=turbo?300:900,tick=turbo?48:82,cycles=Math.max(5,Math.ceil(base/tick));
   els.reelFrame.classList.add('machine-running');soundFx('spin');
-  for(let i=0;i<cycles;i++){renderRandomFrame();$$('.reel').forEach((r,idx)=>{r.classList.add('in-motion');r.style.setProperty('--reel-phase',`${idx*13}px`)});if(i%2===0)tone(105+i*3,.02,'square',.008);await sleep(tick)}
+  for(let i=0;i<cycles;i++){if(ctrl.aborted)return;renderRandomFrame();$$('.reel').forEach((r,idx)=>{r.classList.add('in-motion');r.style.setProperty('--reel-phase',`${idx*13}px`)});if(i%2===0)tone(105+i*3,.02,'square',.008);await sleep(tick)}
+  if(ctrl.aborted)return;
   const anticipation=!spin.isFreeSpin&&(currentGame==='shark-abyss'||currentGame==='tomb-of-kings')&&Number(spin.scatterCount||0)>=2;
   const algaePresentation=prepareAlgaePresentation(spin);
   renderGrid(spin.grid,{algae:algaePresentation.cover});$$('.reel').forEach(r=>r.classList.add('in-motion'));
   for(let c=0;c<5;c++){
+    if(ctrl.aborted)return;
     if(anticipation&&c===4){els.reelFrame.classList.add('anticipation');els.feature.textContent='FEATURE CHANCE…';soundFx('anticipation');await sleep(turbo?120:520)}
+    if(ctrl.aborted)return;
     const reel=$(`.reel[data-reel="${c}"]`);reel?.classList.remove('in-motion');reel?.classList.add('reel-settle');soundFx('stop',.9+c*.05);haptic(c===4?12:5);await sleep(turbo?36:95);reel?.classList.remove('reel-settle')
   }
+  if(ctrl.aborted)return;
   els.reelFrame.classList.remove('machine-running','anticipation');await sleep(turbo?45:120);
+  if(ctrl.aborted)return;
   if(currentGame==='shark-abyss'&&(algaePresentation.seeded.length||algaePresentation.tick.length||algaePresentation.reveal.length)){
     algaePresentation.seeded.forEach(key=>$(`[data-cell="${key}"]`)?.classList.add('algae-seed'));
-    if(algaePresentation.tick.length){els.feature.textContent='ALGEN-COUNTDOWN';for(const key of algaePresentation.tick){const cell=$(`[data-cell="${key}"]`);cell?.classList.add('algae-tick');soundFx('algaeTick',.78);haptic(2);await sleep(turbo?24:62);cell?.classList.remove('algae-tick')}}
-    if(algaePresentation.reveal.length){els.feature.textContent='MYSTERY REVEAL';for(const state of algaePresentation.reveal){const {col:c,row:r}=state,cell=$(`[data-cell="${c}-${r}"]`);cell?.classList.add('algae-erode','reveal');await sleep(turbo?55:120);cell?.classList.remove('algae','algae-erode');if(cell){cell.removeAttribute('data-remaining');cell.innerHTML=symbolMarkup(currentGame,spin.grid[c][r])}soundFx('reveal');haptic(8)}await sleep(turbo?70:210)}
+    if(algaePresentation.tick.length){els.feature.textContent='ALGEN-COUNTDOWN';for(const key of algaePresentation.tick){if(ctrl.aborted)return;const cell=$(`[data-cell="${key}"]`);cell?.classList.add('algae-tick');soundFx('algaeTick',.78);haptic(2);await sleep(turbo?24:62);cell?.classList.remove('algae-tick')}}
+    if(ctrl.aborted)return;
+    if(algaePresentation.reveal.length){els.feature.textContent='MYSTERY REVEAL';for(const state of algaePresentation.reveal){if(ctrl.aborted)return;const {col:c,row:r}=state,cell=$(`[data-cell="${c}-${r}"]`);cell?.classList.add('algae-erode','reveal');await sleep(turbo?55:120);cell?.classList.remove('algae','algae-erode');if(cell){cell.removeAttribute('data-remaining');cell.innerHTML=symbolMarkup(currentGame,spin.grid[c][r])}soundFx('reveal');haptic(8)}await sleep(turbo?70:210)}
   }
-  if(spin.expanding?.reels?.length){els.feature.textContent='EXPANDING SYMBOL';for(const c of spin.expanding.reels){for(let r=0;r<3;r++){const cell=$(`[data-cell="${c}-${r}"]`);if(cell){cell.classList.add('reveal','winner');cell.innerHTML=symbolMarkup(currentGame,spin.expanding.symbol)}}await sleep(turbo?40:90);soundFx('reveal')}await sleep(turbo?70:180)}
+  if(ctrl.aborted)return;
+  if(spin.expanding?.reels?.length){els.feature.textContent='EXPANDING SYMBOL';for(const c of spin.expanding.reels){if(ctrl.aborted)return;for(let r=0;r<3;r++){const cell=$(`[data-cell="${c}-${r}"]`);if(cell){cell.classList.add('reveal','winner');cell.innerHTML=symbolMarkup(currentGame,spin.expanding.symbol)}}await sleep(turbo?40:90);soundFx('reveal')}await sleep(turbo?70:180)}
+  if(ctrl.aborted)return;
   if(spin.wins?.length){spin.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.add('winner'));renderPaylines(spin);els.paylineFlash.classList.remove('active');void els.paylineFlash.offsetWidth;els.paylineFlash.classList.add('active');soundFx(spin.totalCents>=spin.stakeCents*20?'bigwin':'win')}
   if(spin.freeSpins>0)soundFx('feature');
 }
@@ -871,21 +891,65 @@ function applySpinSettlement(spin,{show=true,authoritativeBalanceCents=null,auth
 function normalizeRemoteSpin(data,featureBefore){
   const p=data.presentation||data.spin||data;return {id:p.id||data.spinId||randomId(),createdAt:Date.now(),gameKey:p.gameKey||currentGame,stakeCents:p.stakeCents,isFreeSpin:Boolean(p.isFreeSpin),multiplier:p.multiplier||1,grid:p.grid,mystery:p.mystery||[],wins:p.wins||[],totalCents:p.totalCents||0,freeSpins:p.freeSpins||0,scatterCount:p.scatterCount||0,nextMultiplier:p.nextMultiplier||p.multiplier||1,expanding:p.expanding||null,chosenExpandingSymbol:p.chosenExpandingSymbol||null,featureBefore,authoritativeBalanceCents:data.balanceCents,authoritativeFeatureState:data.featureState||null,sessionId:data.sessionId||getGameState().sessionId,gambleRound:data.gambleRound||null};
 }
+// --- Guest mode: same math modules the server is expected to run, executed locally so a
+// spin never depends on network/login. Used whenever backend.isAuthenticated is false.
+function generateLocalSpin({gameKey,stakeCents,isFreeSpin,featureBefore}){
+  if(gameKey==='shark-abyss')return generateSpin({stakeCents,isFreeSpin,multiplier:isFreeSpin?(featureBefore.multiplier||2):1});
+  if(gameKey==='fruit-reactor')return generateFruitSpin({stakeCents});
+  if(gameKey==='fancy-harvest')return generateFancySpin({stakeCents});
+  if(gameKey==='tomb-of-kings')return generateBookSpin({stakeCents,isFreeSpin,expandingSymbol:featureBefore.expandingSymbol||null});
+  throw new Error(`Unbekanntes Spiel: ${gameKey}`);
+}
+function normalizeLocalSpin(raw,{gameKey,stakeCents,isFreeSpin,featureBefore}){
+  const stakeDebited=isFreeSpin?0:stakeCents;
+  const authoritativeBalanceCents=Math.max(0,store.state.balanceCents-stakeDebited+(RISK_GAMES.has(gameKey)?0:raw.totalCents));
+  return {...raw,gameKey,stakeCents,isFreeSpin,expanding:raw.expanding||null,chosenExpandingSymbol:raw.chosenExpandingSymbol||null,featureBefore,authoritativeBalanceCents,authoritativeFeatureState:null,sessionId:getGameState(gameKey).sessionId,gambleRound:null};
+}
+function resolveLocalGamble(g,action,choice){
+  const level=Number(g.level||0),maxLevel=Number(g.maxLevel||5),current=Number(g.currentCents||0),balance=store.state.balanceCents;
+  if(action==='collect')return {status:'collected',currentCents:current,level,card:null,won:null,balanceCents:balance+current};
+  const isLadder=choice==='ladder';
+  const card=isLadder?{type:'ladder',direction:cryptoFloat()<.5?'up':'down'}:localCard();
+  const won=isLadder?card.direction==='up':card.color===choice;
+  if(!won)return {status:'busted',currentCents:0,level,card,won,balanceCents:balance};
+  const nextLevel=level+1,nextCents=current*2;
+  if(nextLevel>=maxLevel)return {status:'capped',currentCents:nextCents,level:nextLevel,card,won,balanceCents:balance+nextCents};
+  return {status:'active',currentCents:nextCents,level:nextLevel,card,won,balanceCents:balance};
+}
 async function spin(){
-  if(spinning)return;if(riskSpinBlocked()){const pending=store.state.pendingGamble;toast(pending?.gameKey===currentGame?'Erst Gewinn nehmen oder riskieren.':`Offener Gewinn in ${GAME_DEFS[pending?.gameKey]?.title||'anderem Spiel'}.`);return}const featureBefore={...(getGameState().featureState||{})};const isFreeSpin=featureActive();const stakeCents=isFreeSpin?featureBefore.stakeCents:STAKES_CENTS[store.state.stakeIndex];
+  if(spinning)return;if(riskSpinBlocked()){const pending=store.state.pendingGamble;toast(pending?.gameKey===currentGame?'Erst Gewinn nehmen oder riskieren.':`Offener Gewinn in ${GAME_DEFS[pending?.gameKey]?.title||'anderem Spiel'}.`);return}
+  // Defensive: a previous crash/reload could have left an unresolved spin behind. Never
+  // silently overwrite it (that would violate the "settle exactly once" invariant) —
+  // finish it first, synchronously, before touching anything else.
+  if(store.state.pendingSpin){forceCompleteSpin(store.state.pendingSpin);renderState()}
+  const featureBefore={...(getGameState().featureState||{})};const isFreeSpin=featureActive();const stakeCents=isFreeSpin?featureBefore.stakeCents:STAKES_CENTS[store.state.stakeIndex];
   if(!isFreeSpin&&store.state.balanceCents<stakeCents){toast('Nicht genug Simulationsguthaben.');return}
   spinning=true;els.spin.disabled=true;els.spin.classList.add('busy');els.spinText.textContent='•••';els.overlay.hidden=true;els.feature.textContent=isFreeSpin?'Freispiel läuft…':'Walzen laufen…';
   try{
     let prepared;
-    if(!backend.isAuthenticated)throw new Error('Bitte zuerst im Profil anmelden.');
-    const transport=store.state.pendingRequest||{type:'spin',stakeCents,sessionId:getGameState().sessionId,idempotencyKey:randomId(),gameKey:currentGame,featureBefore};
-    store.patch({pendingRequest:transport});
-    const data=await backend.requestSpin(transport);prepared=normalizeRemoteSpin(data,transport.featureBefore||featureBefore);
+    if(backend.isAuthenticated){
+      const transport=store.state.pendingRequest||{type:'spin',stakeCents,sessionId:getGameState().sessionId,idempotencyKey:randomId(),gameKey:currentGame,featureBefore};
+      store.patch({pendingRequest:transport});
+      const data=await backend.requestSpin(transport);prepared=normalizeRemoteSpin(data,transport.featureBefore||featureBefore);
+    }else{
+      // Guest mode: no account, no network — run the exact same paytable/weight
+      // modules the account mode uses, entirely client-side (crypto.getRandomValues).
+      const raw=generateLocalSpin({gameKey:currentGame,stakeCents,isFreeSpin,featureBefore});
+      prepared=normalizeLocalSpin(raw,{gameKey:currentGame,stakeCents,isFreeSpin,featureBefore});
+    }
     const preAnimationBalance=RISK_GAMES.has(currentGame)&&prepared.totalCents>0?prepared.authoritativeBalanceCents:Math.max(0,prepared.authoritativeBalanceCents-prepared.totalCents);store.patch({balanceCents:preAnimationBalance,pendingSpin:prepared,pendingRequest:null});patchGameState(currentGame,{sessionId:prepared.sessionId});
-    renderState();await animateSpin(prepared);
-    applySpinSettlement(prepared,{show:false,authoritativeBalanceCents:prepared.authoritativeBalanceCents,authoritativeFeatureState:prepared.authoritativeFeatureState});
-    if(prepared.totalCents>0)await showWin(prepared);
-    if(currentGame==='tomb-of-kings'&&prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele · Expand ${prepared.chosenExpandingSymbol||''}`);else if(currentGame==='tomb-of-kings'&&prepared.isFreeSpin&&prepared.freeSpins)toast('+10 Freispiele retriggert!');else if(prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele!`);else if(prepared.isFreeSpin&&prepared.mystery?.length&&getGameState('shark-abyss').featureState.remaining)toast(`Multiplikator steigt auf x${getGameState('shark-abyss').featureState.multiplier}`);
+    renderState();
+    const ctrl={aborted:false};
+    const outcome=await withDeadline(animateSpin(prepared,ctrl),ANIMATION_DEADLINE_MS);
+    if(outcome==='__deadline__'){
+      // The presentation didn't report back in time (backgrounded/throttled tab). Cut it
+      // loose cooperatively and jump straight to the guaranteed-correct final state.
+      ctrl.aborted=true;forceCompleteSpin(prepared);
+    }else{
+      applySpinSettlement(prepared,{show:false,authoritativeBalanceCents:prepared.authoritativeBalanceCents,authoritativeFeatureState:prepared.authoritativeFeatureState});
+      if(prepared.totalCents>0)await showWin(prepared);
+      if(currentGame==='tomb-of-kings'&&prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele · Expand ${prepared.chosenExpandingSymbol||''}`);else if(currentGame==='tomb-of-kings'&&prepared.isFreeSpin&&prepared.freeSpins)toast('+10 Freispiele retriggert!');else if(prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele!`);else if(prepared.isFreeSpin&&prepared.mystery?.length&&getGameState('shark-abyss').featureState.remaining)toast(`Multiplikator steigt auf x${getGameState('shark-abyss').featureState.multiplier}`);
+    }
   }catch(error){
     console.error(error);toast(error?.message||'Spin fehlgeschlagen.');
     // Remote errors happen before a result is persisted client-side. Local pending results remain resumable.
@@ -895,8 +959,30 @@ async function spin(){
   }
 }
 async function recoverPendingRequest(){const p=store.state.pendingRequest;if(!p||p.type!=='spin'||!backend.isAuthenticated)return;try{const data=await backend.requestSpin(p);const prepared=normalizeRemoteSpin(data,p.featureBefore||{});store.patch({pendingRequest:null,pendingSpin:prepared,balanceCents:Number(prepared.authoritativeBalanceCents??store.state.balanceCents)});patchGameState(prepared.gameKey||p.gameKey,{sessionId:prepared.sessionId});resumePending();toast('Unterbrochener Server-Spin wiederhergestellt.')}catch(error){console.error(error);toast(error?.message||'Spin-Wiederherstellung fehlgeschlagen.')}}
+// Central "finish this spin no matter what state the DOM is in" routine (Phase 1
+// forceCompleteSpin). Used for: reload/boot recovery, visibilitychange recovery, the
+// in-session animation watchdog, and defensively before starting any new spin while an
+// old one is still unresolved. Always ends with applySpinSettlement, which itself is
+// idempotent (it no-ops if store.state.pendingSpin no longer matches spin.id).
+function forceCompleteSpin(p){
+  if(!p)return;
+  els.reelFrame.classList.remove('machine-running','anticipation','win-shake');
+  $$('.reel').forEach(r=>r.classList.remove('in-motion','reel-settle'));
+  $$('.symbol').forEach(s=>s.classList.remove('blur'));
+  clearPaylines();
+  if(p.gameKey&&GAME_DEFS[p.gameKey])setCurrentGame(p.gameKey,{presence:false});
+  const algaePresentation=prepareAlgaePresentation(p);
+  renderGrid(p.grid,{algae:algaePresentation.cover});
+  for(const state of algaePresentation.reveal||[]){const cell=$(`[data-cell="${state.col}-${state.row}"]`);if(cell){cell.classList.remove('algae');cell.removeAttribute('data-remaining');cell.innerHTML=symbolMarkup(currentGame,p.grid[state.col][state.row])}}
+  if(p.expanding?.reels?.length){for(const c of p.expanding.reels)for(let r=0;r<3;r++){const cell=$(`[data-cell="${c}-${r}"]`);if(cell)cell.innerHTML=symbolMarkup(currentGame,p.expanding.symbol)}}
+  if(p.wins?.length)p.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.add('winner'));
+  applySpinSettlement(p,{show:false,authoritativeBalanceCents:p.authoritativeBalanceCents,authoritativeFeatureState:p.authoritativeFeatureState});
+  els.lastWin.textContent=moneyCents(p.totalCents);
+}
 function resumePending(){
-  const p=store.state.pendingSpin;if(!p)return;if(p.gameKey&&GAME_DEFS[p.gameKey])setCurrentGame(p.gameKey,{presence:false});const algaePresentation=prepareAlgaePresentation(p);renderGrid(p.grid,{algae:algaePresentation.cover});for(const state of algaePresentation.reveal||[]){const cell=$(`[data-cell="${state.col}-${state.row}"]`);if(cell){cell.classList.remove('algae');cell.removeAttribute('data-remaining');cell.innerHTML=symbolMarkup(currentGame,p.grid[state.col][state.row])}}applySpinSettlement(p,{show:false,authoritativeBalanceCents:p.authoritativeBalanceCents,authoritativeFeatureState:p.authoritativeFeatureState});els.lastWin.textContent=moneyCents(p.totalCents);toast('Unterbrochener Spin sicher abgeschlossen.')
+  const p=store.state.pendingSpin;if(!p)return;
+  forceCompleteSpin(p);
+  toast('Unterbrochener Spin sicher abgeschlossen.');
 }
 function setCurrentGame(key,{presence=true}={}){if(!GAME_DEFS[key])return;currentGame=key;els.game.dataset.game=key;els.gameTitle.textContent=gameDef().title;els.slotLogo.innerHTML=gameDef().logo;els.lastWin.textContent='0,00 €';renderState();if(presence&&els.app.dataset.view==='game')backend.updatePresence(key).catch(()=>{})}
 function setView(view){const isGame=view==='game';els.lobby.hidden=isGame;els.game.hidden=!isGame;els.nav.hidden=isGame;$('.topbar').hidden=isGame;els.app.dataset.view=view;const entering=isGame?els.game:els.lobby;entering.classList.remove('view-enter');void entering.offsetWidth;entering.classList.add('view-enter');if(isGame){renderRandomFrame();clearPaylines();backend.updatePresence(currentGame).catch(()=>{});window.scrollTo(0,0)}else{backend.updatePresence(null).catch(()=>{});$$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.nav==='lobby'))}}
@@ -948,7 +1034,23 @@ $('#profileButton').addEventListener('click',openProfile);$('#socialButton').add
 $$('[data-nav]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.nav;if(v==='lobby')setView('lobby');else if(v==='profile')openProfile();else if(v==='social')openSocial();else toast('Favoriten folgen mit Spielbibliothek.')}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncRemoteAccount({silent:true});if(store.state.pendingSpin&&!spinning)resumePending();else if(store.state.pendingRequest)recoverPendingRequest();else resumeGambleAction()}});window.addEventListener('pageshow',()=>{if(store.state.pendingSpin&&!spinning)resumePending();else resumeGambleAction()});
 
-async function boot(){hydrateArtwork();setCurrentGame('shark-abyss',{presence:false});renderState();renderRandomFrame();renderFriendStrip();renderLiveFeed();await backend.init();backend.onChange(()=>syncRemoteAccount({silent:true}));if(backend.isAuthenticated){await syncRemoteAccount();await recoverPendingRequest()}else renderState();startSyncLoop()}
+async function boot(){
+  hydrateArtwork();setCurrentGame('shark-abyss',{presence:false});renderState();renderRandomFrame();renderFriendStrip();renderLiveFeed();
+  if(new URLSearchParams(location.search).get('debug')==='1'){const banner=$('#previewBanner');if(banner){banner.hidden=false;banner.textContent=`V${window.__NOVA_BUILD||'?'} · ${backend.isRemote?'SERVER KONFIGURIERT':'NUR GASTMODUS'}`}}
+  await backend.init();
+  backend.onChange(()=>syncRemoteAccount({silent:true}));
+  if(backend.isAuthenticated){
+    await syncRemoteAccount();
+    // A request that never got a response before the tab died is the only case that
+    // needs the network again; a response that already arrived (pendingSpin) is settled
+    // purely from local state below, on both guest and account mode.
+    if(store.state.pendingRequest)await recoverPendingRequest();
+  }
+  if(store.state.pendingSpin&&!spinning)resumePending();
+  else if(store.state.pendingGambleAction)resumeGambleAction();
+  renderState();
+  startSyncLoop();
+}
 boot();
 
 })();
