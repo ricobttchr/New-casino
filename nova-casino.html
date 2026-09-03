@@ -752,7 +752,7 @@ const ANIMATION_DEADLINE_MS=9000;
 function withDeadline(promise,ms){let timer;const timeout=new Promise(resolve=>{timer=setTimeout(()=>resolve('__deadline__'),ms)});return Promise.race([promise,timeout]).then(v=>{clearTimeout(timer);return v})}
 const gambleActive=()=>RISK_GAMES.has(currentGame)&&hasPendingGamble()&&store.state.pendingGamble?.gameKey===currentGame;
 const riskSpinBlocked=()=>hasPendingGamble();
-const localCard=()=>{const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'],suits=[['♥','red'],['♦','red'],['♠','black'],['♣','black']];const n=Math.floor(cryptoFloat()*52),[suit,color]=suits[Math.floor(n/13)],rank=ranks[n%13];return {rank,suit,color}};
+const localCard=(rng=cryptoFloat)=>{const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'],suits=[['♥','red'],['♦','red'],['♠','black'],['♣','black']];const n=Math.floor(rng()*52),[suit,color]=suits[Math.floor(n/13)],rank=ranks[n%13];return {rank,suit,color}};
 
 const algaeKey=(c,r)=>`${c}-${r}`;
 function algaeStartValue(){const x=cryptoFloat();return x<.56?5:x<.72?4:x<.87?3:2}
@@ -1020,11 +1020,26 @@ function normalizeRemoteSpin(data,featureBefore){
 }
 // --- Guest mode: same math modules the server is expected to run, executed locally so a
 // spin never depends on network/login. Used whenever backend.isAuthenticated is false.
+// Test-only seeded PRNG (Phase 2 requirement: "ein ausschließlich für Tests verwendetes
+// seeded PRNG"). Real play always uses cryptoFloat (crypto.getRandomValues) — this only
+// ever activates via the explicit window.__novaTestHooks.setSeed() call below, never on
+// its own, so it cannot affect a real player's outcome distribution. Lets automated tests
+// deterministically reproduce a specific math result (e.g. a seed already known from
+// sim/rtp-simulator.js to trigger free spins on the very first call) instead of spinning
+// hundreds of times hoping to hit a rare event.
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=(a+0x6d2b79f5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+let testRng=null;
+window.__novaTestHooks={
+  setSeed(seed){testRng=seed==null?null:mulberry32(seed)},
+  clearSeed(){testRng=null},
+  isSeeded(){return testRng!==null}
+};
 function generateLocalSpin({gameKey,stakeCents,isFreeSpin,featureBefore}){
-  if(gameKey==='shark-abyss')return generateSpin({stakeCents,isFreeSpin,multiplier:isFreeSpin?(featureBefore.multiplier||2):1});
-  if(gameKey==='fruit-reactor')return generateFruitSpin({stakeCents});
-  if(gameKey==='fancy-harvest')return generateFancySpin({stakeCents});
-  if(gameKey==='tomb-of-kings')return generateBookSpin({stakeCents,isFreeSpin,expandingSymbol:featureBefore.expandingSymbol||null});
+  const rng=testRng||cryptoFloat;
+  if(gameKey==='shark-abyss')return generateSpin({stakeCents,isFreeSpin,multiplier:isFreeSpin?(featureBefore.multiplier||2):1,rng});
+  if(gameKey==='fruit-reactor')return generateFruitSpin({stakeCents,rng});
+  if(gameKey==='fancy-harvest')return generateFancySpin({stakeCents,rng});
+  if(gameKey==='tomb-of-kings')return generateBookSpin({stakeCents,isFreeSpin,expandingSymbol:featureBefore.expandingSymbol||null,rng});
   throw new Error(`Unbekanntes Spiel: ${gameKey}`);
 }
 function normalizeLocalSpin(raw,{gameKey,stakeCents,isFreeSpin,featureBefore}){
@@ -1036,7 +1051,8 @@ function resolveLocalGamble(g,action,choice){
   const level=Number(g.level||0),maxLevel=Number(g.maxLevel||5),current=Number(g.currentCents||0),balance=store.state.balanceCents;
   if(action==='collect')return {status:'collected',currentCents:current,level,card:null,won:null,balanceCents:balance+current};
   const isLadder=choice==='ladder';
-  const card=isLadder?{type:'ladder',direction:cryptoFloat()<.5?'up':'down'}:localCard();
+  const rng=testRng||cryptoFloat;
+  const card=isLadder?{type:'ladder',direction:rng()<.5?'up':'down'}:localCard(rng);
   const won=isLadder?card.direction==='up':card.color===choice;
   if(!won)return {status:'busted',currentCents:0,level,card,won,balanceCents:balance};
   const nextLevel=level+1,nextCents=current*2;
@@ -1125,11 +1141,17 @@ function startSyncLoop(){clearInterval(syncTimer);syncTimer=setInterval(()=>{if(
 function openProfile(){
   const s=store.state;
   if(backend.isRemote&&!backend.isAuthenticated){
-    openSheet(`<h3>NOVA Account</h3><p>Mit einem Account werden Guthaben, Spins und Freundesdaten geräteübergreifend synchronisiert.</p><label class="sheet-field">E-Mail<input id="authEmail" type="email" autocomplete="email" placeholder="name@beispiel.de"></label><label class="sheet-field">Passwort<input id="authPassword" type="password" autocomplete="current-password" placeholder="mindestens 8 Zeichen"></label><label class="sheet-field">Anzeigename<input id="authName" maxlength="40" value="${escapeHtml(s.profile.name)}"></label><div class="sheet-actions"><button class="sheet-action primary" id="loginAccount">Einloggen</button><button class="sheet-action" id="createAccount">Account erstellen</button></div><p class="fineprint">Nur Simulationsguthaben. Keine Ein- oder Auszahlung.</p>`);
+    openSheet(`<h3>NOVA Account</h3><p>Mit einem Account werden Guthaben, Spins und Freundesdaten geräteübergreifend synchronisiert.</p><label class="sheet-field">E-Mail<input id="authEmail" type="email" autocomplete="email" placeholder="name@beispiel.de"></label><label class="sheet-field">Passwort<input id="authPassword" type="password" autocomplete="current-password" placeholder="mindestens 8 Zeichen"></label><label class="sheet-field">Anzeigename<input id="authName" maxlength="40" value="${escapeHtml(s.profile.name)}"></label><div class="sheet-actions"><button class="sheet-action primary" id="loginAccount">Einloggen</button><button class="sheet-action" id="createAccount">Account erstellen</button></div><p class="fineprint">Nur Simulationsguthaben. Keine Ein- oder Auszahlung.</p><div class="sheet-stat"><span>Gastguthaben (dieses Gerät)</span><strong>${moneyCents(s.balanceCents)}</strong></div><p class="fineprint">Ein Account ist optional — du kannst weiterhin ohne Login als Gast spielen.</p><button class="sheet-close danger" id="resetDemoGuest">Gast-Demo zurücksetzen</button>`);
     setTimeout(()=>{
       const creds=()=>({email:$('#authEmail').value.trim(),password:$('#authPassword').value,displayName:$('#authName').value.trim()||'Spieler'});
       $('#loginAccount')?.addEventListener('click',async()=>{try{await backend.signIn(creds());els.sheet.close();await syncRemoteAccount();toast('Eingeloggt.')}catch(e){toast(e.message)}});
-      $('#createAccount')?.addEventListener('click',async()=>{try{await backend.signUp(creds());els.sheet.close();await syncRemoteAccount();toast('Account angelegt. Prüfe ggf. deine E-Mail.')}catch(e){toast(e.message)}})
+      $('#createAccount')?.addEventListener('click',async()=>{try{await backend.signUp(creds());els.sheet.close();await syncRemoteAccount();toast('Account angelegt. Prüfe ggf. deine E-Mail.')}catch(e){toast(e.message)}});
+      // Guest mode must stay fully usable without ever creating an account (AUDIT.md B1) —
+      // including recovering from a depleted local balance, which this branch had no path
+      // to before: it only ever showed the login form, with no way back to the guest
+      // reset action that already existed (further down in openProfile()) but was
+      // unreachable whenever a Supabase project is configured, i.e. always in this build.
+      $('#resetDemoGuest')?.addEventListener('click',()=>{store.reset();renderState();els.sheet.close();toast('Demo auf 100,00 € zurückgesetzt.')})
     },0);return;
   }
   const mode=backend.isAuthenticated?'Live-Account':'Online-Beta';
