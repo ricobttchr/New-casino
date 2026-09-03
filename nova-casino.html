@@ -827,10 +827,41 @@ function renderState(){
   els.onlineDot?.classList.toggle('live',backend.isAuthenticated);
 }
 function toast(msg){els.toast.textContent=msg;els.toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>els.toast.classList.remove('show'),2200)}
-function ensureAudio(){if(!store.state.sound)return null;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}}
-function tone(freq=260,duration=.06,type='sine',gain=.04,delay=0){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(freq,start);g.gain.setValueAtTime(Math.max(.0001,gain),start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
-function sweep(from,to,duration=.18,type='sine',gain=.035,delay=0){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(from,start);o.frequency.exponentialRampToValueAtTime(Math.max(1,to),start+duration);g.gain.setValueAtTime(gain,start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
-function soundFx(name,strength=1){if(!store.state.sound)return;switch(name){case 'spin':sweep(95,180,.32,'sawtooth',.018*strength);tone(64,.12,'sine',.04*strength);break;case 'stop':tone(88,.07,'sine',.055*strength);tone(260,.025,'square',.013*strength,.012);break;case 'anticipation':tone(420,.08,'triangle',.035*strength);tone(620,.08,'triangle',.03*strength,.1);break;case 'algaeTick':tone(196,.035,'triangle',.012*strength);tone(246,.025,'sine',.008*strength,.018);break;case 'reveal':sweep(320,820,.16,'triangle',.045*strength);break;case 'feature':tone(440,.18,'triangle',.045);tone(660,.22,'triangle',.05,.1);tone(880,.28,'sine',.055,.2);break;case 'win':tone(392,.13,'sine',.04);tone(494,.13,'sine',.04,.08);tone(587,.18,'sine',.045,.16);break;case 'bigwin':tone(261,.2,'triangle',.045);tone(392,.28,'sine',.05,.08);tone(523,.35,'sine',.055,.16);tone(784,.42,'sine',.045,.28);break}}
+// Central audio engine (Phase 6): one AudioContext, one master bus feeding a limiter
+// (DynamicsCompressor) so a big-win flurry of oscillators can never clip, and separate
+// per-category buses (ui/reel/win/feature/music — music unused today, no track exists,
+// but the bus is wired for when one does) so any one category could be balanced or muted
+// independently. Muting (sound off) ramps the master gain to 0 instead of merely gating
+// new tones, so it also cuts anything already decaying — instant and click-free.
+let audioBuses=null;
+function ensureAudioGraph(){
+  if(audioCtx)return audioCtx;
+  try{
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const master=audioCtx.createGain();master.gain.value=store.state.sound?1:0;
+    const limiter=audioCtx.createDynamicsCompressor();
+    limiter.threshold.setValueAtTime(-16,audioCtx.currentTime);limiter.knee.setValueAtTime(14,audioCtx.currentTime);
+    limiter.ratio.setValueAtTime(8,audioCtx.currentTime);limiter.attack.setValueAtTime(.002,audioCtx.currentTime);limiter.release.setValueAtTime(.2,audioCtx.currentTime);
+    master.connect(limiter);limiter.connect(audioCtx.destination);
+    const bus=()=>{const g=audioCtx.createGain();g.gain.value=1;g.connect(master);return g};
+    audioBuses={master,limiter,ui:bus(),reel:bus(),win:bus(),feature:bus(),music:bus()};
+  }catch{audioCtx=null;audioBuses=null}
+  return audioCtx;
+}
+function ensureAudio(){if(!store.state.sound)return null;const ctx=ensureAudioGraph();if(!ctx)return null;try{if(ctx.state==='suspended')ctx.resume().catch(()=>{})}catch{}return ctx}
+// Ramps the master bus rather than tearing the graph down, so re-enabling sound is
+// instant (no re-init) and disabling it silences anything already mid-decay, not just
+// future tones — this is what makes Sound-Off feel immediate instead of "fades out".
+function setAudioMuted(muted){
+  if(!audioCtx||!audioBuses)return;
+  try{
+    const now=audioCtx.currentTime,g=audioBuses.master.gain;
+    g.cancelScheduledValues(now);g.setValueAtTime(g.value,now);g.linearRampToValueAtTime(muted?0:1,now+.07);
+  }catch{}
+}
+function tone(freq=260,duration=.06,type='sine',gain=.04,delay=0,busName='ui'){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(freq,start);g.gain.setValueAtTime(Math.max(.0001,gain),start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(audioBuses?.[busName]||ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
+function sweep(from,to,duration=.18,type='sine',gain=.035,delay=0,busName='ui'){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(from,start);o.frequency.exponentialRampToValueAtTime(Math.max(1,to),start+duration);g.gain.setValueAtTime(gain,start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(audioBuses?.[busName]||ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
+function soundFx(name,strength=1){if(!store.state.sound)return;switch(name){case 'spin':sweep(95,180,.32,'sawtooth',.018*strength,0,'reel');tone(64,.12,'sine',.04*strength,0,'reel');break;case 'stop':tone(88,.07,'sine',.055*strength,0,'reel');tone(260,.025,'square',.013*strength,.012,'reel');break;case 'anticipation':tone(420,.08,'triangle',.035*strength,0,'reel');tone(620,.08,'triangle',.03*strength,.1,'reel');break;case 'algaeTick':tone(196,.035,'triangle',.012*strength,0,'reel');tone(246,.025,'sine',.008*strength,.018,'reel');break;case 'reveal':sweep(320,820,.16,'triangle',.045*strength,0,'feature');break;case 'feature':tone(440,.18,'triangle',.045,0,'feature');tone(660,.22,'triangle',.05,.1,'feature');tone(880,.28,'sine',.055,.2,'feature');break;case 'win':tone(392,.13,'sine',.04,0,'win');tone(494,.13,'sine',.04,.08,'win');tone(587,.18,'sine',.045,.16,'win');break;case 'bigwin':tone(261,.2,'triangle',.045,0,'win');tone(392,.28,'sine',.05,.08,'win');tone(523,.35,'sine',.055,.16,'win');tone(784,.42,'sine',.045,.28,'win');break}}
 function haptic(pattern=10){try{navigator.vibrate?.(pattern)}catch{}}
 function hapticForWin(ratio){if(ratio>=100)return [18,24,24,24,32,35,42];if(ratio>=50)return [16,26,20,26,30];if(ratio>=20)return [14,30,20,30,24];if(ratio>=8)return [11,24,14];return 9}
 function primeWinSparks(tier){const sparks=$$('.win-sparks i'),boost=tier==='epic'?1.35:tier==='mega'?1.18:1;sparks.forEach((node,i)=>{const angle=(Math.PI*2*i/sparks.length)+(Math.random()*.45-.225),radius=29+Math.random()*22;node.style.setProperty('--spark-x',`${50+Math.cos(angle)*radius}%`);node.style.setProperty('--spark-y',`${50+Math.sin(angle)*radius*.72}%`);node.style.setProperty('--spark-size',`${(3.2+Math.random()*3.6)*boost}px`);node.style.setProperty('--spark-delay',`${(-Math.random()*.8).toFixed(2)}s`);node.style.setProperty('--spark-duration',`${(.78+Math.random()*.75).toFixed(2)}s`)})}
@@ -1124,12 +1155,24 @@ $('#closeGame').addEventListener('click',()=>setView('lobby'));$('#brandButton')
 function changeStake(delta,{repeat=false}={}){if(spinning||featureActive()||riskSpinBlocked())return false;const next=Math.max(0,Math.min(STAKES_CENTS.length-1,store.state.stakeIndex+delta));if(next===store.state.stakeIndex)return false;store.patch({stakeIndex:next});renderState();tone(delta<0?180:240,.035,'sine',repeat ? .018 : .025);if(repeat)haptic(2);return true}
 function bindStakeControl(button,delta){let holdTimer=null,repeatTimer=null,suppressClick=false;const clear=()=>{clearTimeout(holdTimer);clearInterval(repeatTimer);holdTimer=repeatTimer=null;button.classList.remove('is-holding')};button.addEventListener('pointerdown',e=>{if(button.disabled)return;suppressClick=false;button.setPointerCapture?.(e.pointerId);holdTimer=setTimeout(()=>{suppressClick=true;button.classList.add('is-holding');changeStake(delta,{repeat:true});repeatTimer=setInterval(()=>{if(!changeStake(delta,{repeat:true}))clear()},125)},380)});['pointerup','pointercancel','lostpointercapture'].forEach(type=>button.addEventListener(type,clear));button.addEventListener('click',e=>{if(suppressClick){e.preventDefault();suppressClick=false;return}changeStake(delta)})}
 bindStakeControl(els.stakeDown,-1);bindStakeControl(els.stakeUp,1);
-els.sound.addEventListener('click',()=>{store.patch({sound:!store.state.sound});renderState()});els.quick.addEventListener('click',()=>{store.patch({turbo:!store.state.turbo});renderState();toast(store.state.turbo?'Turbo an':'Turbo aus')});
+els.sound.addEventListener('click',()=>{const next=!store.state.sound;store.patch({sound:next});setAudioMuted(!next);renderState()});els.quick.addEventListener('click',()=>{store.patch({turbo:!store.state.turbo});renderState();toast(store.state.turbo?'Turbo an':'Turbo aus')});
 els.riskRed.addEventListener('click',()=>executeGamble('risk','red'));els.riskBlack.addEventListener('click',()=>executeGamble('risk','black'));els.riskCollect.addEventListener('click',()=>executeGamble('collect'));els.riskLadderButton.addEventListener('click',()=>executeGamble('risk','ladder'));els.riskCollectLadder.addEventListener('click',()=>executeGamble('collect'));els.riskModeCard.addEventListener('click',()=>{store.patch({riskMode:'card'});renderRisk()});els.riskModeLadder.addEventListener('click',()=>{store.patch({riskMode:'ladder'});renderRisk()});
 $('#infoButton').addEventListener('click',()=>{const d=gameDef();openSheet(`<h3>${escapeHtml(d.title.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase()))}</h3><p>${escapeHtml(d.info)}</p><div class="sheet-stat"><span>RTP-Modell</span><strong>${escapeHtml(d.rtp)}</strong></div><div class="sheet-stat"><span>Mathematik</span><strong>1 Mio. Spins geprüft</strong></div><div class="sheet-stat"><span>Max. Einsatz</span><strong>1,00 €</strong></div><div class="sheet-stat"><span>Echtgeldwert</span><strong>Keiner</strong></div>`)});
 $('#profileButton').addEventListener('click',openProfile);$('#socialButton').addEventListener('click',openSocial);$('#filterButton').addEventListener('click',()=>toast('Filter folgt mit Spielbibliothek.'));$('#sheetClose').addEventListener('click',()=>els.sheet.close());
 $$('[data-nav]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.nav;if(v==='lobby')setView('lobby');else if(v==='profile')openProfile();else if(v==='social')openSocial();else toast('Favoriten folgen mit Spielbibliothek.')}));
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncRemoteAccount({silent:true});if(store.state.pendingSpin&&!spinning)resumePending();else if(store.state.pendingRequest)recoverPendingRequest();else resumeGambleAction()}});window.addEventListener('pageshow',()=>{if(store.state.pendingSpin&&!spinning)resumePending();else resumeGambleAction()});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){
+    syncRemoteAccount({silent:true});
+    if(audioCtx?.state==='suspended')audioCtx.resume().catch(()=>{});
+    if(audioBuses)setAudioMuted(!store.state.sound);
+    if(store.state.pendingSpin&&!spinning)resumePending();else if(store.state.pendingRequest)recoverPendingRequest();else resumeGambleAction()
+  }else{
+    // No looping sounds exist to explicitly stop, but suspend the context so nothing
+    // (including a stray scheduled tone) keeps the audio hardware alive in the background.
+    audioCtx?.suspend?.().catch(()=>{});
+  }
+});
+window.addEventListener('pageshow',()=>{if(store.state.pendingSpin&&!spinning)resumePending();else resumeGambleAction()});
 
 async function boot(){
   hydrateArtwork();setCurrentGame('shark-abyss',{presence:false});renderState();renderRandomFrame();renderFriendStrip();renderLiveFeed();
@@ -1148,6 +1191,9 @@ async function boot(){
   renderState();
   startSyncLoop();
 }
+// Read-only introspection for automated tests only (tests/audio-engine.js) — never used
+// by the app itself. Exposes no control surface, just current state for assertions.
+window.__novaAudioDebug={inspect:()=>({ctxState:audioCtx?.state||'none',masterGain:audioBuses?audioBuses.master.gain.value:null,hasLimiter:!!audioBuses?.limiter,busNames:audioBuses?Object.keys(audioBuses).filter(k=>k!=='master'&&k!=='limiter'):[]})};
 boot();
 
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){

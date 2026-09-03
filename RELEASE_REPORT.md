@@ -76,6 +76,23 @@ kanonischen Datei). Vollständiger Audit vor jeder Änderung: `AUDIT.md`.
   nicht abgebrochene Web-Animations beim Watchdog-Abbruch, weggefallener Spin-Tick-Sound
   durch den Umbau) — alle behoben und mit erneuten Testläufen verifiziert (`smoke.js`
   19/19, `soak.js` 346 abgeschlossene Spins, 0 Hänger, 0 Konsolenfehler).
+- **Phase 5 (teilweise) — messbare Accessibility-/Layout-Punkte**: `tests/touch-targets.js`
+  (echter Playwright-Lauf über Lobby, alle vier Spiele, Risikopanel) fand 26 von 46
+  interaktiven Elementen unter der geforderten 44×44-CSS-Px-Mindestgröße — alle behoben
+  (0 verbleibend). `tests/reduced-motion.js` fragt den Browser direkt, ob irgendwo eine
+  CSS-Animation läuft, statt einer manuellen Selektorliste zu vertrauen; fand 9 bislang
+  nicht abgedeckte Animationen (u. a. den tatsächlich aktiven Spin-Busy-Puls, Risiko-
+  Kartenflip, sowie vier erst nach einem Gewinn erreichbare: Payline-Zeichnen, Payline-
+  Flash, Gewinnsymbol-Puls) — alle jetzt unter `prefers-reduced-motion` deaktiviert, mit
+  Sonderbehandlung für die Payline-Linie (die auch im Reduced-Motion-Endzustand sichtbar
+  bleiben muss, nicht nur unanimiert). `:focus-visible` war bereits durchgängig über
+  generische `button`/`input`-Selektoren abgedeckt, kein Fund nötig.
+  **Offen aus Phase 5**: die eher gestalterisch-offenen Punkte (Shark-Abyss-Artwork
+  vertiefen, Fruit Reactor/Fancy Harvest/Tomb of Kings Art-Direction verstärken,
+  Win-Choreografie-Feintuning) — bewusst zurückgestellt zugunsten von Phase 6
+  (Audio-Engine), da dort konkrete, testbare Technik-Anforderungen (Bus-Struktur,
+  AudioContext-Lifecycle, Gain-Ramps) offen sind, während die Artwork-Vertiefung ohne
+  harte Erfolgskriterien beliebig viel Zeit binden kann.
 - **Nicht verändert, bewusst dokumentiert**: Freundes-Aktivitätsfeed zeigt weiterhin
   Beträge (`AUDIT.md` M2, Produktentscheidung, nicht angetastet); Spielmathematik aller
   vier Spiele unverändert (siehe `RTP_REPORT.md` — Abweichungen dokumentiert, nicht
