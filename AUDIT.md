@@ -281,6 +281,24 @@ regulär aufgedeckt wird statt ewig zu bestehen. Vollständige Regressionssuite
 (smoke/settlement-invariant/test-matrix/tomb-of-kings-feature/touch-targets/
 reduced-motion/audio-engine/pwa-offline) danach erneut grün, keine Nebenwirkungen.
 
+## Nachtrag (Nutzer-Anforderung "funktionierender Online-Modus mit anmelden etc.")
+
+Der zuvor unter "Nicht abschließend geprüft" dokumentierte Blocker — kein
+Migrations-/Functions-Ordner im Repository, obwohl der Client (`js/backend.js`)
+bereits vollständig auf ein Supabase-Projekt zeigt — ist nicht mehr offen: siehe
+`ONLINE_MODE.md` für den vollständigen Stand. Zusammengefasst: `supabase/migrations/
+0001_online_mode_init.sql` (Schema, RLS, alle vom Client erwarteten RPCs) und
+`supabase/functions/{spin,gamble}` wurden ergänzt, ohne den Client selbst zu ändern
+(er brauchte nur das fehlende Server-Gegenstück). Die Mathematik im Edge-Function-Code
+ist ein verifizierter Byte-für-Byte-Port (2700 Vergleiche über 300 Seeds, null
+Abweichungen), Migration und Edge Functions liefen gegen einen echten lokalen
+PostgreSQL 16 (nicht nur Code-Lektüre) — dabei wurden zwei echte Bugs gefunden und
+behoben (falsche Datei-Endung im Import, eine Statusprüfung im Gamble-Handler, die
+legitime Idempotenz-Wiederholungen fälschlich abgelehnt hätte). Weiterhin offen und
+unverändert: kein Zugriff auf das echte Supabase-Projekt aus dieser Sandbox (Egress zu
+`*.supabase.co` aktiv per `curl` als blockiert bestätigt), daher kein tatsächliches
+Deployment oder eine echte Anmeldung gegen das Live-Projekt möglich.
+
 ## Nicht abschließend geprüft (ehrliche Lücken dieser Session)
 
 - **Kein Zugriff auf das Supabase-Projekt** (`ucbkmlkxhfghfzgepkbl.supabase.co`): Ob die

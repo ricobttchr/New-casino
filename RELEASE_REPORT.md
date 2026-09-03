@@ -238,12 +238,19 @@ Diese sind bewusst nicht als erledigt behauptet:
    diesem Report beruhen auf Code-/Timer-Semantik-Analyse, nicht auf einer Messung auf
    echter Hardware. Die reale iPhone-Checkliste aus Phase 7 des Masterprompts ist damit
    **nicht** abgehakt.
-2. **Kein Zugriff auf das referenzierte Supabase-Projekt.** Ob die erwarteten RPCs und
-   Edge Functions (`/functions/v1/spin`, `/functions/v1/gamble`, `client_sync_snapshot`
-   usw.) serverseitig existieren, korrekt sind und dieselbe Mathematik wie der Client
-   verwenden, konnte nicht verifiziert werden — es gab keinen `supabase/`-Ordner im
-   Projekt. Der Online-Modus bleibt daher ein dokumentierter, nicht schließbarer
-   Blocker in dieser Session.
+2. **Kein Zugriff auf das referenzierte Supabase-Projekt zum Deployen/Testen.** Der
+   fehlende `supabase/`-Ordner selbst ist kein Blocker mehr — Migration
+   (`supabase/migrations/0001_online_mode_init.sql`) und beide Edge Functions
+   (`supabase/functions/spin`, `.../gamble`) wurden in dieser Session ergänzt und
+   gegen einen echten lokalen PostgreSQL 16 verifiziert (siehe `ONLINE_MODE.md` für
+   den vollständigen Testnachweis: Mathematik-Äquivalenz, Signup-Trigger, alle RPCs,
+   Idempotenz-Schutz, zurückgehaltene Risikospiel-Gewinne, Fehler-Guards). Was
+   weiterhin fehlt: das tatsächliche Deployment dieser Dateien auf das echte Projekt
+   `ucbkmlkxhfghfzgepkbl.supabase.co` und eine damit durchgeführte echte Anmeldung —
+   der Netzwerkzugriff auf `*.supabase.co` ist aus dieser Sandbox aktiv per `curl`
+   als von der Organisationsrichtlinie blockiert bestätigt (`CONNECT tunnel failed,
+   response 403`), nicht nur vermutet. `ONLINE_MODE.md` enthält die exakten
+   Befehle für das Deployment durch jemanden mit Zugriff.
 3. **Deployment existiert, aber von dieser Session nicht selbst getestet.** Der
    Push zu GitHub gelang letztlich (siehe Abschnitt 7), und das mit dem Repository
    verbundene Vercel-Projekt hat für PR #1 automatisch einen Preview-Build erzeugt:
