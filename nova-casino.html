@@ -61,6 +61,7 @@ button:active{transform:scale(.97)}
 .sheet{width:min(92vw,430px);border:0;border-radius:24px 24px 18px 18px;background:#13192b;color:#fff;padding:10px 18px 18px;box-shadow:0 30px 60px rgba(0,0,0,.55)}.sheet::backdrop{background:rgba(2,4,10,.72);backdrop-filter:blur(4px)}.sheet-handle{width:44px;height:4px;border-radius:20px;background:#3c455f;margin:0 auto 15px}.sheet h3{font-size:18px;margin:0 0 8px}.sheet p,.sheet li{font-size:11px;line-height:1.5;color:#aab3ce}.sheet ul{padding-left:18px}.sheet-close{width:100%;height:44px;border-radius:13px;background:#242d46;font-weight:800;font-size:11px;margin-top:10px}.sheet-stat{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #252d42;font-size:11px}.sheet-stat span{color:#8e99b8}.sheet-stat strong{font-size:11px}.toast{position:fixed;left:50%;bottom:calc(84px + var(--safe-bottom));transform:translate(-50%,15px);z-index:80;background:#f5f7ff;color:#10131d;font-size:10px;font-weight:750;padding:10px 13px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media (min-width:700px){.topbar{max-width:700px;margin:0 auto}.bottom-nav{max-width:560px;margin:auto}.hero-card{height:230px}.game-grid{grid-template-columns:repeat(4,1fr)}.game-card{height:190px}.game-card .game-visual{height:130px}.game-view{max-width:520px;margin:0 auto}.slot-stage{border-radius:22px 22px 0 0}}
 @media (max-height:720px){.reel-frame{width:min(78vw,350px)}.slot-logo{margin-bottom:8px}.controls{height:70px}.spin-button{width:66px;height:66px}.game-topline{height:42px}}
+@media (max-height:460px){.game-topline{height:30px}.slot-logo{transform:scale(.62);margin:0 0 -6px}.reel-frame{width:auto;height:min(80vh,220px)}.feature-bar{height:20px}.feature-bar span{font-size:6px}.control-deck{padding:4px 12px calc(4px + var(--safe-bottom))}.game-readout strong{font-size:9px;margin-top:1px}.game-readout span{font-size:5px}.controls{height:48px;gap:16px}.spin-button{width:46px;height:46px;font-size:9px}.round-control{width:34px;height:34px;font-size:16px}.secondary-controls{padding-top:1px}.secondary-controls button{font-size:6px;min-width:40px}.secondary-controls span{font-size:11px}}
 .connection-badge{font-style:normal;font-size:6px;letter-spacing:.08em;padding:2px 5px;border-radius:6px;margin-left:4px;background:#2a3147;color:#9da7c1;vertical-align:1px}.connection-badge[data-mode="live"]{background:#163c31;color:#61efb7}.connection-badge[data-mode="ready"]{background:#3b3220;color:#ffd875}.friend-state.online{background:#163c31!important;color:#61efb7!important}.feature-mode .slot-stage{box-shadow:inset 0 0 65px rgba(255,198,55,.11)}.feature-mode .spin-button{background:linear-gradient(145deg,#ffd96d,#d88922 48%,#a75816);border-color:#fff0ae;box-shadow:0 8px 28px rgba(245,171,42,.38),inset 0 2px 2px rgba(255,255,255,.4)}
 .sheet-field{display:flex;flex-direction:column;gap:6px;font-size:9px;color:#929db9;margin:12px 0}.sheet-field input{height:44px;border:1px solid #303950;border-radius:12px;background:#0c1120;color:#fff;padding:0 12px;outline:none;font:inherit;font-size:12px}.sheet-field input:focus{border-color:#8e5fff;box-shadow:0 0 0 3px rgba(142,95,255,.12)}.sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.sheet-action{height:44px;border-radius:12px;background:#242d46;color:#fff;font-size:10px;font-weight:800}.sheet-action.primary{background:linear-gradient(135deg,#9b6cff,#6840e7)}.sheet-action.full{width:100%;margin:4px 0 12px}.fineprint{font-size:8px!important;text-align:center;color:#727d9c!important}.sheet-close.danger{background:#3a1d28;color:#ff9fb5}.friend-strip #friendList{display:flex;flex-direction:column;gap:8px}
 .friend-row>span{display:flex;flex-direction:column;gap:2px}.friend-row small{font-size:7px;color:#78839e}.mini-accept{height:30px;padding:0 10px;border-radius:9px;background:#234b3f;color:#75efbd;font-size:8px;font-weight:850}
@@ -144,9 +145,9 @@ button:active{transform:scale(.97)}
 .slot-logo{z-index:3;filter:drop-shadow(0 8px 12px rgba(0,0,0,.38))}
 .reel-frame{overflow:visible;transition:filter .25s,transform .25s,box-shadow .25s}.reel-frame:before{content:"";position:absolute;inset:-4px;border-radius:16px;border:1px solid rgba(255,255,255,.14);pointer-events:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.28)}.reel-frame.machine-running{filter:brightness(.92) saturate(1.08)}.reel-frame.anticipation{transform:scale(1.012);box-shadow:0 24px 62px rgba(0,0,0,.55),0 0 34px rgba(255,209,80,.24),inset 0 1px #fff0aa}.reel-frame.anticipation:after{content:"FEATURE?";position:absolute;left:50%;top:-28px;transform:translateX(-50%);font-size:9px;font-weight:950;letter-spacing:.19em;color:#ffe685;text-shadow:0 2px 8px #000;animation:anticipatePulse .45s ease-in-out infinite alternate}@keyframes anticipatePulse{to{filter:brightness(1.45);transform:translateX(-50%) scale(1.06)}}
 .reels{position:relative;z-index:2;box-shadow:inset 0 0 24px rgba(0,0,0,.35)}
-.reel{position:relative;transform:translateZ(0);transition:filter .12s,transform .18s cubic-bezier(.18,.74,.25,1)}.reel:before,.reel:after{content:"";position:absolute;z-index:5;left:0;right:0;height:18%;pointer-events:none}.reel:before{top:0;background:linear-gradient(180deg,rgba(0,0,0,.3),transparent)}.reel:after{bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.25),transparent)}.reel.in-motion{filter:blur(2.8px) brightness(.9);transform:translateY(var(--reel-phase,7px)) scaleY(1.03)}.reel.reel-settle{animation:reelSettle .2s cubic-bezier(.2,.8,.2,1)}@keyframes reelSettle{0%{transform:translateY(-9px);filter:blur(2px)}60%{transform:translateY(4px)}100%{transform:none;filter:none}}
+.reel{position:relative;transform:translateZ(0)}.reel:before,.reel:after{content:"";position:absolute;z-index:5;left:0;right:0;height:18%;pointer-events:none}.reel:before{top:0;background:linear-gradient(180deg,rgba(0,0,0,.3),transparent)}.reel:after{bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.25),transparent)}
+.reel-strip{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;will-change:transform,filter}
 .symbol{padding:3px;transform:translateZ(0);will-change:transform,filter}.symbol .nova-symbol-svg{width:88%;height:88%;max-width:68px;max-height:68px;overflow:visible;filter:drop-shadow(0 5px 5px rgba(0,0,0,.18));transition:transform .18s,filter .18s}.symbol:after{content:"";position:absolute;inset:auto 10% 5px;height:10%;background:radial-gradient(ellipse,rgba(0,0,0,.22),transparent 70%);filter:blur(2px);z-index:-1}.symbol.winner .nova-symbol-svg{animation:symbolWin .68s ease-in-out 2}@keyframes symbolWin{0%,100%{transform:scale(1);filter:drop-shadow(0 5px 5px rgba(0,0,0,.18))}45%{transform:scale(1.12);filter:drop-shadow(0 0 10px rgba(255,230,112,.75)) brightness(1.18)}}
-.symbol.blur{filter:none;opacity:.9;transform:none}.symbol.blur .nova-symbol-svg{filter:blur(3.2px) drop-shadow(0 7px 5px rgba(0,0,0,.18));transform:translateY(-7px) scaleY(1.07)}
 .symbol.algae{background:radial-gradient(circle at 50% 50%,#1f8656,#0a4834 52%,#04281f);overflow:hidden}.symbol.algae:after{content:"";inset:0;background:radial-gradient(circle at 35% 24%,rgba(155,255,169,.18),transparent 28%)}.algae-frond{position:absolute;left:50%;bottom:-8px;width:11px;height:82%;border-radius:50% 50% 8px 8px;background:linear-gradient(90deg,#1a633b,#62c866,#153f2d);transform-origin:bottom center;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}.algae-frond.a1{transform:translateX(-19px) rotate(-24deg)}.algae-frond.a2{height:94%;width:13px;transform:translateX(-5px) rotate(6deg)}.algae-frond.a3{height:75%;transform:translateX(12px) rotate(28deg)}
 .nova-symbol-svg{display:block}.symbol-fallback{font-weight:950;font-size:22px}
 .payline-layer{position:absolute;z-index:8;inset:6px;pointer-events:none;overflow:visible}.payline-layer polyline{fill:none;stroke:#ffe66d;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 5px #ffbb3b) drop-shadow(0 0 9px rgba(255,198,53,.55));stroke-dasharray:900;stroke-dashoffset:900;opacity:0}.payline-layer.active polyline{animation:drawPayline 1.25s ease var(--line-delay,0s) both}@keyframes drawPayline{0%{stroke-dashoffset:900;opacity:0}18%{opacity:1}55%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
@@ -762,11 +763,29 @@ function prepareAlgaePresentation(spin){
   for(const [c,r] of spin.mystery||[]){const key=algaeKey(c,r);if(next[key]||reveal.some(x=>algaeKey(x.col,x.row)===key))continue;const symbol=spin.grid?.[c]?.[r];if(!symbol)continue;const state={col:c,row:r,remaining:algaeStartValue(),symbol,createdAt:Date.now(),lastSpinId:spin.id};if(wins.has(key))reveal.push({...state,remaining:0,reason:'win'});else{next[key]=state;seeded.push(key)}}
   const cover={...next};reveal.forEach(state=>{cover[algaeKey(state.col,state.row)]={...state,remaining:0}});const presentation={spinId:spin.id,cover,tick,seeded,reveal};store.patch({algaeStates:next,algaePresentation:presentation});return presentation;
 }
-function renderGrid(grid,{mystery=[],algae=null}={}){
-  const algaeMap=algae||{};els.reels.innerHTML='';grid.forEach((col,c)=>{const reel=document.createElement('div');reel.className='reel';reel.dataset.reel=String(c);col.forEach((sym,r)=>{const d=document.createElement('div');d.className='symbol';d.dataset.cell=`${c}-${r}`;d.dataset.symbol=sym;d.innerHTML=symbolMarkup(currentGame,sym);const state=algaeMap[algaeKey(c,r)];if(state){d.classList.add('algae');d.dataset.remaining=String(Math.max(0,Number(state.remaining||0)));d.innerHTML=algaeMarkup(state)}else if(mystery.some(([mc,mr])=>mc===c&&mr===r)){d.classList.add('algae');d.dataset.remaining='5';d.innerHTML=algaeMarkup({remaining:5})}reel.appendChild(d)});els.reels.appendChild(reel)})
+function buildCellElement(c,r,sym,algaeMap,mystery){
+  const d=document.createElement('div');d.className='symbol';d.dataset.cell=`${c}-${r}`;d.dataset.symbol=sym;d.innerHTML=symbolMarkup(currentGame,sym);
+  const state=algaeMap[algaeKey(c,r)];
+  if(state){d.classList.add('algae');d.dataset.remaining=String(Math.max(0,Number(state.remaining||0)));d.innerHTML=algaeMarkup(state)}
+  else if(mystery.some(([mc,mr])=>mc===c&&mr===r)){d.classList.add('algae');d.dataset.remaining='5';d.innerHTML=algaeMarkup({remaining:5})}
+  return d;
 }
-function renderRandomFrame(){renderGrid(currentGame==='fruit-reactor'?createFruitGrid():currentGame==='fancy-harvest'?createFancyGrid():currentGame==='tomb-of-kings'?createBookGrid():createGrid().grid)}
-function setSymbolsBlur(on){$$('.symbol').forEach(x=>x.classList.toggle('blur',on))}
+function renderGrid(grid,{mystery=[],algae=null}={}){
+  const algaeMap=algae||{};els.reels.innerHTML='';grid.forEach((col,c)=>{const reel=document.createElement('div');reel.className='reel';reel.dataset.reel=String(c);col.forEach((sym,r)=>reel.appendChild(buildCellElement(c,r,sym,algaeMap,mystery)));els.reels.appendChild(reel)})
+}
+// Swaps a single already-in-DOM .reel's content to its final, static symbols — used the
+// instant that reel's spin animation lands, so the rest of the app (algae countdown,
+// expanding symbol, paylines, winner highlighting) keeps operating on the exact same
+// data-cell/.symbol structure renderGrid() has always produced.
+function landReelColumn(reelEl,c,colSymbols,algaeMap,mystery=[]){
+  reelEl.innerHTML='';colSymbols.forEach((sym,r)=>reelEl.appendChild(buildCellElement(c,r,sym,algaeMap,mystery)));
+}
+function generateFillerGrid(){return currentGame==='fruit-reactor'?createFruitGrid():currentGame==='fancy-harvest'?createFancyGrid():currentGame==='tomb-of-kings'?createBookGrid():createGrid().grid}
+function renderRandomFrame(){renderGrid(generateFillerGrid())}
+// Decorative-only filler symbols for the spinning reel strip (never scored) — reuses the
+// real, weighted per-game grid generators so filler still looks authentic to the game's
+// actual symbol mix instead of being uniform-random.
+function fillerColumn(col,count){const out=[];while(out.length<count)out.push(...generateFillerGrid()[col]);return out.slice(0,count)}
 function hydrateArtwork(){
   $$('[data-lobby-art]').forEach(el=>{el.innerHTML=lobbyArt(el.dataset.lobbyArt)});
   const hero=$('#heroCreature');if(hero)hero.innerHTML=symbolMarkup('shark-abyss','SHARK');
@@ -840,22 +859,79 @@ async function executeGamble(action,choice=null,resume=null){
 }
 function resumeGambleAction(){const p=store.state.pendingGambleAction;if(p&&store.state.pendingGamble?.status==='active')executeGamble(p.action,p.choice,p)}
 
+// Reel-strip motion engine (Phase 4): each column gets a real vertical strip of symbols
+// (built from the same weighted generators as the math, plus the actual final result
+// appended at the end) that scrolls via a single Web Animations API transform+filter
+// timeline — accelerate, constant-speed cruise, decelerate, a small controlled overshoot,
+// then settle exactly on the mathematically-generated result. Only transform/filter are
+// animated (compositor-friendly, no per-frame layout work); the final symbol grid is
+// swapped in as static DOM the instant each reel's animation lands, so every existing
+// consumer (algae countdown, expanding symbol, paylines, winner highlight) keeps working
+// unchanged on the same data-cell structure renderGrid() has always produced.
+const REEL_TIMING={
+  normal:{accel:180,cruise:280,stagger:110,decel:220,overshoot:90,settle:110,fillerCount:22,blur:true,anticipation:520},
+  turbo:{accel:60,cruise:90,stagger:35,decel:70,overshoot:30,settle:40,fillerCount:10,blur:false,anticipation:120},
+  reduced:{accel:70,cruise:110,stagger:40,decel:90,overshoot:0,settle:0,fillerCount:8,blur:false,anticipation:0}
+};
+function currentReelTiming(){
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return REEL_TIMING.reduced;
+  return store.state.turbo?REEL_TIMING.turbo:REEL_TIMING.normal;
+}
+function spinReelColumn(reelEl,{col,rows,finalSymbols,timing,extraHoldMs=0,onHold,ctrl}){
+  return new Promise(resolve=>{
+    if(ctrl.aborted){resolve();return}
+    const cellHeight=reelEl.clientHeight/Math.max(1,rows)||1;
+    const before=fillerColumn(col,rows),fill=fillerColumn(col,timing.fillerCount),after=fillerColumn(col,1);
+    const strip=document.createElement('div');strip.className='reel-strip';
+    strip.innerHTML=[...before,...fill,...finalSymbols,...after].map(sym=>`<div class="symbol" style="height:${cellHeight}px" data-symbol="${sym}">${symbolMarkup(currentGame,sym)}</div>`).join('');
+    reelEl.innerHTML='';reelEl.appendChild(strip);
+    const accelEndY=-rows*cellHeight;
+    const cruiseDistance=timing.fillerCount*cellHeight;
+    const cruiseEndY=accelEndY-cruiseDistance*.75;
+    const targetY=-(rows+timing.fillerCount)*cellHeight;
+    const overshootPx=Math.min(cellHeight*.25,18);
+    const hasOvershoot=timing.overshoot>0;
+    const cruiseMs=timing.cruise+col*timing.stagger+extraHoldMs;
+    const t0=0,t1=timing.accel,t2=t1+cruiseMs,t3=t2+timing.decel,t4=t3+timing.overshoot,t5=t4+timing.settle;
+    const totalMs=Math.max(1,hasOvershoot?t5:t3);
+    const kf=[
+      {offset:0,transform:`translateY(${0}px)`,filter:'blur(0px)'},
+      {offset:t1/totalMs,transform:`translateY(${accelEndY}px)`,filter:`blur(${timing.blur?6:0}px)`},
+      {offset:t2/totalMs,transform:`translateY(${cruiseEndY}px)`,filter:`blur(${timing.blur?6:0}px)`},
+      {offset:t3/totalMs,transform:`translateY(${targetY}px)`,filter:'blur(0px)'}
+    ];
+    if(hasOvershoot){
+      kf.push({offset:t4/totalMs,transform:`translateY(${targetY-overshootPx}px)`,filter:'blur(0px)'});
+      kf.push({offset:1,transform:`translateY(${targetY}px)`,filter:'blur(0px)'});
+    }
+    if(extraHoldMs>0&&onHold)setTimeout(()=>{if(!ctrl.aborted)onHold()},t1+timing.cruise+col*timing.stagger);
+    let anim;
+    try{anim=strip.animate(kf,{duration:totalMs,easing:'cubic-bezier(.22,.1,.2,1)',fill:'forwards'})}
+    catch{strip.style.transform=`translateY(${targetY}px)`;resolve();return}
+    const done=()=>resolve();
+    if(anim.finished?.then)anim.finished.then(done).catch(done);else anim.onfinish=done;
+  });
+}
 async function animateSpin(spin,ctrl={aborted:false}){
-  clearPaylines();els.overlay.hidden=true;const turbo=store.state.turbo;const base=turbo?300:900,tick=turbo?48:82,cycles=Math.max(5,Math.ceil(base/tick));
+  clearPaylines();els.overlay.hidden=true;
+  const turbo=store.state.turbo,timing=currentReelTiming(),rows=gameDef().rows||3;
   els.reelFrame.classList.add('machine-running');soundFx('spin');
-  for(let i=0;i<cycles;i++){if(ctrl.aborted)return;renderRandomFrame();$$('.reel').forEach((r,idx)=>{r.classList.add('in-motion');r.style.setProperty('--reel-phase',`${idx*13}px`)});if(i%2===0)tone(105+i*3,.02,'square',.008);await sleep(tick)}
-  if(ctrl.aborted)return;
   const anticipation=!spin.isFreeSpin&&(currentGame==='shark-abyss'||currentGame==='tomb-of-kings')&&Number(spin.scatterCount||0)>=2;
   const algaePresentation=prepareAlgaePresentation(spin);
-  renderGrid(spin.grid,{algae:algaePresentation.cover});$$('.reel').forEach(r=>r.classList.add('in-motion'));
-  for(let c=0;c<5;c++){
-    if(ctrl.aborted)return;
-    if(anticipation&&c===4){els.reelFrame.classList.add('anticipation');els.feature.textContent='FEATURE CHANCE…';soundFx('anticipation');await sleep(turbo?120:520)}
-    if(ctrl.aborted)return;
-    const reel=$(`.reel[data-reel="${c}"]`);reel?.classList.remove('in-motion');reel?.classList.add('reel-settle');soundFx('stop',.9+c*.05);haptic(c===4?12:5);await sleep(turbo?36:95);reel?.classList.remove('reel-settle')
-  }
+  const reelEls=$$('.reel');
+  const landings=reelEls.map((reelEl,c)=>{
+    const isLast=c===reelEls.length-1,extraHoldMs=(anticipation&&isLast)?timing.anticipation:0;
+    return spinReelColumn(reelEl,{col:c,rows,finalSymbols:spin.grid[c],timing,extraHoldMs,ctrl,
+      onHold:extraHoldMs>0?()=>{els.reelFrame.classList.add('anticipation');els.feature.textContent='FEATURE CHANCE…';soundFx('anticipation')}:null
+    }).then(()=>{
+      if(ctrl.aborted)return;
+      landReelColumn(reelEl,c,spin.grid[c],algaePresentation.cover,spin.mystery||[]);
+      soundFx('stop',.9+c*.05);haptic(isLast?12:5);
+    });
+  });
+  await Promise.all(landings);
   if(ctrl.aborted)return;
-  els.reelFrame.classList.remove('machine-running','anticipation');await sleep(turbo?45:120);
+  els.reelFrame.classList.remove('machine-running','anticipation');
   if(ctrl.aborted)return;
   if(currentGame==='shark-abyss'&&(algaePresentation.seeded.length||algaePresentation.tick.length||algaePresentation.reveal.length)){
     algaePresentation.seeded.forEach(key=>$(`[data-cell="${key}"]`)?.classList.add('algae-seed'));

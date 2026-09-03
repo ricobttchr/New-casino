@@ -211,6 +211,23 @@ unverändert im Repository-Root liegen (nicht gelöscht), wird aber von
 
 ---
 
+## Nachtrag (Phase 4 — Reel-Motion-Umbau)
+
+### B5 — Landscape 852×393: Walzenraster vollständig abgeschnitten
+Gefunden durch einen echten Playwright-Screenshot im Pflicht-Testviewport
+Landscape 852×393 (Phase 7). Die einzige vorhandene Verkleinerungsregel
+(`@media (max-height:720px)`, Zeile 63) reicht bei einer Viewport-Höhe von nur 393px
+bei weitem nicht aus: Kopf- und Fußbereich allein beanspruchten mehr als die
+verfügbare Höhe, das Walzenraster wurde oben und unten abgeschnitten (nur ein Teil
+der vier bzw. drei Reihen sichtbar), das Spiel war in diesem Viewport faktisch
+unbrauchbar. Kein horizontales Scrollen trat auf (das wurde separat geprüft und war
+schon vorher in Ordnung), nur vertikales Abschneiden.
+→ Neue `@media (max-height:460px)`-Regel ergänzt, die Logo, Walzenrahmen (jetzt über
+`height` statt `width` bemessen, damit die Höhe die knappe Ressource korrekt
+steuert), Feature-Leiste und Bedienfeld gezielt verkleinert. Mit Screenshots für
+Shark Abyss (4 Reihen) und Fruit Reactor (3 Reihen) verifiziert: beide vollständig
+sichtbar, kein Abschneiden mehr, Spin bleibt funktionsfähig.
+
 ## Nicht abschließend geprüft (ehrliche Lücken dieser Session)
 
 - **Kein Zugriff auf das Supabase-Projekt** (`ucbkmlkxhfghfzgepkbl.supabase.co`): Ob die
