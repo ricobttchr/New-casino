@@ -152,9 +152,19 @@ Diese sind bewusst nicht als erledigt behauptet:
    verwenden, konnte nicht verifiziert werden — es gab keinen `supabase/`-Ordner im
    Projekt. Der Online-Modus bleibt daher ein dokumentierter, nicht schließbarer
    Blocker in dieser Session.
-3. **Kein Deployment.** Diese Umgebung hat keinen konfigurierten Vercel-/GitHub-Pages-
-   Zugang; ein Push zum GitHub-Repository selbst schlug fehl (siehe Abschnitt 7). Es
-   gibt daher **keinen** Preview- oder Produktionslink zu diesem Report.
+3. **Deployment existiert, aber von dieser Session nicht selbst getestet.** Der
+   Push zu GitHub gelang letztlich (siehe Abschnitt 7), und das mit dem Repository
+   verbundene Vercel-Projekt hat für PR #1 automatisch einen Preview-Build erzeugt:
+   https://new-casino-git-claude-nova-casin-ccc8ca-ricos-projects-9ca86c53.vercel.app
+   (Status laut GitHub-Check „Ready"/„Deployment has completed"). Der in Phase 10
+   geforderte Kern-E2E-Test gegen die reale URL konnte aus dieser Session heraus
+   **nicht** ausgeführt werden: Die Netzwerk-Egress-Richtlinie dieser Umgebung blockiert
+   jeden ausgehenden Zugriff auf diese Vercel-Domain — bestätigt über drei unabhängige
+   Wege (`curl`, `WebFetch`-Tool, echter Chromium-Browser via Playwright), alle mit
+   „egress blocked"/„tunnel connection failed". Der Link ist damit eine verifizierte
+   Tatsache (aus dem GitHub-PR-Status), sein tatsächliches Verhalten im Browser wurde
+   in dieser Session aber nicht geprüft — das müsste jemand mit Zugriff auf die URL
+   von außerhalb dieser Sandbox nachholen.
 4. **11 leere `catch{}`-Blöcke unverändert** (AUDIT.md M1) — funktional meist
    vertretbare Best-Effort-Fallbacks, aber ohne Logging, was künftige Fehlersuche
    erschwert.
@@ -178,13 +188,25 @@ vollständigen Gastmodus (siehe README.md „Schnellstart“).
 
 ## 7. Deployment
 
-Kein Preview- oder Produktionslink. Diese Session hat GitHub-Zugriff nur eingeschränkt:
-`git push` zum konfigurierten Branch `claude/nova-casino-handoff-4qa406` schlug mit
-`403` fehl ("Claude doesn't have GitHub access to ricobttchr/New-casino for your
-organization") — ein Org-Admin müsste die Claude-GitHub-App installieren bzw. die
-GitHub-Verbindung erneut autorisieren. Vercel/GitHub-Pages-Zugang war in dieser
-Umgebung nicht konfiguriert. Alle Commits liegen lokal im Repository vor und sind
-push-bereit, sobald der Zugriff besteht.
+`git push` zum Branch `claude/nova-casino-handoff-4qa406` schlug zunächst mit `403`
+fehl ("Claude doesn't have GitHub access to ricobttchr/New-casino for your
+organization"); nach Autorisierung durch den Nutzer war der Push erfolgreich. Alle
+10 Commits liegen jetzt auf `origin/claude/nova-casino-handoff-4qa406`, und
+[Pull Request #1](https://github.com/ricobttchr/New-casino/pull/1) wurde erstellt.
+
+Das mit dem Repository verbundene Vercel-Projekt hat für diesen PR automatisch einen
+Preview-Build erzeugt (Deployment-Konfiguration lag außerhalb dieser Session — nicht
+von Claude eingerichtet, sondern bereits vorhandene Repo-/Vercel-Verknüpfung):
+
+**Preview:** https://new-casino-git-claude-nova-casin-ccc8ca-ricos-projects-9ca86c53.vercel.app
+
+Laut GitHub-Commit-Status/Check-Run: `Vercel` → `success` ("Deployment has completed"),
+`Vercel Preview Comments` → `success`. Der in Phase 10 geforderte Kern-E2E-Test gegen
+diese reale URL konnte **nicht** aus dieser Session heraus ausgeführt werden — die
+Netzwerk-Egress-Richtlinie dieser Umgebung blockiert jeden Zugriff auf diese
+Vercel-Domain (bestätigt über `curl`, das `WebFetch`-Tool und einen echten
+Chromium-Browser, alle mit "egress blocked"/"tunnel connection failed"). Der Link
+selbst ist damit verifiziert vorhanden, sein Verhalten im Browser aber nicht.
 
 ## 8. iPhone-Installationsanleitung (Kurzfassung)
 
