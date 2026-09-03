@@ -109,6 +109,21 @@ kanonischen Datei). Vollständiger Audit vor jeder Änderung: `AUDIT.md`.
   Audio-Fokusverlust (eingehender Anruf) und Lautlosmodus sind auf echter
   iOS-Hardware nicht testbar in dieser Umgebung — dokumentierte Lücke, siehe
   Abschnitt "Verbleibende bekannte Einschränkungen".
+- **Release-Gate "500 aufeinanderfolgende Spins" jetzt wörtlich erfüllt**:
+  `tests/soak-500.js` spielt 500 Spins **hintereinander auf einem einzigen Spiel**
+  (nicht über vier Spiele verteilt wie der frühere `soak.js`) und trackt zusätzlich
+  JS-Heap-Größe (Chromiums `performance.memory`) und den Audio-Engine-Zustand.
+  Ergebnis: 500/500 abgeschlossen, 0 Hänger, nie negatives Guthaben, DOM-Knoten
+  397→389 (kein Wachstum), JS-Heap pendelt 2.5–2.9 MB über den ganzen Lauf (kein
+  monotoner Anstieg, alle 100-Spins-Checkpoints in `RELEASE_REPORT.md` protokolliert:
+  2,8/2,6/2,9/2,9/2,9 MB), Audio-Graph nach 500 Spins weiterhin intakt (Limiter +
+  alle 5 Busse vorhanden, `masterGain=1`), `pendingSpin` am Ende `null`, 0
+  Konsolenfehler.
+- **WebKit-Testlauf explizit geprüft und bestätigt nicht verfügbar**: In dieser
+  Umgebung ist nur der Chromium-Browser vorinstalliert; `webkit.launch()` schlägt mit
+  „Executable doesn't exist" fehl, und die Umgebungsrichtlinie untersagt einen
+  nachträglichen `playwright install`. Bleibt eine dokumentierte, nicht schließbare
+  Lücke (siehe Einschränkung 7) — kein stiller Verzicht, sondern aktiv verifiziert.
 - **Nicht verändert, bewusst dokumentiert**: Freundes-Aktivitätsfeed zeigt weiterhin
   Beträge (`AUDIT.md` M2, Produktentscheidung, nicht angetastet); Spielmathematik aller
   vier Spiele unverändert (siehe `RTP_REPORT.md` — Abweichungen dokumentiert, nicht
@@ -226,9 +241,11 @@ Diese sind bewusst nicht als erledigt behauptet:
    "korrigiert" — eine bewusste Entscheidung erfordert, ob die UI-Texte oder die
    Kalibrierungsfaktoren angepasst werden (siehe `RTP_REPORT.md`).
 7. **Kein automatisierter WebKit/Safari-Lauf.** Alle Browsertests liefen unter
-   Chromium (Playwright); ein WebKit-Lauf war in dieser Umgebung nicht Teil der
-   ausgeführten Tests (Playwright bringt WebKit grundsätzlich mit, wurde hier aber
-   nicht zusätzlich verifiziert) — das ersetzt nicht Punkt 1.
+   Chromium (Playwright). WebKit ist in dieser Umgebung aktiv geprüft **nicht**
+   installiert (`webkit.launch()` schlägt mit „Executable doesn't exist" fehl); ein
+   nachträgliches `playwright install` widerspricht der Umgebungsrichtlinie. Das ist
+   damit eine verifizierte, nicht selbst schließbare Lücke, kein stiller Verzicht —
+   ersetzt aber nicht Punkt 1 (echtes iPhone/Safari).
 8. **Freundes-Feed-Beträge** unverändert als bestehende Produktentscheidung belassen
    (AUDIT.md M2) — keine neue Konfigurierbarkeit ergänzt, um keine ungefragte
    Verhaltensänderung einzuführen.
