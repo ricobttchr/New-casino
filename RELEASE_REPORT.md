@@ -124,6 +124,20 @@ kanonischen Datei). Vollständiger Audit vor jeder Änderung: `AUDIT.md`.
   „Executable doesn't exist" fehl, und die Umgebungsrichtlinie untersagt einen
   nachträglichen `playwright install`. Bleibt eine dokumentierte, nicht schließbare
   Lücke (siehe Einschränkung 7) — kein stiller Verzicht, sondern aktiv verifiziert.
+- **Phase 2/9 — seeded Test-PRNG (explizite Phase-2-Anforderung) + deterministische
+  Testmatrix**: `window.__novaTestHooks.setSeed(n)` ersetzt `cryptoFloat` durch einen
+  `mulberry32`-Generator, ausschließlich wenn ein Test ihn aktiviert — echtes Spiel
+  bleibt bei `crypto.getRandomValues()`. Damit lassen sich seltene Ereignisse
+  (Freispiel-Trigger, Mehrfachlinien-Gewinn, Mystery-Reveal, Expanding Symbol)
+  deterministisch reproduzieren statt hunderte Spins lang zu hoffen. Seeds offline
+  gegen die exakte, aus `nova-casino.html` extrahierte Mathematik gefunden und gegen
+  die echte App verifiziert. `tests/test-matrix.js`: **15/15 bestehen.**
+  Dabei ein echter, bis dahin unentdeckter Bug gefunden: Da eine feste Supabase-URL
+  konfiguriert ist, zeigte `openProfile()` jedem Gast **ausschließlich** das
+  Login-Formular — der vorhandene "Demo zurücksetzen"-Button war nie erreichbar. Ein
+  Gast mit aufgebrauchtem Guthaben hatte keinen Weg zurück ins Spiel. Behoben:
+  Gastguthaben-Anzeige + funktionierender Reset-Button direkt im Login-Sheet
+  (`AUDIT.md` B6).
 - **Nicht verändert, bewusst dokumentiert**: Freundes-Aktivitätsfeed zeigt weiterhin
   Beträge (`AUDIT.md` M2, Produktentscheidung, nicht angetastet); Spielmathematik aller
   vier Spiele unverändert (siehe `RTP_REPORT.md` — Abweichungen dokumentiert, nicht

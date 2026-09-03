@@ -228,6 +228,35 @@ steuert), Feature-Leiste und Bedienfeld gezielt verkleinert. Mit Screenshots fü
 Shark Abyss (4 Reihen) und Fruit Reactor (3 Reihen) verifiziert: beide vollständig
 sichtbar, kein Abschneiden mehr, Spin bleibt funktionsfähig.
 
+## Nachtrag (Phase 2/9 — seeded Test-PRNG und deterministische Testmatrix)
+
+### B6 — "Demo zurücksetzen" für Gäste unerreichbar (echter Bug, kein Testartefakt)
+Gefunden beim Aufbau der deterministischen Testmatrix für den Testfall "kostenloses
+Auffüllen im Gastmodus". `openProfile()` prüft `if(backend.isRemote&&!backend.isAuthenticated)`
+und zeigt in diesem Fall **ausschließlich** das Login/Registrierungs-Formular — niemals
+das normale Profil-Sheet mit dem weiter unten im selben Code vorhandenen
+"Demo zurücksetzen"-Button. Da `nova-casino.html` eine feste Supabase-URL referenziert
+(`backend.isRemote` ist damit immer `true`), trifft diese Bedingung auf **jeden** Gast
+zu — der Reset-Button war folglich in keiner erreichbaren UI-Fassung jemals nutzbar,
+obwohl der Code dafür existierte. Ein Gast, dessen lokales Guthaben auf 0 fällt, hatte
+keinen Weg zurück ins Spiel außer manuellem Löschen des Browser-Speichers.
+→ Login-Sheet um Gastguthaben-Anzeige und einen funktionierenden
+"Gast-Demo zurücksetzen"-Button ergänzt. Mit `tests/test-matrix.js` verifiziert (Button
+tatsächlich klickbar, Guthaben wird auf 100,00 € zurückgesetzt).
+
+### Umsetzung: seeded Test-PRNG (explizite Phase-2-Anforderung)
+`window.__novaTestHooks.setSeed(n)`/`clearSeed()` ersetzt `cryptoFloat` durch einen
+`mulberry32`-Generator ausschließlich für `generateLocalSpin()`/`resolveLocalGamble()`,
+und nur solange ein Test ihn aktiv gesetzt hat — echtes Spiel bleibt unverändert bei
+`crypto.getRandomValues()`. Seeds für konkrete Ergebnisse (Freispiel-Trigger,
+Mehrfachlinien-Gewinn, Mystery-Reveal, Expanding-Symbol-Freispiel) wurden offline gegen
+exakt dieselbe aus `nova-casino.html` extrahierte Mathematik gesucht
+(`scratchpad/find_seeds.js`) und gegen die echte laufende App verifiziert — nicht nur
+gegen den Offline-Simulator. `tests/test-matrix.js`: 15/15 deterministische Prüfungen
+bestehen (Bonusstart/Freispiele auf Shark Abyss und Tomb of Kings, Mehrfachlinien-Gewinn,
+Mystery/Algen, Expanding-Symbol-Freispiel, Fruit-Reactor-Gewinn/-Verlust/Kartenrisiko/
+Gewinn-nehmen, unzureichendes Guthaben, Fancy-Harvest-Leiterrisiko, Gastmodus-Reset).
+
 ## Nicht abschließend geprüft (ehrliche Lücken dieser Session)
 
 - **Kein Zugriff auf das Supabase-Projekt** (`ucbkmlkxhfghfzgepkbl.supabase.co`): Ob die
