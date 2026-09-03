@@ -1,0 +1,31 @@
+Wrote sim/rtp-results-5m.json
+
+--- seed=1  spins/game=5000000 ---
+shark-abyss    RTP=88.343% (claimed 88.43%, Δ-0.087pp, SE±0.085pp)  hitFreq=41.35%  maxWinX=299.0  featureFreq=0.606%
+fruit-reactor  RTP=88.261% (claimed 88.63%, Δ-0.369pp, SE±0.162pp)  hitFreq=29.24%  maxWinX=551.5
+fancy-harvest  RTP=87.607% (claimed 88.22%, Δ-0.613pp, SE±0.144pp)  hitFreq=26.79%  maxWinX=1101.0
+tomb-of-kings  RTP=86.368% (claimed 87.25%, Δ-0.882pp, SE±0.163pp)  hitFreq=28.29%  maxWinX=1064.9  featureFreq=0.716%
+
+--- seed=2  spins/game=5000000 ---
+shark-abyss    RTP=88.429% (claimed 88.43%, Δ-0.001pp, SE±0.085pp)  hitFreq=41.40%  maxWinX=280.9  featureFreq=0.607%
+fruit-reactor  RTP=88.302% (claimed 88.63%, Δ-0.328pp, SE±0.162pp)  hitFreq=29.25%  maxWinX=549.3
+fancy-harvest  RTP=87.891% (claimed 88.22%, Δ-0.329pp, SE±0.141pp)  hitFreq=26.80%  maxWinX=1100.0
+tomb-of-kings  RTP=86.400% (claimed 87.25%, Δ-0.850pp, SE±0.162pp)  hitFreq=28.26%  maxWinX=570.7  featureFreq=0.717%
+
+--- seed=3  spins/game=5000000 ---
+shark-abyss    RTP=88.269% (claimed 88.43%, Δ-0.161pp, SE±0.085pp)  hitFreq=41.34%  maxWinX=417.7  featureFreq=0.611%
+fruit-reactor  RTP=88.339% (claimed 88.63%, Δ-0.291pp, SE±0.163pp)  hitFreq=29.24%  maxWinX=549.9
+fancy-harvest  RTP=87.716% (claimed 88.22%, Δ-0.504pp, SE±0.141pp)  hitFreq=26.80%  maxWinX=1100.0
+tomb-of-kings  RTP=86.470% (claimed 87.25%, Δ-0.780pp, SE±0.168pp)  hitFreq=28.27%  maxWinX=1065.5  featureFreq=0.716%
+
+--- seed=4  spins/game=5000000 ---
+shark-abyss    RTP=88.332% (claimed 88.43%, Δ-0.098pp, SE±0.085pp)  hitFreq=41.40%  maxWinX=224.0  featureFreq=0.600%
+fruit-reactor  RTP=88.158% (claimed 88.63%, Δ-0.472pp, SE±0.161pp)  hitFreq=29.25%  maxWinX=549.3
+fancy-harvest  RTP=87.716% (claimed 88.22%, Δ-0.504pp, SE±0.139pp)  hitFreq=26.83%  maxWinX=200.0
+tomb-of-kings  RTP=86.273% (claimed 87.25%, Δ-0.977pp, SE±0.165pp)  hitFreq=28.28%  maxWinX=1044.0  featureFreq=0.713%
+
+--- seed=5  spins/game=5000000 ---
+shark-abyss    RTP=88.227% (claimed 88.43%, Δ-0.203pp, SE±0.085pp)  hitFreq=41.36%  maxWinX=258.9  featureFreq=0.604%
+fruit-reactor  RTP=88.382% (claimed 88.63%, Δ-0.248pp, SE±0.160pp)  hitFreq=29.27%  maxWinX=549.3
+fancy-harvest  RTP=87.584% (claimed 88.22%, Δ-0.636pp, SE±0.138pp)  hitFreq=26.81%  maxWinX=200.0
+tomb-of-kings  RTP=86.584% (claimed 87.25%, Δ-0.666pp, SE±0.161pp)  hitFreq=28.27%  maxWinX=560.4  featureFreq=0.720%

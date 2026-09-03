@@ -123,21 +123,20 @@ JS-Syntax fehlerfrei nach jeder Änderung erneut geprüft. 75 IDs, keine Duplika
 
 ## 4. Gemessene RTP-Werte
 
-Vollständige Tabellen, Methodik und Bewertung: `RTP_REPORT.md`. Kurzfassung
-(gepoolt über 5 Seeds à 1.000.000 Spins = 5.000.000 Spins je Spiel):
+Vollständige Tabellen, Methodik und Bewertung: `RTP_REPORT.md`. Finale Kalibrierung,
+gepoolt über 5 Seeds à 5.000.000 Spins = **25.000.000 Spins je Spiel**:
 
-| Spiel | Ziel-RTP | Gemessen (5 Mio. Spins) | Δ |
-|---|---|---|---|
-| Shark Abyss | 88,43 % | 88,384 % | −0,046pp |
-| Fruit Reactor | 88,63 % | 88,284 % | −0,346pp |
-| Fancy Harvest | 88,22 % | 87,667 % | −0,553pp |
-| Tomb of Kings | 87,25 % | 86,241 % | −1,009pp |
+| Spiel | Ziel-RTP | Gemessen (25 Mio. Spins) | Δ | Innerhalb ±0,15pp? |
+|---|---|---|---|---|
+| Shark Abyss | 88,43 % | 88,320 % | −0,110pp | Ja |
+| Fruit Reactor | 88,63 % | 88,288 % | −0,342pp | Nein |
+| Fancy Harvest | 88,22 % | 87,703 % | −0,517pp | Nein |
+| Tomb of Kings | 87,25 % | 86,419 % | −0,831pp | Nein |
 
-Fancy Harvest und Tomb of Kings weichen **systematisch** (nicht zufällig) vom
-ausgewiesenen Wert ab; Ursachen benannt und Spielmathematik dabei **nicht** verändert
-(siehe `RTP_REPORT.md` „Bewertung“). Finale 5.000.000-Spins-Kalibrierung pro Seed lief
-zusätzlich im Hintergrund — Ergebnis siehe `RTP_REPORT.md`/`sim/rtp-results-5m.json`,
-falls zum Zeitpunkt des Lesens fertig.
+Bei dieser Stichprobengröße ist der Standardfehler eng genug (±0,08–0,17pp), dass die
+Abweichungen bei Fruit Reactor, Fancy Harvest und Tomb of Kings **systematisch**
+(nicht zufällig) sind. Ursachen pro Spiel benannt, Spielmathematik dabei **nicht**
+verändert (siehe `RTP_REPORT.md` „Bewertung” und „Finale Kalibrierung”).
 
 ## 5. Verbleibende bekannte Einschränkungen
 

@@ -101,13 +101,31 @@ Werte aktualisieren, oder — falls die ursprünglichen Zielwerte verbindlich si
 einen Kalibrierungsfaktor in `fancy-math.js` ergänzen bzw. `BOOK_CAL` in `book-math.js`
 nachjustieren und die Änderung erneut mit dieser Simulation verifizieren.
 
-## Finale Kalibrierung: 5.000.000 Spins je Spiel und Seed
+## Finale Kalibrierung: 5.000.000 Spins je Spiel und Seed (25.000.000 Spins gesamt je Spiel)
 
-<!-- RTP_5M_RESULTS_PLACEHOLDER -->
-Läuft zum Zeitpunkt der Erstellung dieses Dokuments noch im Hintergrund (gestartet,
-~20 Minuten Laufzeit erwartet für 4 Spiele × 5 Seeds × 5.000.000 Spins). Ergebnis wird
-nachgetragen, sobald verfügbar — siehe `sim/rtp-results-5m.json` für die Rohdaten, falls
-diese Datei zum Zeitpunkt des Lesens bereits vollständig geschrieben ist.
+Gelaufen im Hintergrund dieser Session, abgeschlossen nach ca. 19 Minuten. Vollständige
+Rohdaten: `sim/rtp-results-5m.json`. Standardfehler ist bei dieser Stichprobengröße
+deutlich enger (±0,08–0,17pp statt ±0,19–0,38pp bei 1 Mio.) — die Abweichungen unten
+sind damit klar **systematisch**, nicht mehr im Rauschen erklärbar.
+
+| Spiel | Ziel-RTP | Gepoolt (25 Mio. Spins) | Δ | Innerhalb ±0,15pp-Ziel? |
+|---|---|---|---|---|
+| Shark Abyss | 88,43 % | 88,320 % | −0,110pp | **Ja** |
+| Fruit Reactor | 88,63 % | 88,288 % | −0,342pp | Nein |
+| Fancy Harvest | 88,22 % | 87,703 % | −0,517pp | Nein |
+| Tomb of Kings | 87,25 % | 86,419 % | −0,831pp | Nein |
+
+Je-Seed-Werte bei 5 Mio. Spins (alle vier Spiele, alle 5 Seeds) liegen in
+`sim/rtp-5m.log` protokolliert; die Streuung zwischen den Seeds ist bei dieser
+Stichprobengröße klein (z. B. Tomb of Kings: 86,27 %–86,58 % über alle 5 Seeds),
+was die gepoolten Werte oben als stabil bestätigt.
+
+**Fazit nach 25 Mio. Spins pro Spiel:** Shark Abyss erreicht das ±0,15pp-Ziel. Die
+übrigen drei liegen systematisch darunter, in derselben Größenordnung wie bereits bei
+1 Mio. Spins gemessen — die Kalibrierungsfaktoren (`FRUIT_CALIBRATION`,
+fehlender Faktor bei Fancy Harvest, `BOOK_CAL`) sind damit die wahrscheinlichste
+Ursache, nicht statistisches Rauschen. Siehe „Bewertung" oben für die Einordnung je
+Spiel — auch hier wurde bewusst **keine** Spielmathematik verändert.
 
 ## Weitere geprüfte Aspekte
 
