@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#070916" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NOVA Casino" />
+  <meta name="format-detection" content="telephone=no" />
+  <style>
+:root{
+  --bg:#070916;--bg2:#0c1020;--card:#12172a;--card2:#171e34;--text:#f7f8ff;--muted:#909ab8;
+  --accent:#8d5cff;--accent2:#34ddff;--green:#3ee6a8;--gold:#ffca55;--danger:#ff647c;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);overscroll-behavior:none}
+body{min-height:100dvh;overflow-x:hidden}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+button:active{transform:scale(.97)}
+.app-shell[data-view="game"]{height:100dvh;min-height:0;padding-bottom:0;overflow:hidden}
+.app-shell{min-height:100dvh;background:radial-gradient(circle at 80% 0%,rgba(84,45,160,.22),transparent 30%),linear-gradient(180deg,#080b17 0,#090c18 100%);padding-bottom:calc(78px + var(--safe-bottom))}
+.topbar{height:calc(64px + var(--safe-top));padding:calc(10px + var(--safe-top)) 16px 8px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(7,9,22,.98),rgba(7,9,22,.86),transparent);backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:8px;background:transparent;padding:0;margin-right:auto;text-align:left}
+.brand-mark{width:35px;height:35px;border-radius:12px;display:grid;place-items:center;font-weight:950;font-size:19px;background:linear-gradient(135deg,var(--accent),#5b29df 55%,var(--accent2));box-shadow:0 7px 24px rgba(111,64,255,.34)}
+.brand-copy{display:flex;flex-direction:column;line-height:.95;letter-spacing:.03em}.brand-copy b{font-size:15px}.brand-copy small{font-size:7px;color:#a99fd4;letter-spacing:.2em;margin-top:4px}
+.wallet-chip{background:linear-gradient(180deg,#171d32,#111629);border:1px solid rgba(255,255,255,.07);height:40px;border-radius:15px;padding:6px 11px;display:flex;flex-direction:column;justify-content:center;min-width:93px;box-shadow:inset 0 1px rgba(255,255,255,.03)}
+.wallet-chip span{font-size:7px;text-transform:uppercase;color:var(--muted);letter-spacing:.14em}.wallet-chip strong{font-size:13px;margin-top:1px}
+.avatar-button{width:40px;height:40px;border-radius:15px;background:linear-gradient(145deg,#202840,#141a2f);border:1px solid rgba(255,255,255,.07);display:grid;place-items:center;font-weight:850;position:relative}
+.avatar-button i{width:9px;height:9px;border-radius:99px;background:var(--green);border:2px solid var(--bg);position:absolute;right:-1px;bottom:-1px}
+.view{padding:0 16px}.lobby-view{max-width:700px;margin:0 auto}
+.hero-card{height:206px;border-radius:26px;position:relative;overflow:hidden;background:linear-gradient(115deg,#1d1745 0%,#102244 47%,#073e4a 100%);border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 45px rgba(0,0,0,.25);margin-top:7px}
+.hero-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,7,17,.05),transparent 60%),linear-gradient(0deg,rgba(3,5,14,.3),transparent 50%);pointer-events:none}
+.hero-glow{position:absolute;width:170px;height:170px;border-radius:50%;background:#39dfff;filter:blur(70px);opacity:.17;right:-20px;top:10px}
+.hero-copy{position:relative;z-index:3;width:62%;padding:28px 0 0 22px}.eyebrow{color:#8ae9ff;font-weight:800;letter-spacing:.12em;font-size:8px}.hero-copy h1{font-size:30px;line-height:.95;margin:9px 0 8px;letter-spacing:-.045em}.hero-copy p{font-size:11px;line-height:1.45;color:#bac3df;margin:0 0 15px;max-width:210px}.primary-button{background:#fff;color:#0b0d18;border-radius:13px;padding:10px 13px;font-size:11px;font-weight:850;box-shadow:0 9px 20px rgba(0,0,0,.15)}.primary-button span{font-size:15px;margin-left:4px}
+.hero-art{position:absolute;right:0;top:0;width:47%;height:100%;z-index:1}.shark{position:absolute;font-size:88px;right:-5px;top:54px;transform:rotate(-7deg);filter:drop-shadow(0 15px 16px rgba(0,0,0,.32))}.moon{position:absolute;width:85px;height:85px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e5fbff,#53e5f7 38%,#1584a3 66%,transparent 68%);opacity:.5;right:15px;top:15px;filter:blur(.3px)}.bubbles{position:absolute;color:#a7f2ff;font-size:42px;opacity:.45}.b1{right:13px;top:23px}.b2{right:110px;top:110px}.b3{right:64px;top:150px}
+.friend-strip,.game-section,.activity-section{margin-top:24px}.section-heading{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:11px}.section-heading>div{display:flex;flex-direction:column}.section-heading h2{font-size:18px;letter-spacing:-.02em;margin:2px 0 0}.section-heading small{font-size:8px;font-weight:800;letter-spacing:.16em;color:#777f9e}.section-heading button{background:transparent;color:#9ca6c8;font-size:10px;padding:5px}.section-heading.compact{align-items:center}.section-heading.compact>div{flex-direction:row;gap:7px;align-items:center}.section-heading.compact h2{font-size:14px;margin:0}.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(62,230,168,.08)}
+.friend-card{display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,rgba(20,26,47,.88),rgba(15,20,37,.88));border-radius:18px;padding:11px 12px}.friend-avatar{width:36px;height:36px;border-radius:13px;background:linear-gradient(135deg,#39405d,#242a42);display:grid;place-items:center;font-size:12px;font-weight:800}.friend-copy{display:flex;flex-direction:column;flex:1}.friend-copy strong{font-size:11px}.friend-copy span{font-size:9px;color:var(--muted);margin-top:3px}.friend-state{font-size:7px;letter-spacing:.1em;color:#a7b1ce;border:1px solid #303852;padding:5px 6px;border-radius:8px}
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.game-card{position:relative;text-align:left;height:178px;border-radius:22px;overflow:hidden;padding:0;background:#171c30;border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 24px rgba(0,0,0,.18)}.game-card .game-visual{height:120px;display:grid;place-items:center;position:relative;overflow:hidden}.game-card .game-visual:before{content:"";position:absolute;width:110px;height:110px;border-radius:50%;filter:blur(42px);opacity:.45}.shark-card .game-visual{background:linear-gradient(145deg,#0e2d54,#0b5964)}.shark-card .game-visual:before{background:#27ddff}.fruit-card .game-visual{background:linear-gradient(145deg,#55112b,#8b2315)}.fruit-card .game-visual:before{background:#ff9b42}.fancy-card .game-visual{background:linear-gradient(145deg,#193e25,#376317)}.fancy-card .game-visual:before{background:#bdff5e}.book-card .game-visual{background:linear-gradient(145deg,#4a1c0f,#66471a)}.book-card .game-visual:before{background:#ffd663}.big-icon{font-size:63px;position:relative;filter:drop-shadow(0 9px 10px rgba(0,0,0,.28))}.game-info{height:58px;display:flex;flex-direction:column;justify-content:center;padding:0 12px;background:linear-gradient(180deg,#161b2e,#111629)}.game-info b{font-size:12px}.game-info small{font-size:8px;color:#8e98b5;margin-top:4px}.game-badge{position:absolute;z-index:2;left:8px;top:8px;font-size:7px;font-weight:900;letter-spacing:.08em;background:#44e5aa;color:#06221a;padding:5px 7px;border-radius:8px}.game-badge.muted{background:rgba(8,10,20,.65);color:#c3cadf;backdrop-filter:blur(5px)}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.stats-row>div{background:#111627;border:1px solid rgba(255,255,255,.055);border-radius:16px;padding:12px 9px;display:flex;flex-direction:column}.stats-row span{font-size:7px;letter-spacing:.08em;color:#7f89a8}.stats-row strong{font-size:12px;margin-top:5px}
+.bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(8px + var(--safe-bottom));height:64px;border-radius:22px;background:rgba(14,18,33,.94);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(22px);display:grid;grid-template-columns:repeat(4,1fr);z-index:40;box-shadow:0 14px 45px rgba(0,0,0,.42)}.bottom-nav button{background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;color:#6f7894}.bottom-nav span{font-size:19px;line-height:1}.bottom-nav small{font-size:7px;font-weight:700}.bottom-nav button.active{color:#fff}.bottom-nav button.active span{filter:drop-shadow(0 0 9px rgba(142,95,255,.9))}
+/* game */
+.game-view{padding:0;height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}.game-view[hidden]{display:none}.game-topline{height:46px;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:0 8px}.icon-button{width:38px;height:38px;border-radius:14px;background:#12182b;font-size:24px;display:grid;place-items:center}.game-title{text-align:center;display:flex;flex-direction:column}.game-title strong{font-size:10px;letter-spacing:.12em}.game-title small{font-size:6px;color:#68728f;letter-spacing:.14em;margin-top:2px}
+.slot-stage{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#05162b,#062b37 58%,#05131e)}.underwater-bg{position:absolute;inset:0;background:radial-gradient(circle at 20% 16%,rgba(41,224,255,.18),transparent 20%),radial-gradient(circle at 75% 25%,rgba(77,47,171,.24),transparent 30%),linear-gradient(130deg,transparent 28%,rgba(76,235,255,.05) 29%,transparent 34%);filter:saturate(1.15)}.underwater-bg:after{content:"";position:absolute;inset:55% 0 0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.44))}
+.slot-logo{position:relative;z-index:3;text-align:center;line-height:.77;transform:skew(-5deg);margin:-6px 0 13px;text-shadow:0 6px 16px rgba(0,0,0,.55)}.slot-logo span{font-size:19px;font-weight:950;letter-spacing:.05em;color:#bdefff}.slot-logo b{display:block;font-size:27px;font-weight:1000;letter-spacing:.03em;background:linear-gradient(#fff176,#f6b22c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.reel-frame{width:min(94vw,420px);aspect-ratio:5/4.15;background:linear-gradient(145deg,#24374b,#0b1724 20%,#02070d 50%,#243548);padding:5px;border-radius:12px;box-shadow:0 24px 50px rgba(0,0,0,.45),inset 0 1px #7890a3;position:relative;z-index:3}.reels{height:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:#06101a;border-radius:8px;overflow:hidden}.reel{display:grid;grid-template-rows:repeat(4,1fr);gap:2px;background:#081727;overflow:hidden}.symbol{position:relative;display:grid;place-items:center;background:linear-gradient(160deg,#0f3150,#081a2b);font-size:clamp(27px,9vw,48px);isolation:isolate;overflow:hidden;transition:filter .16s,transform .16s,opacity .16s}.symbol:before{content:"";position:absolute;inset:4px;border-radius:7px;border:1px solid rgba(255,255,255,.055);z-index:-1}.symbol.blur{filter:blur(4px);transform:translateY(-8px);opacity:.65}.symbol.algae{background:radial-gradient(circle at 50% 60%,#43a964,#0c5a3c 42%,#062c24);font-size:0}.symbol.algae:after{content:"♒";font-size:45px;color:#7bed8c;text-shadow:0 3px #154d26;transform:rotate(-12deg)}.symbol.winner{animation:winnerPulse .62s ease-in-out 2;z-index:2}.symbol.reveal{animation:revealFlip .42s cubic-bezier(.2,.8,.2,1)}
+@keyframes winnerPulse{50%{filter:brightness(1.65) drop-shadow(0 0 11px #fbd764);transform:scale(1.05)}}@keyframes revealFlip{0%{transform:scaleX(1)}48%{transform:scaleX(.05);filter:brightness(2)}52%{transform:scaleX(.05);filter:brightness(2)}100%{transform:scaleX(1)}}
+.payline-flash{position:absolute;inset:0;pointer-events:none;z-index:7;border-radius:11px;opacity:0}.payline-flash.active{animation:frameFlash .75s ease}@keyframes frameFlash{0%,100%{box-shadow:inset 0 0 0 1px transparent;opacity:0}40%{box-shadow:inset 0 0 20px #ffe87a,0 0 22px rgba(255,222,91,.45);opacity:1}}
+.win-overlay{position:absolute;z-index:10;inset:35% 8% auto;border-radius:18px;background:rgba(4,8,17,.9);border:1px solid rgba(255,225,113,.4);padding:14px;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,.4),0 0 28px rgba(255,202,85,.14);backdrop-filter:blur(10px)}.win-overlay small{display:block;font-size:8px;letter-spacing:.18em;color:#ffdb70;font-weight:900}.win-overlay strong{font-size:30px;display:block;margin-top:3px;color:#fff2c1}.win-overlay.big{animation:bigWin .45s ease-out}@keyframes bigWin{0%{transform:scale(.72);opacity:0}100%{transform:scale(1);opacity:1}}
+.feature-bar{position:relative;z-index:3;width:min(92vw,410px);height:28px;border-radius:0 0 11px 11px;background:rgba(4,8,14,.72);display:flex;align-items:center;justify-content:center;margin-top:-2px;border:1px solid rgba(255,255,255,.06);color:#9eb4c6}.feature-bar span{font-size:8px;letter-spacing:.05em}.feature-bar strong{position:absolute;right:10px;color:#ffdc72;font-size:11px}
+.control-deck{position:relative;z-index:6;background:linear-gradient(180deg,#0a0f1c,#080c16);border-top:1px solid rgba(255,255,255,.065);padding:9px 14px calc(10px + var(--safe-bottom));box-shadow:0 -15px 30px rgba(0,0,0,.2)}.game-readout{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:5px}.game-readout>div{display:flex;flex-direction:column}.game-readout .center{text-align:center}.game-readout .right{text-align:right}.game-readout span{font-size:6px;letter-spacing:.12em;color:#68748f}.game-readout strong{font-size:11px;margin-top:3px}.controls{height:78px;display:flex;align-items:center;justify-content:center;gap:25px}.round-control{width:44px;height:44px;border-radius:50%;background:linear-gradient(180deg,#1f2840,#12182a);border:1px solid #303a55;font-size:22px;box-shadow:0 6px 14px rgba(0,0,0,.24)}.spin-button{width:76px;height:76px;border-radius:50%;background:linear-gradient(145deg,#b37cff,#7646ee 45%,#5829cc);box-shadow:0 8px 22px rgba(96,46,222,.45),inset 0 2px 2px rgba(255,255,255,.33),inset 0 -6px 13px rgba(45,14,122,.4);border:3px solid #d5b5ff;display:grid;place-items:center;position:relative;font-weight:950;font-size:12px;letter-spacing:.05em}.spin-button i{position:absolute;inset:-7px;border:1px solid rgba(171,121,255,.26);border-radius:50%}.spin-button.busy{animation:spinGlow 1s linear infinite}.spin-button:disabled{opacity:.5}@keyframes spinGlow{50%{box-shadow:0 0 32px rgba(134,77,255,.7),inset 0 2px 2px rgba(255,255,255,.3)}}
+.secondary-controls{display:flex;justify-content:space-around}.secondary-controls button{background:transparent;color:#7e89a8;font-size:8px;display:flex;flex-direction:column;gap:3px;align-items:center;min-width:55px}.secondary-controls span{font-size:15px;color:#b4bfd9}.secondary-controls button.on{color:#fff}.secondary-controls button.on span{color:#ffdf71}
+.sheet{width:min(92vw,430px);border:0;border-radius:24px 24px 18px 18px;background:#13192b;color:#fff;padding:10px 18px 18px;box-shadow:0 30px 60px rgba(0,0,0,.55)}.sheet::backdrop{background:rgba(2,4,10,.72);backdrop-filter:blur(4px)}.sheet-handle{width:44px;height:4px;border-radius:20px;background:#3c455f;margin:0 auto 15px}.sheet h3{font-size:18px;margin:0 0 8px}.sheet p,.sheet li{font-size:11px;line-height:1.5;color:#aab3ce}.sheet ul{padding-left:18px}.sheet-close{width:100%;height:44px;border-radius:13px;background:#242d46;font-weight:800;font-size:11px;margin-top:10px}.sheet-stat{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #252d42;font-size:11px}.sheet-stat span{color:#8e99b8}.sheet-stat strong{font-size:11px}.toast{position:fixed;left:50%;bottom:calc(84px + var(--safe-bottom));transform:translate(-50%,15px);z-index:80;background:#f5f7ff;color:#10131d;font-size:10px;font-weight:750;padding:10px 13px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (min-width:700px){.topbar{max-width:700px;margin:0 auto}.bottom-nav{max-width:560px;margin:auto}.hero-card{height:230px}.game-grid{grid-template-columns:repeat(4,1fr)}.game-card{height:190px}.game-card .game-visual{height:130px}.game-view{max-width:520px;margin:0 auto}.slot-stage{border-radius:22px 22px 0 0}}
+@media (max-height:720px){.reel-frame{width:min(78vw,350px)}.slot-logo{margin-bottom:8px}.controls{height:70px}.spin-button{width:66px;height:66px}.game-topline{height:42px}}
+.connection-badge{font-style:normal;font-size:6px;letter-spacing:.08em;padding:2px 5px;border-radius:6px;margin-left:4px;background:#2a3147;color:#9da7c1;vertical-align:1px}.connection-badge[data-mode="live"]{background:#163c31;color:#61efb7}.connection-badge[data-mode="ready"]{background:#3b3220;color:#ffd875}.friend-state.online{background:#163c31!important;color:#61efb7!important}.feature-mode .slot-stage{box-shadow:inset 0 0 65px rgba(255,198,55,.11)}.feature-mode .spin-button{background:linear-gradient(145deg,#ffd96d,#d88922 48%,#a75816);border-color:#fff0ae;box-shadow:0 8px 28px rgba(245,171,42,.38),inset 0 2px 2px rgba(255,255,255,.4)}
+.sheet-field{display:flex;flex-direction:column;gap:6px;font-size:9px;color:#929db9;margin:12px 0}.sheet-field input{height:44px;border:1px solid #303950;border-radius:12px;background:#0c1120;color:#fff;padding:0 12px;outline:none;font:inherit;font-size:12px}.sheet-field input:focus{border-color:#8e5fff;box-shadow:0 0 0 3px rgba(142,95,255,.12)}.sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.sheet-action{height:44px;border-radius:12px;background:#242d46;color:#fff;font-size:10px;font-weight:800}.sheet-action.primary{background:linear-gradient(135deg,#9b6cff,#6840e7)}.sheet-action.full{width:100%;margin:4px 0 12px}.fineprint{font-size:8px!important;text-align:center;color:#727d9c!important}.sheet-close.danger{background:#3a1d28;color:#ff9fb5}.friend-strip #friendList{display:flex;flex-direction:column;gap:8px}
+.friend-row>span{display:flex;flex-direction:column;gap:2px}.friend-row small{font-size:7px;color:#78839e}.mini-accept{height:30px;padding:0 10px;border-radius:9px;background:#234b3f;color:#75efbd;font-size:8px;font-weight:850}
+.game-view[data-game="fruit-reactor"] .slot-stage{background:linear-gradient(180deg,#26070d,#54120d 58%,#180609)}
+.game-view[data-game="fruit-reactor"] .underwater-bg{background:radial-gradient(circle at 20% 16%,rgba(255,194,48,.18),transparent 22%),radial-gradient(circle at 78% 30%,rgba(255,58,51,.23),transparent 28%),linear-gradient(145deg,transparent 25%,rgba(255,223,110,.045) 26%,transparent 31%);filter:saturate(1.2)}
+.game-view[data-game="fruit-reactor"] .underwater-bg:after{background:linear-gradient(180deg,transparent,rgba(25,0,0,.58))}
+.game-view[data-game="fruit-reactor"] .slot-logo{transform:none;line-height:.86}.game-view[data-game="fruit-reactor"] .slot-logo span{color:#ffe453;font-size:20px;text-shadow:0 2px #a12016}.game-view[data-game="fruit-reactor"] .slot-logo b{font-size:29px;background:linear-gradient(#fff6bd,#ffb91f 45%,#f05220);-webkit-background-clip:text;background-clip:text;color:transparent}
+.game-view[data-game="fruit-reactor"] .reel-frame{aspect-ratio:5/3.3;background:linear-gradient(145deg,#dfac41,#6d2616 18%,#21090b 50%,#f0b646);padding:6px;box-shadow:0 22px 48px rgba(0,0,0,.48),inset 0 1px #ffe59b}
+.game-view[data-game="fruit-reactor"] .reel{grid-template-rows:repeat(3,1fr);background:#2b0a0c}
+.game-view[data-game="fruit-reactor"] .symbol{background:linear-gradient(160deg,#fff8d8,#ffd77d 48%,#d9872c);font-size:clamp(30px,10vw,52px);text-shadow:0 2px 1px rgba(255,255,255,.55),0 4px 8px rgba(79,16,0,.25)}
+.game-view[data-game="fruit-reactor"] .symbol:before{border-color:rgba(117,40,10,.16)}
+.game-view[data-game="fruit-reactor"] .symbol[data-symbol="SEVEN"]{font-family:Impact,"Arial Black",sans-serif;font-style:italic;font-size:clamp(38px,12vw,62px);color:#ff2d23;-webkit-text-stroke:1.5px #7d0600;text-shadow:0 -2px #fff36a,0 3px #7e0b00,0 7px 12px rgba(104,9,0,.35)}
+.game-view[data-game="fruit-reactor"] .feature-bar{background:linear-gradient(90deg,rgba(105,21,15,.88),rgba(159,45,15,.94));border-color:rgba(255,210,78,.28)}
+.game-view[data-game="fruit-reactor"] .feature-bar strong{color:#ffe36e}
+
+.risk-panel{padding:8px 0 2px;min-height:126px;display:flex;flex-direction:column;gap:7px}.risk-panel[hidden]{display:none}.risk-topline{display:flex;justify-content:space-between;align-items:center}.risk-topline span{font-size:7px;font-weight:900;letter-spacing:.13em;color:#ffbf64}.risk-topline strong{font-size:16px;letter-spacing:-.03em}.risk-ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.risk-step{height:24px;border-radius:7px;background:#111829;border:1px solid #252f47;display:grid;place-items:center;font-size:7px;color:#6d7896;position:relative}.risk-step.done{background:#18352c;border-color:#265b49;color:#68e9b4}.risk-step.current{background:linear-gradient(135deg,#5d3611,#9b5b15);border-color:#e1a347;color:#fff;box-shadow:0 0 15px rgba(235,160,50,.18)}.risk-card{position:absolute;left:50%;transform:translateX(-50%);margin-top:37px;width:45px;height:55px;border-radius:8px;background:linear-gradient(150deg,#f7f8fc,#d9dfeb);color:#10131b;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 7px 15px rgba(0,0,0,.34);z-index:2;font-weight:950;font-size:20px}.risk-card.red{color:#d42e45}.risk-card.black{color:#111826}.risk-card small{font-size:5px;letter-spacing:.12em;margin-top:1px}.risk-actions{display:grid;grid-template-columns:1fr .82fr 1fr;gap:8px;margin-top:3px}.risk-actions button{height:43px;border-radius:12px;font-weight:900;font-size:9px;letter-spacing:.04em}.risk-choice{display:flex;gap:5px;align-items:center;justify-content:center}.risk-choice span{font-size:17px}.risk-choice.red{background:linear-gradient(145deg,#bb304c,#71182d);border:1px solid #da4962}.risk-choice.black{background:linear-gradient(145deg,#30384b,#161c2a);border:1px solid #465068}.risk-collect{background:linear-gradient(145deg,#e7b34b,#a66a13);color:#161005;border:1px solid #f2cd75}.risk-actions button:disabled{opacity:.45}.risk-note{text-align:center;color:#6f7996;font-size:6px;letter-spacing:.04em}.risk-panel.busy .risk-card{animation:riskFlip .18s linear infinite}@keyframes riskFlip{50%{transform:translateX(-50%) rotateY(90deg)}}
+@media (max-height:720px){.risk-panel{min-height:112px;gap:5px}.risk-actions button{height:38px}.risk-card{width:40px;height:48px;margin-top:32px}.risk-step{height:21px}}
+
+/* Fancy Harvest — polished classic GAMOMAT-style visual language, original NOVA assets */
+.game-view[data-game="fancy-harvest"] .slot-stage{background:linear-gradient(180deg,#27123e,#512260 54%,#190d29)}
+.game-view[data-game="fancy-harvest"] .underwater-bg{background:radial-gradient(circle at 20% 14%,rgba(255,106,211,.22),transparent 23%),radial-gradient(circle at 82% 28%,rgba(255,218,79,.17),transparent 25%),linear-gradient(135deg,transparent 22%,rgba(255,255,255,.045) 23%,transparent 29%);filter:saturate(1.25)}
+.game-view[data-game="fancy-harvest"] .underwater-bg:after{background:linear-gradient(180deg,transparent,rgba(24,4,32,.64))}
+.game-view[data-game="fancy-harvest"] .slot-logo{transform:none;line-height:.84;margin-bottom:12px}
+.game-view[data-game="fancy-harvest"] .slot-logo span{font-size:20px;color:#ffbce8;text-shadow:0 2px #6d1f64}
+.game-view[data-game="fancy-harvest"] .slot-logo b{font-size:30px;background:linear-gradient(#fffbd2,#ffd85e 45%,#ff7cc7);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 4px 8px rgba(62,9,62,.45))}
+.game-view[data-game="fancy-harvest"] .reel-frame{aspect-ratio:5/3.3;background:linear-gradient(145deg,#ffda73,#91477d 16%,#321434 52%,#f6c24f);padding:6px;box-shadow:0 22px 50px rgba(0,0,0,.5),inset 0 1px #fff0af}
+.game-view[data-game="fancy-harvest"] .reel{grid-template-rows:repeat(3,1fr);background:#321330}
+.game-view[data-game="fancy-harvest"] .symbol{background:radial-gradient(circle at 35% 26%,#fffdf2 0,#ffecc0 31%,#ffbd76 67%,#d06a85 100%);font-size:clamp(29px,9.8vw,50px);text-shadow:0 2px 1px rgba(255,255,255,.55),0 5px 10px rgba(83,20,70,.25)}
+.game-view[data-game="fancy-harvest"] .symbol:before{border-color:rgba(108,32,88,.18)}
+.game-view[data-game="fancy-harvest"] .symbol[data-symbol="SEVEN"]{font-family:Impact,"Arial Black",sans-serif;font-style:italic;font-size:clamp(39px,12vw,62px);color:#f32f67;-webkit-text-stroke:1.5px #7d133d;text-shadow:0 -2px #fff275,0 3px #8d123f,0 7px 12px rgba(72,8,47,.35)}
+.game-view[data-game="fancy-harvest"] .feature-bar{background:linear-gradient(90deg,rgba(86,26,84,.92),rgba(135,43,105,.94));border-color:rgba(255,211,87,.3)}
+.game-view[data-game="fancy-harvest"] .feature-bar strong{color:#ffe378}
+
+.risk-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:2px;background:#0d1220;border-radius:9px;border:1px solid #222b40}
+.risk-mode-switch[hidden]{display:none}.risk-mode-switch button{height:25px;border-radius:7px;background:transparent;color:#707b99;font-size:7px;font-weight:900;letter-spacing:.08em}.risk-mode-switch button.active{background:linear-gradient(135deg,#7046ac,#a64782);color:#fff;box-shadow:0 3px 10px rgba(106,49,143,.25)}
+.risk-ladder-actions{display:grid;grid-template-columns:1.35fr .8fr;gap:8px;margin-top:3px}.risk-ladder-actions[hidden]{display:none}.risk-ladder-actions button{height:43px;border-radius:12px;font-weight:900;font-size:9px;letter-spacing:.04em}.risk-ladder-go{background:linear-gradient(145deg,#6843b3,#a7458d);border:1px solid #c873bf;color:#fff}.risk-card.ladder{font-size:24px;background:linear-gradient(150deg,#fff3b5,#dfb443);color:#4a2b0b}.risk-card.ladder.down{background:linear-gradient(150deg,#e0e4ef,#757f99);color:#202638}.risk-card.ladder small{font-size:5px}
+@media (max-height:720px){.risk-mode-switch button{height:22px}.risk-ladder-actions button{height:38px}}
+
+/* Tomb of Kings — original Egyptian-inspired presentation */
+.game-view[data-game="tomb-of-kings"] .slot-stage{background:linear-gradient(180deg,#100b27,#241a4e 50%,#090817)}
+.game-view[data-game="tomb-of-kings"] .underwater-bg{background:radial-gradient(circle at 18% 16%,rgba(255,207,84,.24),transparent 22%),radial-gradient(circle at 82% 24%,rgba(58,208,205,.16),transparent 27%),linear-gradient(120deg,transparent 22%,rgba(255,221,126,.055) 23%,transparent 29%),linear-gradient(180deg,#17103a,#0c0a20);filter:saturate(1.1)}
+.game-view[data-game="tomb-of-kings"] .underwater-bg:after{background:linear-gradient(180deg,transparent,rgba(5,3,17,.7))}
+.game-view[data-game="tomb-of-kings"] .slot-logo{transform:none;line-height:.82;margin-bottom:11px}
+.game-view[data-game="tomb-of-kings"] .slot-logo span{font-size:17px;letter-spacing:.13em;color:#6ce5dc;text-shadow:0 2px #173a42}
+.game-view[data-game="tomb-of-kings"] .slot-logo b{font-size:31px;background:linear-gradient(#fff3a8,#eeb847 46%,#9b5d17);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 8px rgba(0,0,0,.38))}
+.game-view[data-game="tomb-of-kings"] .reel-frame{aspect-ratio:5/3.3;background:linear-gradient(145deg,#ffe18b,#9a661b 15%,#24113c 48%,#d9a53d 85%,#fff1aa);padding:6px;box-shadow:0 22px 52px rgba(0,0,0,.52),inset 0 1px #fff1bb}
+.game-view[data-game="tomb-of-kings"] .reel{grid-template-rows:repeat(3,1fr);background:#190d2e}
+.game-view[data-game="tomb-of-kings"] .symbol{background:radial-gradient(circle at 38% 25%,#fff6cf 0,#ead7a0 33%,#b99055 71%,#664223 100%);font-size:clamp(27px,9.6vw,49px);color:#24102f;text-shadow:0 2px 1px rgba(255,255,255,.5),0 5px 11px rgba(28,9,43,.28)}
+.game-view[data-game="tomb-of-kings"] .symbol:before{border-color:rgba(71,37,14,.2)}
+.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="A"],.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="K"],.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="Q"],.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="J"],.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="TEN"]{font-family:Georgia,serif;font-weight:900;color:#351456;font-size:clamp(27px,9vw,46px)}
+.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="BOOK"]{background:radial-gradient(circle at 36% 25%,#fff1a7,#d19a35 55%,#6e351c);box-shadow:inset 0 0 18px rgba(255,226,117,.42)}
+.game-view[data-game="tomb-of-kings"] .symbol.reveal{animation:tombExpand .38s ease both}
+.game-view[data-game="tomb-of-kings"] .feature-bar{background:linear-gradient(90deg,rgba(40,27,78,.94),rgba(101,62,28,.93));border-color:rgba(255,220,119,.34)}
+.game-view[data-game="tomb-of-kings"] .feature-bar strong{color:#ffe17d}
+@keyframes tombExpand{0%{transform:scale(.75);filter:brightness(1)}55%{transform:scale(1.13);filter:brightness(1.7)}100%{transform:scale(1);filter:brightness(1.1)}}
+
+/* ===== NOVA PREMIUM VISUAL PASS v6 ===== */
+:root{
+  --surface-glass:rgba(12,17,34,.78);
+  --hairline:rgba(255,255,255,.085);
+  --shadow-soft:0 20px 50px rgba(0,0,0,.34);
+}
+.view-enter{animation:viewEnter .3s cubic-bezier(.22,.75,.18,1) both}@keyframes viewEnter{from{opacity:.25;transform:translateY(10px) scale(.992)}to{opacity:1;transform:none}}
+.topbar{backdrop-filter:blur(18px) saturate(1.3);background:linear-gradient(180deg,rgba(7,9,22,.92),rgba(7,9,22,.72));border-bottom:1px solid rgba(255,255,255,.035)}
+.wallet-chip{background:linear-gradient(160deg,rgba(24,30,52,.92),rgba(12,17,33,.88));border:1px solid rgba(255,255,255,.07);box-shadow:inset 0 1px rgba(255,255,255,.04),0 8px 22px rgba(0,0,0,.18)}
+.brand-mark{background:radial-gradient(circle at 35% 25%,#d7c8ff,#8c5bff 42%,#5b2bc7 70%);box-shadow:0 0 24px rgba(142,92,255,.28),inset 0 1px 2px rgba(255,255,255,.5)}
+.hero-card{background:radial-gradient(circle at 77% 16%,rgba(69,221,255,.24),transparent 23%),radial-gradient(circle at 83% 66%,rgba(100,64,255,.25),transparent 35%),linear-gradient(132deg,#111735 0%,#102c4e 49%,#07505c 100%);box-shadow:0 24px 54px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.08)}
+.hero-card:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 31px,rgba(255,255,255,.018) 32px 33px);mix-blend-mode:screen;pointer-events:none}
+.hero-creature{position:absolute;right:-8px;top:51px;width:145px;height:112px;filter:drop-shadow(0 18px 18px rgba(0,0,0,.42));animation:heroFloat 5s ease-in-out infinite}.hero-creature svg{width:100%;height:100%}@keyframes heroFloat{50%{transform:translate(-6px,-7px) rotate(-2deg)}}
+.moon{box-shadow:0 0 50px rgba(63,230,255,.2);opacity:.72}.bubbles{animation:bubbleFloat 4s ease-in-out infinite}@keyframes bubbleFloat{50%{transform:translateY(-11px);opacity:.7}}
+.primary-button{background:linear-gradient(180deg,#fff,#dfe7ff);box-shadow:0 10px 24px rgba(0,0,0,.2),inset 0 1px #fff}
+.friend-card,.activity-section,.game-card{backdrop-filter:blur(12px)}
+.game-card{border-color:rgba(255,255,255,.075);box-shadow:0 16px 30px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.045);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s,border-color .22s}.game-card:active{transform:scale(.975)}
+.game-card .game-visual{isolation:isolate}.game-card .game-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(150deg,rgba(255,255,255,.16),transparent 24%,transparent 70%,rgba(0,0,0,.18));z-index:1;pointer-events:none}.card-glint{position:absolute;width:52px;height:170px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.17),transparent);transform:rotate(24deg);left:-85px;top:-24px;z-index:3;animation:cardGlint 6s ease-in-out infinite}@keyframes cardGlint{0%,72%{left:-85px}90%,100%{left:200px}}
+.lobby-art{width:86px;height:86px;display:grid;place-items:center;position:relative;z-index:2;filter:drop-shadow(0 13px 13px rgba(0,0,0,.3))}.lobby-art .nova-symbol-svg{width:100%;height:100%}.shark-card .lobby-art{width:102px;height:82px}.book-card .lobby-art{width:78px;height:78px}
+.game-info{background:linear-gradient(180deg,rgba(21,27,49,.97),rgba(12,17,33,.99));border-top:1px solid rgba(255,255,255,.035)}.game-info b{letter-spacing:-.01em;font-size:12.5px}.game-info small{letter-spacing:.015em}
+.game-badge{box-shadow:0 4px 14px rgba(40,220,160,.2)}
+
+.game-topline{backdrop-filter:blur(18px);background:linear-gradient(180deg,rgba(6,8,18,.94),rgba(7,10,21,.8));border-bottom:1px solid rgba(255,255,255,.045)}
+.slot-stage{isolation:isolate}.slot-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 0 20%,rgba(255,255,255,.025) 21%,transparent 26% 61%,rgba(255,255,255,.016) 62%,transparent 68%);animation:stageLight 9s linear infinite}@keyframes stageLight{50%{transform:translateX(7%)}}
+.slot-logo{z-index:3;filter:drop-shadow(0 8px 12px rgba(0,0,0,.38))}
+.reel-frame{overflow:visible;transition:filter .25s,transform .25s,box-shadow .25s}.reel-frame:before{content:"";position:absolute;inset:-4px;border-radius:16px;border:1px solid rgba(255,255,255,.14);pointer-events:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.28)}.reel-frame.machine-running{filter:brightness(.92) saturate(1.08)}.reel-frame.anticipation{transform:scale(1.012);box-shadow:0 24px 62px rgba(0,0,0,.55),0 0 34px rgba(255,209,80,.24),inset 0 1px #fff0aa}.reel-frame.anticipation:after{content:"FEATURE?";position:absolute;left:50%;top:-28px;transform:translateX(-50%);font-size:9px;font-weight:950;letter-spacing:.19em;color:#ffe685;text-shadow:0 2px 8px #000;animation:anticipatePulse .45s ease-in-out infinite alternate}@keyframes anticipatePulse{to{filter:brightness(1.45);transform:translateX(-50%) scale(1.06)}}
+.reels{position:relative;z-index:2;box-shadow:inset 0 0 24px rgba(0,0,0,.35)}
+.reel{position:relative;transform:translateZ(0);transition:filter .12s,transform .18s cubic-bezier(.18,.74,.25,1)}.reel:before,.reel:after{content:"";position:absolute;z-index:5;left:0;right:0;height:18%;pointer-events:none}.reel:before{top:0;background:linear-gradient(180deg,rgba(0,0,0,.3),transparent)}.reel:after{bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.25),transparent)}.reel.in-motion{filter:blur(2.8px) brightness(.9);transform:translateY(var(--reel-phase,7px)) scaleY(1.03)}.reel.reel-settle{animation:reelSettle .2s cubic-bezier(.2,.8,.2,1)}@keyframes reelSettle{0%{transform:translateY(-9px);filter:blur(2px)}60%{transform:translateY(4px)}100%{transform:none;filter:none}}
+.symbol{padding:3px;transform:translateZ(0);will-change:transform,filter}.symbol .nova-symbol-svg{width:88%;height:88%;max-width:68px;max-height:68px;overflow:visible;filter:drop-shadow(0 5px 5px rgba(0,0,0,.18));transition:transform .18s,filter .18s}.symbol:after{content:"";position:absolute;inset:auto 10% 5px;height:10%;background:radial-gradient(ellipse,rgba(0,0,0,.22),transparent 70%);filter:blur(2px);z-index:-1}.symbol.winner .nova-symbol-svg{animation:symbolWin .68s ease-in-out 2}@keyframes symbolWin{0%,100%{transform:scale(1);filter:drop-shadow(0 5px 5px rgba(0,0,0,.18))}45%{transform:scale(1.12);filter:drop-shadow(0 0 10px rgba(255,230,112,.75)) brightness(1.18)}}
+.symbol.blur{filter:none;opacity:.9;transform:none}.symbol.blur .nova-symbol-svg{filter:blur(3.2px) drop-shadow(0 7px 5px rgba(0,0,0,.18));transform:translateY(-7px) scaleY(1.07)}
+.symbol.algae{background:radial-gradient(circle at 50% 50%,#1f8656,#0a4834 52%,#04281f);overflow:hidden}.symbol.algae:after{content:"";inset:0;background:radial-gradient(circle at 35% 24%,rgba(155,255,169,.18),transparent 28%)}.algae-frond{position:absolute;left:50%;bottom:-8px;width:11px;height:82%;border-radius:50% 50% 8px 8px;background:linear-gradient(90deg,#1a633b,#62c866,#153f2d);transform-origin:bottom center;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}.algae-frond.a1{transform:translateX(-19px) rotate(-24deg)}.algae-frond.a2{height:94%;width:13px;transform:translateX(-5px) rotate(6deg)}.algae-frond.a3{height:75%;transform:translateX(12px) rotate(28deg)}
+.nova-symbol-svg{display:block}.symbol-fallback{font-weight:950;font-size:22px}
+.payline-layer{position:absolute;z-index:8;inset:6px;pointer-events:none;overflow:visible}.payline-layer polyline{fill:none;stroke:#ffe66d;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 5px #ffbb3b) drop-shadow(0 0 9px rgba(255,198,53,.55));stroke-dasharray:900;stroke-dashoffset:900;opacity:0}.payline-layer.active polyline{animation:drawPayline 1.25s ease var(--line-delay,0s) both}@keyframes drawPayline{0%{stroke-dashoffset:900;opacity:0}18%{opacity:1}55%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+
+.win-overlay{overflow:hidden;min-height:112px;display:grid;place-items:center;padding:17px 14px;background:radial-gradient(circle at 50% 48%,rgba(60,44,21,.92),rgba(6,9,17,.95) 72%);border-color:rgba(255,224,120,.55)}.win-overlay[hidden]{display:none}.win-overlay small,.win-overlay strong,.win-multiplier{position:relative;z-index:4}.win-overlay small{font-size:9px}.win-overlay strong{font-size:34px;line-height:1}.win-multiplier{font-size:7px;font-weight:900;letter-spacing:.12em;color:#d7ca9c;margin-top:4px}.win-rays{position:absolute;width:170px;height:170px;left:50%;top:50%;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,rgba(255,226,108,.18) 0 9deg,transparent 9deg 19deg);border-radius:50%;animation:winRaySpin 5s linear infinite}@keyframes winRaySpin{to{transform:translate(-50%,-50%) rotate(360deg)}}.win-sparks i{position:absolute;width:5px;height:5px;border-radius:50%;background:#ffe791;box-shadow:0 0 9px #ffca55;animation:winSpark 1.1s ease-in-out infinite}.win-sparks i:nth-child(1){left:16%;top:28%;animation-delay:.1s}.win-sparks i:nth-child(2){left:79%;top:20%;animation-delay:.3s}.win-sparks i:nth-child(3){left:87%;top:66%;animation-delay:.5s}.win-sparks i:nth-child(4){left:12%;top:73%;animation-delay:.7s}.win-sparks i:nth-child(5){left:67%;top:82%;animation-delay:.9s}.win-sparks i:nth-child(6){left:42%;top:12%;animation-delay:1.1s}@keyframes winSpark{50%{transform:scale(2.1);opacity:.35}}.win-overlay[data-tier="big"],.win-overlay[data-tier="mega"],.win-overlay[data-tier="epic"]{inset:29% 5% auto;min-height:145px}.win-overlay[data-tier="mega"] strong,.win-overlay[data-tier="epic"] strong{font-size:40px;background:linear-gradient(#fffbd4,#ffd359 55%,#ff9d38);-webkit-background-clip:text;background-clip:text;color:transparent}.win-overlay[data-tier="epic"]{box-shadow:0 20px 46px rgba(0,0,0,.5),0 0 44px rgba(160,86,255,.3);border-color:rgba(204,147,255,.65)}.win-overlay[data-tier="epic"] .win-rays{background:repeating-conic-gradient(from 0deg,rgba(255,226,108,.22) 0 8deg,transparent 8deg 17deg,rgba(178,113,255,.15) 17deg 24deg,transparent 24deg 33deg)}
+
+.control-deck{background:linear-gradient(180deg,rgba(10,13,25,.96),#070a13);border-top:1px solid rgba(255,255,255,.055);box-shadow:0 -10px 30px rgba(0,0,0,.28)}.game-readout strong{font-variant-numeric:tabular-nums}.spin-button{position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(110,72,255,.32),inset 0 2px 2px rgba(255,255,255,.34),inset 0 -8px 16px rgba(49,17,116,.3)}.spin-button:after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid rgba(255,255,255,.24);pointer-events:none}.spin-button:before{content:"";position:absolute;width:25px;height:100px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transform:rotate(28deg);left:-48px;top:-10px;animation:spinButtonGlint 4.5s ease-in-out infinite}@keyframes spinButtonGlint{0%,70%{left:-48px}88%,100%{left:100px}}.spin-button.busy{animation:spinBusy .5s linear infinite}@keyframes spinBusy{50%{filter:brightness(1.22)}}
+.round-control,.secondary-controls button,.icon-button{background:linear-gradient(160deg,#1a2136,#0d1220);border:1px solid rgba(255,255,255,.07);box-shadow:inset 0 1px rgba(255,255,255,.04),0 5px 14px rgba(0,0,0,.2)}
+.feature-bar{backdrop-filter:blur(10px);box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.toast{backdrop-filter:blur(18px);background:rgba(14,19,34,.92);border:1px solid rgba(255,255,255,.09);box-shadow:0 12px 30px rgba(0,0,0,.34)}
+
+/* Game-specific vector-art tuning */
+.game-view[data-game="shark-abyss"] .symbol{background:radial-gradient(circle at 42% 24%,#164968,#09263d 57%,#051624 100%)}
+.game-view[data-game="shark-abyss"] .symbol[data-symbol="SHARK"] .nova-symbol-svg{width:96%;height:96%}.game-view[data-game="shark-abyss"] .symbol[data-symbol="PEARL"] .nova-symbol-svg{width:72%;height:72%}.game-view[data-game="shark-abyss"] .symbol[data-symbol="OCTO"]{background:radial-gradient(circle at 50% 40%,#612c72,#25143e 70%);box-shadow:inset 0 0 16px rgba(211,109,255,.18)}
+.game-view[data-game="fruit-reactor"] .symbol,.game-view[data-game="fancy-harvest"] .symbol,.game-view[data-game="tomb-of-kings"] .symbol{text-shadow:none}.game-view[data-game="fruit-reactor"] .symbol .nova-symbol-svg,.game-view[data-game="fancy-harvest"] .symbol .nova-symbol-svg,.game-view[data-game="tomb-of-kings"] .symbol .nova-symbol-svg{width:82%;height:82%}.game-view[data-game="fruit-reactor"] .symbol[data-symbol="SEVEN"] .nova-symbol-svg,.game-view[data-game="fancy-harvest"] .symbol[data-symbol="SEVEN"] .nova-symbol-svg{width:76%;height:76%}
+.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="BOOK"] .nova-symbol-svg,.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="KING"] .nova-symbol-svg{width:79%;height:79%}
+.feature-mode .underwater-bg{animation:featureBackdrop 4s ease-in-out infinite}@keyframes featureBackdrop{50%{filter:saturate(1.25) brightness(1.08)}}
+@media (prefers-reduced-motion:reduce){.hero-creature,.card-glint,.win-rays,.win-sparks i,.spin-button:before,.underwater-bg{animation:none!important}.view-enter{animation:none!important}.reel{transition:none}.symbol .nova-symbol-svg{transition:none}}
+
+</style>
+  <title>NOVA Casino</title>
+</head>
+<body><div id="previewBanner" style="position:fixed;z-index:99999;left:50%;transform:translateX(-50%);top:max(8px,env(safe-area-inset-top));padding:6px 10px;border-radius:999px;background:#11182dcc;border:1px solid #ffffff22;font:700 10px/1.2 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:.08em;color:#b9c7e9;backdrop-filter:blur(12px);pointer-events:none">V6.1 PREMIUM · INTERAKTIVE LOKALE PREVIEW</div>
+  <div id="app" class="app-shell" data-view="lobby">
+    <header class="topbar">
+      <button class="brand" id="brandButton" aria-label="Zur Lobby">
+        <span class="brand-mark">N</span>
+        <span class="brand-copy"><b>NOVA</b><small>CASINO SIM</small></span>
+      </button>
+      <div class="wallet-chip" aria-label="Simulationsguthaben">
+        <span class="wallet-label">Guthaben <em id="connectionBadge" class="connection-badge">LOKAL</em></span>
+        <strong id="walletBalance">100,00 €</strong>
+      </div>
+      <button class="avatar-button" id="profileButton" aria-label="Profil öffnen">
+        <span id="avatarInitial">S</span>
+        <i id="onlineDot"></i>
+      </button>
+    </header>
+
+    <main id="lobbyView" class="view lobby-view">
+      <section class="hero-card">
+        <div class="hero-glow"></div>
+        <div class="hero-copy">
+          <span class="eyebrow">NEU · HIGH VOLATILITY</span>
+          <h1>Shark Abyss</h1>
+          <p>Mystery-Reveals, Freispiele und Multiplikatoren.</p>
+          <button class="primary-button" data-play="shark-abyss">Jetzt spielen <span>›</span></button>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="moon"></div>
+          <div class="hero-creature" id="heroCreature" aria-hidden="true"></div>
+          <div class="bubbles b1">◦</div><div class="bubbles b2">◦</div><div class="bubbles b3">◦</div>
+        </div>
+      </section>
+
+      <section class="friend-strip" aria-label="Freunde live">
+        <div class="section-heading compact"><div><span class="live-dot"></span><h2>Freunde live</h2></div><button id="socialButton">Alle</button></div>
+        <div id="friendList">
+          <div class="friend-card demo-live">
+            <div class="friend-avatar">L</div>
+            <div class="friend-copy"><strong>Lokaler Modus</strong><span>Backend wird geprüft</span></div>
+            <span class="friend-state">LOCAL</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="game-section">
+        <div class="section-heading"><div><small>FÜR DICH</small><h2>Beliebte Spiele</h2></div><button id="filterButton">Filter</button></div>
+        <div class="game-grid">
+          <button class="game-card shark-card" data-play="shark-abyss">
+            <span class="game-badge">LIVE</span>
+            <span class="game-visual"><span class="lobby-art" data-lobby-art="shark-abyss"></span><i class="card-glint"></i></span>
+            <span class="game-info"><b>Shark Abyss</b><small>20 Linien · Mystery Reveal</small></span>
+          </button>
+          <button class="game-card fruit-card" data-play="fruit-reactor">
+            <span class="game-badge">LIVE</span>
+            <span class="game-visual"><span class="lobby-art" data-lobby-art="fruit-reactor"></span><i class="card-glint"></i></span>
+            <span class="game-info"><b>Fruit Reactor</b><small>5 Linien · Classic</small></span>
+          </button>
+          <button class="game-card fancy-card" data-play="fancy-harvest">
+            <span class="game-badge">LIVE</span>
+            <span class="game-visual"><span class="lobby-art" data-lobby-art="fancy-harvest"></span><i class="card-glint"></i></span>
+            <span class="game-info"><b>Fancy Harvest</b><small>Classic · Risk</small></span>
+          </button>
+          <button class="game-card book-card" data-play="tomb-of-kings">
+            <span class="game-badge">LIVE</span>
+            <span class="game-visual"><span class="lobby-art" data-lobby-art="tomb-of-kings"></span><i class="card-glint"></i></span>
+            <span class="game-info"><b>Tomb of Kings</b><small>10 Linien · Expanding Symbol</small></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="activity-section">
+        <div class="section-heading"><div><small>SESSION</small><h2>Deine Aktivität</h2></div></div>
+        <div class="stats-row">
+          <div><span>Einsätze</span><strong id="statWagered">0,00 €</strong></div>
+          <div><span>Gewinne</span><strong id="statWon">0,00 €</strong></div>
+          <div><span>Spins</span><strong id="statSpins">0</strong></div>
+        </div>
+      </section>
+    </main>
+
+    <main id="gameView" class="view game-view" hidden>
+      <div class="game-topline">
+        <button class="icon-button" id="closeGame" aria-label="Spiel schließen">‹</button>
+        <div class="game-title"><strong id="gameTitle">SHARK ABYSS</strong><small>SIMULATION</small></div>
+        <button class="icon-button" id="soundToggle" aria-label="Sound an oder aus">🔊</button>
+      </div>
+
+      <section class="slot-stage">
+        <div class="underwater-bg" id="gameBackdrop"></div>
+        <div class="slot-logo" id="slotLogo"><span>SHARK</span><b>ABYSS</b></div>
+        <div class="reel-frame" id="reelFrame">
+          <div class="payline-flash" id="paylineFlash"></div>
+          <svg class="payline-layer" id="paylineLayer" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div class="reels" id="reels" aria-label="Spielwalzen"></div>
+          <div class="win-overlay" id="winOverlay" hidden>
+            <div class="win-rays" aria-hidden="true"></div>
+            <div class="win-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <small id="winLabel">GEWINN</small>
+            <strong id="winAmount">0,00 €</strong>
+            <span id="winMultiplier" class="win-multiplier"></span>
+          </div>
+        </div>
+        <div class="feature-bar"><span id="featureText">3 Kraken = Freispiele</span><strong id="multiplierLabel">x1</strong></div>
+      </section>
+
+      <section class="control-deck">
+        <div class="game-readout">
+          <div><span>GUTHABEN</span><strong id="gameBalance">100,00 €</strong></div>
+          <div class="center"><span>LETZTER GEWINN</span><strong id="lastWin">0,00 €</strong></div>
+          <div class="right"><span>EINSATZ</span><strong id="stakeValue">0,20 €</strong></div>
+        </div>
+        <div class="controls" id="mainControls">
+          <button class="round-control" id="stakeDown" aria-label="Einsatz senken">−</button>
+          <button class="spin-button" id="spinButton" aria-label="Drehen"><span id="spinText">SPIN</span><i></i></button>
+          <button class="round-control" id="stakeUp" aria-label="Einsatz erhöhen">+</button>
+        </div>
+        <div class="secondary-controls" id="secondaryControls">
+          <button id="autoButton"><span>↻</span> Auto</button>
+          <button id="infoButton"><span>ⓘ</span> Info</button>
+          <button id="quickButton"><span>⚡</span> Turbo</button>
+        </div>
+        <div class="risk-panel" id="riskPanel" hidden>
+          <div class="risk-topline"><span>RISIKO</span><strong id="riskAmount">0,00 €</strong></div>
+          <div class="risk-mode-switch" id="riskModeSwitch" hidden>
+            <button class="active" id="riskModeCard">🂠 KARTE</button>
+            <button id="riskModeLadder">↟ LEITER</button>
+          </div>
+          <div class="risk-ladder" id="riskLadder"></div>
+          <div class="risk-card" id="riskCard"><span>?</span><small>KARTE</small></div>
+          <div class="risk-actions" id="riskCardActions">
+            <button class="risk-choice red" id="riskRed"><span>♥♦</span> ROT</button>
+            <button class="risk-collect" id="riskCollect">NEHMEN</button>
+            <button class="risk-choice black" id="riskBlack"><span>♠♣</span> SCHWARZ</button>
+          </div>
+          <div class="risk-ladder-actions" id="riskLadderActions" hidden>
+            <button class="risk-ladder-go" id="riskLadderButton">↟ LEITER RISKIEREN</button>
+            <button class="risk-collect" id="riskCollectLadder">NEHMEN</button>
+          </div>
+          <small class="risk-note" id="riskNote">50/50 · Gewinn verdoppeln oder verlieren</small>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="active" data-nav="lobby"><span>⌂</span><small>Casino</small></button>
+      <button data-nav="favorites"><span>♡</span><small>Favoriten</small></button>
+      <button data-nav="social"><span>◉</span><small>Freunde</small></button>
+      <button data-nav="profile"><span>○</span><small>Profil</small></button>
+    </nav>
+
+    <dialog id="sheet" class="sheet">
+      <div class="sheet-handle"></div>
+      <div id="sheetContent"></div>
+      <button class="sheet-close" id="sheetClose">Schließen</button>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script>window.NOVA_CONFIG={};</script>
+  <script>
+
+/* js/game-math.js */
+(function(){
+const STAKES_CENTS=[10,20,30,40,50,80,100];
+const GAME_KEY='shark-abyss';
+const PAYLINES=[
+ [0,0,0,0,0],[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3],
+ [0,1,2,1,0],[3,2,1,2,3],[0,0,1,0,0],[3,3,2,3,3],
+ [1,0,0,0,1],[2,3,3,3,2],[1,2,3,2,1],[2,1,0,1,2],
+ [0,1,1,1,0],[3,2,2,2,3],[1,1,0,1,1],[2,2,3,2,2],
+ [0,1,2,3,3],[3,2,1,0,0],[0,1,0,1,0],[3,2,3,2,3]
+];
+
+// Paytable is expressed as line-bet multipliers. Total stake is split across 20 lines.
+// Tuned by Monte Carlo rather than copied from a commercial game's proprietary reel strips.
+const SYMBOLS={
+  SHARK:{glyph:'🦈',weight:5,pays:[0,0,58.8,147,490]},
+  DIVER:{glyph:'🤿',weight:8,pays:[0,0,39.2,88.2,254.8]},
+  TURTLE:{glyph:'🐢',weight:11,pays:[0,0,24.5,58.8,147]},
+  FISH:{glyph:'🐠',weight:15,pays:[0,0,19.6,39.2,88.2]},
+  SHELL:{glyph:'🐚',weight:18,pays:[0,0,12.74,25.48,58.8]},
+  PEARL:{glyph:'⚪',weight:20,pays:[0,0,9.8,18.62,37.24]},
+  OCTO:{glyph:'🐙',weight:0,pays:[0,0,0,0,0],scatter:true}
+};
+
+const BASE_SYMBOL_KEYS=['SHARK','DIVER','TURTLE','FISH','SHELL','PEARL'];
+const BASE_WEIGHTS=BASE_SYMBOL_KEYS.map(k=>SYMBOLS[k].weight);
+const REVEAL_SYMBOLS=['SHARK','DIVER','TURTLE','FISH'];
+const LINE_CALIBRATION=.997;
+
+function cryptoFloat(){
+  if(globalThis.crypto?.getRandomValues){
+    const a=new Uint32Array(1);globalThis.crypto.getRandomValues(a);return a[0]/4294967296;
+  }
+  return Math.random();
+}
+function randomId(){
+  if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();
+  const bytes=new Uint8Array(16);if(globalThis.crypto?.getRandomValues)globalThis.crypto.getRandomValues(bytes);else for(let i=0;i<16;i++)bytes[i]=Math.floor(Math.random()*256);
+  return [...bytes].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function pickWeighted(rng=cryptoFloat){
+  const total=BASE_WEIGHTS.reduce((a,b)=>a+b,0);let r=rng()*total;
+  for(let i=0;i<BASE_SYMBOL_KEYS.length;i++){r-=BASE_WEIGHTS[i];if(r<=0)return BASE_SYMBOL_KEYS[i]}
+  return 'PEARL';
+}
+function randint(max,rng=cryptoFloat){return Math.min(max-1,Math.floor(rng()*max))}
+
+function createGrid({rng=cryptoFloat,scatterReelChance=.09,mysteryChance=.18}={}){
+  const grid=Array.from({length:5},()=>Array.from({length:4},()=>pickWeighted(rng)));
+  // At most one scatter per reel; this keeps feature frequency realistic instead of flooding the grid.
+  for(let c=0;c<5;c++)if(rng()<scatterReelChance)grid[c][randint(4,rng)]='OCTO';
+  const mystery=[];
+  if(rng()<mysteryChance){
+    const col=1+randint(4,rng);const len=2+randint(3,rng);const start=randint(5-len,rng);const reveal=REVEAL_SYMBOLS[randint(REVEAL_SYMBOLS.length,rng)];
+    for(let r=start;r<Math.min(4,start+len);r++)if(grid[col][r]!=='OCTO'){grid[col][r]=reveal;mystery.push([col,r])}
+  }
+  return {grid,mystery};
+}
+
+function evaluateGrid(grid,stakeCents,{multiplier=1}={}){
+  let rawLineWinCents=0;const wins=[];const lineBetCents=stakeCents/PAYLINES.length;
+  PAYLINES.forEach((line,lineIndex)=>{
+    const first=grid[0][line[0]];if(SYMBOLS[first]?.scatter)return;
+    let count=1;for(let c=1;c<5;c++){if(grid[c][line[c]]===first)count++;else break}
+    const multiple=SYMBOLS[first]?.pays[count-1]||0;
+    if(count>=3&&multiple>0){
+      const raw=multiple*lineBetCents*multiplier*LINE_CALIBRATION;rawLineWinCents+=raw;
+      wins.push({lineIndex,symbol:first,count,rawAmountCents:raw,cells:Array.from({length:count},(_,c)=>[c,line[c]])});
+    }
+  });
+  const scatters=[];grid.forEach((col,c)=>col.forEach((s,r)=>{if(s==='OCTO')scatters.push([c,r])}));
+  const scatterCount=scatters.length;
+  const freeSpins=scatterCount===3?8:scatterCount===4?10:scatterCount>=5?12:0;
+  const scatterWinCents=scatterCount===3?stakeCents*2:scatterCount===4?stakeCents*10:scatterCount>=5?stakeCents*50:0;
+  if(scatterWinCents)wins.push({lineIndex:-1,symbol:'OCTO',count:scatterCount,rawAmountCents:scatterWinCents,cells:scatters});
+  const totalCents=Math.max(0,Math.round(rawLineWinCents+scatterWinCents));
+  const lineWinCents=Math.max(0,Math.round(rawLineWinCents));
+  wins.forEach(w=>w.amountCents=Math.max(0,Math.round(w.rawAmountCents)));
+  return {totalCents,lineWinCents,scatterWinCents,wins,freeSpins,scatterCount};
+}
+
+function generateSpin({stakeCents,isFreeSpin=false,multiplier=1,rng=cryptoFloat}={}){
+  const {grid,mystery}=createGrid({rng,mysteryChance:isFreeSpin?.45:.18});
+  const result=evaluateGrid(grid,stakeCents,{multiplier});
+  return {
+    id:randomId(),createdAt:Date.now(),stakeCents,isFreeSpin,multiplier,grid,mystery,
+    ...result,
+    // During free spins a mystery reveal raises the multiplier for the next free spin.
+    nextMultiplier:isFreeSpin&&mystery.length?Math.min(10,multiplier+1):multiplier
+  };
+}
+
+function nextFeatureState(previous,spin){
+  const current=previous&&previous.remaining>0?{remaining:previous.remaining,multiplier:previous.multiplier||2,stakeCents:previous.stakeCents||spin.stakeCents}:{remaining:0,multiplier:2,stakeCents:spin.stakeCents};
+  if(!spin.isFreeSpin&&spin.freeSpins>0)return {remaining:spin.freeSpins,multiplier:2,stakeCents:spin.stakeCents};
+  if(spin.isFreeSpin){
+    let remaining=Math.max(0,current.remaining-1);
+    if(spin.freeSpins>0)remaining=Math.min(30,remaining+Math.min(5,spin.freeSpins));
+    return {remaining,multiplier:spin.nextMultiplier||current.multiplier,stakeCents:current.stakeCents};
+  }
+  return {remaining:0,multiplier:2,stakeCents:spin.stakeCents};
+}
+
+window.__gameMath={STAKES_CENTS, GAME_KEY, PAYLINES, SYMBOLS, cryptoFloat, randomId, createGrid, evaluateGrid, generateSpin, nextFeatureState};
+})();
+
+
+/* js/backend.js */
+(function(){
+const configured=()=>Boolean(window.NOVA_CONFIG?.supabaseUrl&&window.NOVA_CONFIG?.supabasePublishableKey);
+
+class CasinoBackend{
+  constructor(){this.mode='local';this.client=null;this.user=null;this.presenceChannels=[];this.listeners=new Set()}
+  async init(){
+    if(!configured())return this;
+    try{
+      const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
+      this.client=createClient(window.NOVA_CONFIG.supabaseUrl,window.NOVA_CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true}});
+      const {data}=await this.client.auth.getSession();this.user=data.session?.user||null;this.mode='supabase';
+      this.client.auth.onAuthStateChange((_event,session)=>{this.user=session?.user||null;this.emit()});
+    }catch(error){console.warn('NOVA backend fallback to local mode',error);this.client=null;this.mode='local'}
+    return this;
+  }
+  get isRemote(){return this.mode==='supabase'&&!!this.client}
+  get isAuthenticated(){return !!this.user}
+  onChange(fn){this.listeners.add(fn);return()=>this.listeners.delete(fn)}
+  emit(){for(const fn of this.listeners)try{fn(this)}catch{}}
+  async signUp({email,password,displayName}){
+    if(!this.isRemote)throw new Error('Backend noch nicht verbunden.');
+    const {data,error}=await this.client.auth.signUp({email,password,options:{data:{display_name:displayName}}});if(error)throw error;this.user=data.user||null;return data;
+  }
+  async signIn({email,password}){
+    if(!this.isRemote)throw new Error('Backend noch nicht verbunden.');
+    const {data,error}=await this.client.auth.signInWithPassword({email,password});if(error)throw error;this.user=data.user||null;return data;
+  }
+  async signOut(){if(!this.isRemote)return;await this.client.auth.signOut();this.user=null;await this.stopPresence()}
+  async getMe(){
+    if(!this.isAuthenticated)return null;
+    const [{data:profile,error:pe},{data:wallet,error:we}]=await Promise.all([
+      this.client.from('profiles').select('id,username,display_name,friend_code,show_balance').eq('id',this.user.id).single(),
+      this.client.from('wallets').select('balance_cents,lifetime_wagered_cents,lifetime_won_cents,spin_count,biggest_win_cents').eq('user_id',this.user.id).single()
+    ]);if(pe)throw pe;if(we)throw we;return {profile,wallet};
+  }
+  async requestSpin({stakeCents,sessionId=null,idempotencyKey,gameKey='shark-abyss'}){
+    if(!this.isAuthenticated)throw new Error('Bitte zuerst anmelden.');
+    const {data,error}=await this.client.functions.invoke('spin',{body:{stakeCents,sessionId,idempotencyKey,gameKey}});if(error)throw error;if(data?.error)throw new Error(data.error);return data;
+  }
+  async getActiveGamble(){
+    if(!this.isAuthenticated)return null;
+    const {data,error}=await this.client.rpc('active_gamble_round');if(error)throw error;const g=data?.[0];return g?{id:g.id,spinId:g.spin_id,gameKey:g.game_key,initialCents:Number(g.initial_cents),currentCents:Number(g.current_cents),level:Number(g.level),maxLevel:Number(g.max_level),status:g.status}:null;
+  }
+  async resolveGamble({roundId,action,choice=null,idempotencyKey}){
+    if(!this.isAuthenticated)throw new Error('Bitte zuerst anmelden.');
+    const {data,error}=await this.client.functions.invoke('gamble',{body:{roundId,action,choice,idempotencyKey}});if(error)throw error;if(data?.error)throw new Error(data.error);return data;
+  }
+  async findFriend(code){
+    if(!this.isAuthenticated)throw new Error('Bitte zuerst anmelden.');
+    const {data,error}=await this.client.rpc('find_profile_by_friend_code',{p_code:String(code).trim().toUpperCase()});if(error)throw error;return data?.[0]||null;
+  }
+  async sendFriendRequest(addresseeId){
+    const {error}=await this.client.from('friendships').insert({requester_id:this.user.id,addressee_id:addresseeId});if(error)throw error;
+  }
+  async listFriends(){
+    if(!this.isAuthenticated)return [];
+    const {data,error}=await this.client.rpc('friend_connections');if(error)throw error;return data||[];
+  }
+  async acceptFriend(friendshipId){
+    if(!this.isAuthenticated)throw new Error('Bitte zuerst anmelden.');
+    const {data,error}=await this.client.rpc('accept_friendship',{p_friendship_id:friendshipId});if(error)throw error;return Boolean(data);
+  }
+  async startPresence({friendships=[],gameKey=null,onSync=()=>{},onBroadcast=()=>{}}={}){
+    if(!this.isAuthenticated)return;
+    await this.stopPresence();
+    const snapshots=new Map();
+    const emitMerged=()=>{
+      const merged={};for(const state of snapshots.values())for(const [key,value] of Object.entries(state||{}))merged[key]=value;
+      onSync(merged);
+    };
+    for(const friendship of friendships){
+      if(!friendship.friendship_id||friendship.status!=='accepted')continue;
+      const channel=this.client.channel(`friendship:${friendship.friendship_id}`,{config:{private:true,presence:{key:this.user.id},broadcast:{self:false}}});
+      channel.on('presence',{event:'sync'},()=>{snapshots.set(friendship.friendship_id,channel.presenceState());emitMerged()});
+      channel.on('broadcast',{event:'activity'},payload=>onBroadcast(payload.payload));
+      channel.subscribe(async status=>{if(status==='SUBSCRIBED')await channel.track({userId:this.user.id,gameKey,onlineAt:new Date().toISOString()})});
+      this.presenceChannels.push(channel);
+    }
+  }
+  async updatePresence(gameKey=null){for(const channel of this.presenceChannels)await channel.track({userId:this.user.id,gameKey,onlineAt:new Date().toISOString()})}
+  async broadcastActivity(payload){for(const channel of this.presenceChannels)await channel.send({type:'broadcast',event:'activity',payload})}
+  async stopPresence(){if(!this.client)return;for(const channel of this.presenceChannels)await this.client.removeChannel(channel);this.presenceChannels=[]}
+}
+
+window.__backend={CasinoBackend};
+})();
+
+
+/* js/fruit-math.js */
+(function(){
+const {cryptoFloat,randomId}=window.__gameMath;
+
+const FRUIT_GAME_KEY='fruit-reactor';
+const FRUIT_PAYLINES=[
+  [1,1,1,1,1],
+  [0,0,0,0,0],
+  [2,2,2,2,2],
+  [0,1,2,1,0],
+  [2,1,0,1,2]
+];
+const FRUIT_SYMBOLS={
+  SEVEN:{glyph:'7',weight:3,pays:[0,0,100,1000,5000],className:'seven'},
+  BELL:{glyph:'🔔',weight:5,pays:[0,0,50,500,2500]},
+  WATERMELON:{glyph:'🍉',weight:8,pays:[0,0,40,200,750]},
+  PLUM:{glyph:'🍇',weight:9,pays:[0,0,40,200,750]},
+  ORANGE:{glyph:'🍊',weight:11,pays:[0,0,20,100,250]},
+  LEMON:{glyph:'🍋',weight:12,pays:[0,0,20,100,250]},
+  CHERRY:{glyph:'🍒',weight:15,pays:[0,5,20,50,200]}
+};
+const KEYS=Object.keys(FRUIT_SYMBOLS);const WEIGHTS=KEYS.map(k=>FRUIT_SYMBOLS[k].weight);
+// We keep the classic payout ratios but calibrate our independently-built reel model to 88.64% RTP.
+// This does not reproduce Merkur's proprietary reel strips.
+const FRUIT_CALIBRATION=.54928;
+const weighted=(rng=cryptoFloat)=>{let r=rng()*WEIGHTS.reduce((a,b)=>a+b,0);for(let i=0;i<KEYS.length;i++){r-=WEIGHTS[i];if(r<=0)return KEYS[i]}return 'CHERRY'};
+function createFruitGrid({rng=cryptoFloat}={}){return Array.from({length:5},()=>Array.from({length:3},()=>weighted(rng)))}
+function evaluateFruitGrid(grid,stakeCents){
+  const lineBet=stakeCents/FRUIT_PAYLINES.length;let raw=0;const wins=[];
+  FRUIT_PAYLINES.forEach((line,lineIndex)=>{
+    const first=grid[0][line[0]];let count=1;
+    for(let c=1;c<5;c++){if(grid[c][line[c]]===first)count++;else break}
+    const multiple=FRUIT_SYMBOLS[first]?.pays[count-1]||0;
+    if(multiple>0){const amount=multiple*lineBet*FRUIT_CALIBRATION;raw+=amount;wins.push({lineIndex,symbol:first,count,amountCents:Math.max(0,Math.round(amount)),cells:Array.from({length:count},(_,c)=>[c,line[c]])})}
+  });
+  return {totalCents:Math.max(0,Math.round(raw)),wins};
+}
+function generateFruitSpin({stakeCents,rng=cryptoFloat}={}){
+  const grid=createFruitGrid({rng});const result=evaluateFruitGrid(grid,stakeCents);
+  return {id:randomId(),createdAt:Date.now(),gameKey:FRUIT_GAME_KEY,stakeCents,isFreeSpin:false,multiplier:1,grid,mystery:[],freeSpins:0,scatterCount:0,nextMultiplier:1,...result};
+}
+
+window.__fruitMath={FRUIT_GAME_KEY, FRUIT_PAYLINES, FRUIT_SYMBOLS, createFruitGrid, evaluateFruitGrid, generateFruitSpin};
+})();
+
+
+/* js/fancy-math.js */
+(function(){
+const {cryptoFloat,randomId}=window.__gameMath;
+
+const FANCY_GAME_KEY='fancy-harvest';
+const FANCY_PAYLINES=[
+  [1,1,1,1,1],
+  [0,0,0,0,0],
+  [2,2,2,2,2],
+  [0,1,2,1,0],
+  [2,1,0,1,2]
+];
+const FANCY_SYMBOLS={
+  SEVEN:{glyph:'7',weight:2,pays:[0,0,100,500,5500],className:'seven'},
+  GRAPE:{glyph:'🍇',weight:5,pays:[0,0,39,150,800]},
+  WATERMELON:{glyph:'🍉',weight:7,pays:[0,0,30,100,500]},
+  PLUM:{glyph:'🟣',weight:9,pays:[0,0,20,60,250]},
+  ORANGE:{glyph:'🍊',weight:10,pays:[0,0,15,40,150]},
+  LEMON:{glyph:'🍋',weight:11,pays:[0,0,10,30,120]},
+  CHERRY:{glyph:'🍒',weight:12,pays:[0,4.987,10,30,100]}
+};
+const KEYS=Object.keys(FANCY_SYMBOLS),WEIGHTS=KEYS.map(k=>FANCY_SYMBOLS[k].weight),TOTAL=WEIGHTS.reduce((a,b)=>a+b,0);
+const weighted=(rng=cryptoFloat)=>{let r=rng()*TOTAL;for(let i=0;i<KEYS.length;i++){r-=WEIGHTS[i];if(r<=0)return KEYS[i]}return 'CHERRY'};
+function createFancyGrid({rng=cryptoFloat}={}){return Array.from({length:5},()=>Array.from({length:3},()=>weighted(rng)))}
+function evaluateFancyGrid(grid,stakeCents){
+  const lineBet=stakeCents/FANCY_PAYLINES.length;let raw=0;const wins=[];
+  FANCY_PAYLINES.forEach((line,lineIndex)=>{
+    const first=grid[0][line[0]];let count=1;
+    for(let c=1;c<5;c++){if(grid[c][line[c]]===first)count++;else break}
+    const multiple=FANCY_SYMBOLS[first]?.pays[count-1]||0;
+    if(multiple>0){const amount=multiple*lineBet;raw+=amount;wins.push({lineIndex,symbol:first,count,amountCents:Math.max(0,Math.round(amount)),cells:Array.from({length:count},(_,c)=>[c,line[c]])})}
+  });
+  return {totalCents:Math.max(0,Math.round(raw)),wins};
+}
+function generateFancySpin({stakeCents,rng=cryptoFloat}={}){
+  const grid=createFancyGrid({rng}),result=evaluateFancyGrid(grid,stakeCents);
+  return {id:randomId(),createdAt:Date.now(),gameKey:FANCY_GAME_KEY,stakeCents,isFreeSpin:false,multiplier:1,grid,mystery:[],freeSpins:0,scatterCount:0,nextMultiplier:1,...result};
+}
+
+window.__fancyMath={FANCY_GAME_KEY, FANCY_PAYLINES, FANCY_SYMBOLS, createFancyGrid, evaluateFancyGrid, generateFancySpin};
+})();
+
+
+/* js/book-math.js */
+(function(){
+const {cryptoFloat,randomId}=window.__gameMath;
+
+const BOOK_GAME_KEY='tomb-of-kings';
+const BOOK_PAYLINES=[
+  [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],
+  [1,0,0,0,1],[1,2,2,2,1],[0,0,1,2,2],[2,2,1,0,0],[1,0,1,2,1]
+];
+const BOOK_SYMBOLS={
+  KING:{glyph:'👑',weight:3,pays:[0,0,100,750,5000]},
+  QUEEN:{glyph:'🏺',weight:5,pays:[0,0,60,300,1500]},
+  GUARD:{glyph:'🗿',weight:7,pays:[0,0,40,200,800]},
+  SCARAB:{glyph:'🪲',weight:9,pays:[0,0,30,120,500]},
+  A:{glyph:'A',weight:12,pays:[0,0,15,50,150]},
+  K:{glyph:'K',weight:14,pays:[0,0,12,40,120]},
+  Q:{glyph:'Q',weight:16,pays:[0,0,10,30,100]},
+  J:{glyph:'J',weight:18,pays:[0,0,8,25,80]},
+  TEN:{glyph:'10',weight:20,pays:[0,0,8,20,60]},
+  BOOK:{glyph:'📕',weight:3,pays:[0,0,0,0,0]}
+};
+const REGULAR=Object.keys(BOOK_SYMBOLS).filter(k=>k!=='BOOK'),KEYS=Object.keys(BOOK_SYMBOLS),TOTAL=KEYS.reduce((a,k)=>a+BOOK_SYMBOLS[k].weight,0),BOOK_CAL=.696;
+const weighted=(rng=cryptoFloat)=>{let r=rng()*TOTAL;for(const k of KEYS){r-=BOOK_SYMBOLS[k].weight;if(r<=0)return k}return 'TEN'};
+function createBookGrid({rng=cryptoFloat}={}){return Array.from({length:5},()=>Array.from({length:3},()=>weighted(rng)))}
+function lineWins(grid,stakeCents){const lineBet=stakeCents/BOOK_PAYLINES.length;let raw=0;const wins=[];BOOK_PAYLINES.forEach((line,lineIndex)=>{let best=null;for(const candidate of REGULAR){let count=0;for(let c=0;c<5;c++){const sym=grid[c][line[c]];if(sym===candidate||sym==='BOOK')count++;else break}if(count>=3){const amount=(BOOK_SYMBOLS[candidate].pays[count-1]||0)*lineBet*BOOK_CAL;if(amount>0&&(!best||amount>best.amount)){best={lineIndex,symbol:candidate,count,amount,cells:Array.from({length:count},(_,c)=>[c,line[c]])}}}}if(best){raw+=best.amount;wins.push({...best,amountCents:Math.round(best.amount)})}});return {raw,wins}}
+function scatterResult(grid,stakeCents){const cells=[];grid.forEach((col,c)=>col.forEach((sym,r)=>{if(sym==='BOOK')cells.push([c,r])}));const n=cells.length,multiple=n===2?2:n===3?5:n===4?20:n>=5?100:0;return {count:n,cells,amountCents:Math.round(stakeCents*multiple)}}
+function expansionResult(grid,symbol,stakeCents){if(!symbol)return null;const reels=[];for(let c=0;c<5;c++)if(grid[c].includes(symbol))reels.push(c);if(reels.length<3)return null;const multiple=BOOK_SYMBOLS[symbol].pays[reels.length-1]||0;if(!multiple)return null;const amountCents=Math.round(multiple*(stakeCents/10)*10*BOOK_CAL);const cells=reels.flatMap(c=>[[c,0],[c,1],[c,2]]);return {symbol,reels,cells,amountCents}}
+function generateBookSpin({stakeCents,isFreeSpin=false,expandingSymbol=null,rng=cryptoFloat}={}){const grid=createBookGrid({rng}),base=lineWins(grid,stakeCents),scatter=scatterResult(grid,stakeCents),expanding=isFreeSpin?expansionResult(grid,expandingSymbol,stakeCents):null;const freeSpins=scatter.count>=3?10:0,chosenExpandingSymbol=!isFreeSpin&&freeSpins?REGULAR[Math.floor(rng()*REGULAR.length)]:null;const wins=[...base.wins];if(scatter.amountCents)wins.push({lineIndex:-1,symbol:'BOOK',count:scatter.count,amountCents:scatter.amountCents,cells:scatter.cells});if(expanding?.amountCents)wins.push({lineIndex:-2,symbol:expanding.symbol,count:expanding.reels.length,amountCents:expanding.amountCents,cells:expanding.cells});return {id:randomId(),createdAt:Date.now(),gameKey:BOOK_GAME_KEY,stakeCents,isFreeSpin,multiplier:1,grid,mystery:[],wins,totalCents:Math.max(0,Math.round(base.raw+scatter.amountCents+(expanding?.amountCents||0))),freeSpins,scatterCount:scatter.count,nextMultiplier:1,expanding,chosenExpandingSymbol}}
+function nextBookFeatureState(before,spin){if(!spin.isFreeSpin&&spin.freeSpins>0)return {remaining:10,multiplier:1,stakeCents:spin.stakeCents,expandingSymbol:spin.chosenExpandingSymbol};if(spin.isFreeSpin){let remaining=Math.max(0,Number(before.remaining||0)-1);if(spin.freeSpins>0)remaining=Math.min(100,remaining+10);return {remaining,multiplier:1,stakeCents:before.stakeCents||spin.stakeCents,expandingSymbol:before.expandingSymbol||spin.chosenExpandingSymbol||null}}return {remaining:0,multiplier:1,stakeCents:spin.stakeCents,expandingSymbol:null}}
+
+window.__bookMath={BOOK_GAME_KEY, BOOK_PAYLINES, BOOK_SYMBOLS, createBookGrid, generateBookSpin, nextBookFeatureState};
+})();
+
+
+/* js/symbol-art.js */
+(function(){
+const svg=(body,view='0 0 100 100',cls='')=>`<svg class="nova-symbol-svg ${cls}" viewBox="${view}" aria-hidden="true" focusable="false">${body}</svg>`;
+const gloss=`<path d="M18 20C38 4 70 5 84 19" fill="none" stroke="rgba(255,255,255,.36)" stroke-width="5" stroke-linecap="round"/>`;
+const fruit=(fill,inner,leaf=true)=>svg(`${leaf?'<path d="M54 22c8-15 23-18 31-11-5 13-16 18-29 14z" fill="#2d9a48"/><path d="M53 26c3-12 4-17 3-23" stroke="#5a351e" stroke-width="5" stroke-linecap="round"/>':''}<circle cx="50" cy="58" r="31" fill="${fill}" stroke="rgba(74,16,12,.44)" stroke-width="4"/>${inner}${gloss}`);
+const cherry=svg(`<path d="M49 43C46 24 58 13 72 12M51 43C57 29 45 16 30 16" fill="none" stroke="#49742e" stroke-width="5" stroke-linecap="round"/><path d="M68 13c9-7 18-5 22 2-7 8-15 10-22 5z" fill="#4ba347"/><circle cx="31" cy="63" r="19" fill="#e62f46" stroke="#861326" stroke-width="4"/><circle cx="65" cy="65" r="21" fill="#f33a4e" stroke="#8f1425" stroke-width="4"/><circle cx="24" cy="55" r="5" fill="#ffafb7" opacity=".8"/><circle cx="57" cy="56" r="6" fill="#ffc2c7" opacity=".75"/>`);
+const orange=fruit('#f39a24','<circle cx="50" cy="58" r="25" fill="none" stroke="#ffbe4c" stroke-width="3" opacity=".55"/>');
+const lemon=svg(`<path d="M73 28c10 8 12 22 5 36-7 14-24 25-37 21-14-3-24-18-21-32 3-15 16-28 30-31 9-2 17 0 23 6z" fill="#f7df32" stroke="#9f7f10" stroke-width="4"/><path d="M70 25c9-11 19-11 26-5-5 11-14 15-25 11z" fill="#55a83f"/>${gloss}`);
+const grape=svg(`<path d="M50 24c1-11 7-17 16-21" stroke="#4d752f" stroke-width="5" stroke-linecap="round"/><path d="M56 18c7-10 19-10 27-5-3 10-12 15-24 13z" fill="#58a34b"/>${[[38,39],[55,39],[29,54],[47,55],[65,55],[38,70],[56,71],[47,83]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="13" fill="${i%2?'#7c3eb2':'#9349c2'}" stroke="#4a1c70" stroke-width="3"/><circle cx="${x-4}" cy="${y-5}" r="3" fill="#d6aaf1" opacity=".72"/>`).join('')}`);
+const plum=fruit('#8d43ae','<ellipse cx="41" cy="48" rx="7" ry="12" fill="#d39fe2" opacity=".45"/>');
+const melon=svg(`<path d="M16 60c7-30 28-44 50-35 18 7 27 27 20 48-22 12-50 8-70-13z" fill="#4caa50" stroke="#185f2a" stroke-width="4"/><path d="M22 60c7-20 25-31 40-26 13 4 20 17 18 31-18 8-39 6-58-5z" fill="#f04f65"/><path d="M31 50l4 6m16-13 2 7m15-5-2 7m-23 10 3 6m18-6 1 6" stroke="#4a1d23" stroke-width="3" stroke-linecap="round"/>`);
+const bell=svg(`<path d="M31 33c4-13 14-20 25-20 12 0 22 8 25 21l6 28c2 8 7 13 10 17H15c4-4 8-10 10-17z" fill="#f4bb38" stroke="#8b5714" stroke-width="4"/><path d="M45 14c0-8 4-12 10-12 6 0 10 4 10 12" fill="none" stroke="#a26e20" stroke-width="5"/><path d="M41 82c3 10 9 15 15 15 7 0 13-5 16-15" fill="#d88920" stroke="#855015" stroke-width="3"/><path d="M35 37c7-8 16-12 27-11" fill="none" stroke="#fff0a2" stroke-width="6" stroke-linecap="round" opacity=".7"/>`);
+const seven=svg(`<path d="M17 17h70L55 87H31l35-51H17z" fill="#f22f3e" stroke="#71101b" stroke-width="5" stroke-linejoin="round"/><path d="M26 24h49L40 76" fill="none" stroke="#ffdc5a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`);
+const pearl=svg(`<circle cx="50" cy="52" r="30" fill="#e9fbff" stroke="#89b7c4" stroke-width="4"/><circle cx="40" cy="40" r="12" fill="#fff" opacity=".85"/><path d="M23 72c16 10 36 11 55 0" fill="none" stroke="#b4d9e2" stroke-width="4" opacity=".7"/>`);
+const shell=svg(`<path d="M16 70c0-30 14-48 34-48s34 18 34 48c-18 13-50 13-68 0z" fill="#f1b86e" stroke="#824c29" stroke-width="4"/><path d="M50 27v49M33 32l9 43M67 32l-9 43M20 47l18 31M80 47L62 78" stroke="#a96739" stroke-width="4" stroke-linecap="round"/>`);
+const fish=svg(`<path d="M20 54c10-22 34-31 55-18l17-13-3 28 3 26-18-13c-22 13-44 4-54-10z" fill="#f0a83b" stroke="#75411d" stroke-width="4"/><circle cx="43" cy="47" r="5" fill="#11283a"/><path d="M34 63c12 6 25 5 35-1" fill="none" stroke="#d56b2d" stroke-width="5"/><path d="M51 35c8 4 13 10 15 18" fill="none" stroke="#ffd36d" stroke-width="4"/>`);
+const turtle=svg(`<ellipse cx="52" cy="54" rx="30" ry="25" fill="#55a56a" stroke="#1b5a3b" stroke-width="4"/><path d="M31 37l42 33M73 37L31 70M52 30v48M22 54h60" stroke="#2d7a4c" stroke-width="3" opacity=".75"/><ellipse cx="86" cy="54" rx="11" ry="9" fill="#6bc57a" stroke="#1b5a3b" stroke-width="3"/><circle cx="90" cy="51" r="2" fill="#0f2f24"/><path d="M25 36l-12-9m11 45-13 9m47-1 5 13" stroke="#4aa866" stroke-width="7" stroke-linecap="round"/>`);
+const diver=svg(`<circle cx="50" cy="40" r="22" fill="#263746" stroke="#0a1118" stroke-width="4"/><rect x="28" y="30" width="44" height="22" rx="9" fill="#85dded" stroke="#132533" stroke-width="4"/><rect x="34" y="36" width="14" height="9" rx="3" fill="#dffbff" opacity=".8"/><rect x="52" y="36" width="14" height="9" rx="3" fill="#dffbff" opacity=".8"/><path d="M28 62c8-8 36-8 44 0l9 27H19z" fill="#e7a928" stroke="#684817" stroke-width="4"/><path d="M72 43h13v24" fill="none" stroke="#cbd8df" stroke-width="5" stroke-linecap="round"/>`);
+const shark=svg(`<path d="M10 58c18-24 43-34 68-23l15-14-2 26 7 15-20-3c-20 19-48 21-68-1z" fill="#6fa6b9" stroke="#1f5060" stroke-width="4"/><path d="M43 34l10-22 13 24" fill="#5a91a3" stroke="#1f5060" stroke-width="4"/><path d="M31 65c15 6 30 4 42-4" fill="#eef7f7"/><circle cx="28" cy="45" r="4" fill="#071116"/><path d="M72 46l16 3-15 6" fill="#ebf5f5"/>`);
+const octo=svg(`<path d="M28 47c0-20 10-31 25-31 16 0 25 12 25 31v14H28z" fill="#bc57b7" stroke="#54275e" stroke-width="4"/><circle cx="44" cy="42" r="4" fill="#fff"/><circle cx="62" cy="42" r="4" fill="#fff"/><circle cx="44" cy="43" r="2" fill="#1a1222"/><circle cx="62" cy="43" r="2" fill="#1a1222"/><path d="M31 61c-11 7-16 16-10 25 5 6 14 2 18-8m5-17c-4 10-3 23 7 27 9 2 13-8 9-18m5-9c2 12 9 23 19 19 8-4 5-14-2-21" fill="none" stroke="#a744a6" stroke-width="8" stroke-linecap="round"/>`);
+const scarab=svg(`<ellipse cx="50" cy="55" rx="20" ry="29" fill="#2db5a9" stroke="#0c5f65" stroke-width="4"/><path d="M50 29v53M30 52h40M25 38L11 28m14 43L9 81m66-43 14-10M75 71l15 10" stroke="#167d80" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="22" r="8" fill="#e2b54d"/>`);
+const crown=svg(`<path d="M15 30l20 16 15-28 15 28 20-16-7 49H22z" fill="#edbd47" stroke="#704515" stroke-width="5" stroke-linejoin="round"/><circle cx="35" cy="48" r="5" fill="#27b7c2"/><circle cx="50" cy="43" r="5" fill="#d75372"/><circle cx="65" cy="48" r="5" fill="#27b7c2"/><path d="M27 68h46" stroke="#fff0a4" stroke-width="5" stroke-linecap="round"/>`);
+const amphora=svg(`<path d="M37 18h26v10c13 10 15 22 7 35-6 10-7 17-5 26H35c2-9 1-16-5-26-8-13-6-25 7-35z" fill="#c59a61" stroke="#654125" stroke-width="4"/><path d="M35 33C16 35 14 57 30 62M65 33c19 2 21 24 5 29" fill="none" stroke="#8b5d35" stroke-width="5"/><path d="M36 45h28M33 60h34M38 76h24" stroke="#4d7e75" stroke-width="4"/>`);
+const guard=svg(`<path d="M31 18h38l9 19-8 48H30l-8-48z" fill="#7d8a7f" stroke="#303a38" stroke-width="4"/><path d="M36 37l14-11 14 11-5 10H41z" fill="#c9b978"/><circle cx="42" cy="53" r="4" fill="#122228"/><circle cx="58" cy="53" r="4" fill="#122228"/><path d="M42 69h16" stroke="#293a3d" stroke-width="5" stroke-linecap="round"/>`);
+const book=svg(`<path d="M19 24c17-8 28-5 31 1v58c-7-8-18-8-31-2z" fill="#9b3b2c" stroke="#4c241d" stroke-width="4"/><path d="M81 24c-17-8-28-5-31 1v58c7-8 18-8 31-2z" fill="#b94b31" stroke="#4c241d" stroke-width="4"/><path d="M50 25v58" stroke="#e2b44c" stroke-width="4"/><path d="M32 42h12m-12 10h12m12-10h12m-12 10h12" stroke="#f1d181" stroke-width="3"/><circle cx="50" cy="65" r="7" fill="#e3b44c"/>`);
+const royalLetter=(txt,color='#3a1b64')=>svg(`<path d="M18 14h64v72H18z" rx="8" fill="rgba(255,245,213,.18)"/><text x="50" y="68" text-anchor="middle" font-size="52" font-weight="900" font-family="Georgia,serif" fill="${color}" stroke="#f0c66b" stroke-width="1.3">${txt}</text>`);
+
+const ART={
+  'shark-abyss':{SHARK:shark,DIVER:diver,TURTLE:turtle,FISH:fish,SHELL:shell,PEARL:pearl,OCTO:octo},
+  'fruit-reactor':{SEVEN:seven,BELL:bell,WATERMELON:melon,PLUM:grape,ORANGE:orange,LEMON:lemon,CHERRY:cherry},
+  'fancy-harvest':{SEVEN:seven,GRAPE:grape,WATERMELON:melon,PLUM:plum,ORANGE:orange,LEMON:lemon,CHERRY:cherry},
+  'tomb-of-kings':{KING:crown,QUEEN:amphora,GUARD:guard,SCARAB:scarab,A:royalLetter('A'),K:royalLetter('K'),Q:royalLetter('Q'),J:royalLetter('J'),TEN:royalLetter('10'),BOOK:book}
+};
+
+function symbolMarkup(gameKey,symbolKey){return ART[gameKey]?.[symbolKey]||`<span class="symbol-fallback">${String(symbolKey||'?')}</span>`}
+function lobbyArt(gameKey){const keys={'shark-abyss':'SHARK','fruit-reactor':'SEVEN','fancy-harvest':'WATERMELON','tomb-of-kings':'BOOK'};return symbolMarkup(gameKey,keys[gameKey])}
+function featureSymbolMarkup(gameKey,symbolKey){return `<span class="feature-symbol-mini">${symbolMarkup(gameKey,symbolKey)}</span>`}
+
+window.__symbolArt={symbolMarkup, lobbyArt, featureSymbolMarkup};
+})();
+
+
+/* js/app.js */
+(function(){
+const {STAKES_CENTS,SYMBOLS,createGrid,generateSpin,nextFeatureState,randomId,cryptoFloat}=window.__gameMath;
+const {CasinoBackend}=window.__backend;
+const {FRUIT_SYMBOLS,createFruitGrid,generateFruitSpin}=window.__fruitMath;
+const {FANCY_SYMBOLS,createFancyGrid,generateFancySpin}=window.__fancyMath;
+const {BOOK_SYMBOLS,createBookGrid,generateBookSpin,nextBookFeatureState}=window.__bookMath;
+const {symbolMarkup,lobbyArt}=window.__symbolArt;
+
+const currency=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'});
+const moneyCents=c=>currency.format(Number(c||0)/100);
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+
+class LocalCasinoStore{
+  constructor(){this.key='nova-casino-state-v2';this.state=this.load()}
+  fallback(){return {balanceCents:10000,stakeIndex:1,stats:{spins:0,paidSpins:0,wageredCents:0,wonCents:0,biggestWinCents:0},favorites:['shark-abyss'],profile:{name:'Spieler',friendCode:'LOCAL'},pendingSpin:null,featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null,gameStates:{'shark-abyss':{featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null},'fruit-reactor':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'fancy-harvest':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'tomb-of-kings':{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}},pendingGamble:null,pendingGambleAction:null,riskMode:'card',sound:true,turbo:false,backendMode:'local'};}
+  load(){
+    const fallback=this.fallback();
+    try{
+      const saved=JSON.parse(localStorage.getItem(this.key)||'null');if(saved){const legacyFeature={...fallback.featureState,...saved.featureState};const gs={...fallback.gameStates,...saved.gameStates};gs['shark-abyss']={...fallback.gameStates['shark-abyss'],...(gs['shark-abyss']||{}),featureState:{...fallback.gameStates['shark-abyss'].featureState,...(gs['shark-abyss']?.featureState||legacyFeature)},sessionId:gs['shark-abyss']?.sessionId??saved.sessionId??null};return {...fallback,...saved,stats:{...fallback.stats,...saved.stats},gameStates:gs,featureState:legacyFeature};}
+      const old=JSON.parse(localStorage.getItem('nova-casino-state-v1')||'null');
+      if(old){return {...fallback,balanceCents:Math.round(Number(old.balance||100)*100),stakeIndex:old.stakeIndex??1,profile:old.profile||fallback.profile,sound:old.sound??true,turbo:old.turbo??false,stats:{...fallback.stats,spins:old.stats?.spins||0,paidSpins:old.stats?.spins||0,wageredCents:Math.round(Number(old.stats?.wagered||0)*100),wonCents:Math.round(Number(old.stats?.won||0)*100),biggestWinCents:Math.round(Number(old.stats?.biggestWin||0)*100)}}}
+    }catch{}
+    return fallback;
+  }
+  save(){try{localStorage.setItem(this.key,JSON.stringify(this.state))}catch{}}
+  patch(next){this.state={...this.state,...next};this.save();return this.state}
+  reset(){try{localStorage.removeItem(this.key);localStorage.removeItem('nova-casino-state-v1')}catch{}this.state=this.fallback();this.save()}
+}
+
+const store=new LocalCasinoStore();const backend=new CasinoBackend();
+const els={
+ app:$('#app'),lobby:$('#lobbyView'),game:$('#gameView'),nav:$('#bottomNav'),balance:$('#walletBalance'),gameBalance:$('#gameBalance'),stake:$('#stakeValue'),lastWin:$('#lastWin'),
+ reels:$('#reels'),reelFrame:$('#reelFrame'),paylineLayer:$('#paylineLayer'),spin:$('#spinButton'),spinText:$('#spinText'),overlay:$('#winOverlay'),winAmount:$('#winAmount'),winLabel:$('#winLabel'),winMultiplier:$('#winMultiplier'),paylineFlash:$('#paylineFlash'),
+ statWagered:$('#statWagered'),statWon:$('#statWon'),statSpins:$('#statSpins'),stakeDown:$('#stakeDown'),stakeUp:$('#stakeUp'),feature:$('#featureText'),multiplier:$('#multiplierLabel'),
+ sheet:$('#sheet'),sheetContent:$('#sheetContent'),toast:$('#toast'),sound:$('#soundToggle'),quick:$('#quickButton'),auto:$('#autoButton'),friendList:$('#friendList'),connectionBadge:$('#connectionBadge'),gameTitle:$('#gameTitle'),slotLogo:$('#slotLogo'),mainControls:$('#mainControls'),secondaryControls:$('#secondaryControls'),riskPanel:$('#riskPanel'),riskAmount:$('#riskAmount'),riskLadder:$('#riskLadder'),riskCard:$('#riskCard'),riskRed:$('#riskRed'),riskBlack:$('#riskBlack'),riskCollect:$('#riskCollect'),riskModeSwitch:$('#riskModeSwitch'),riskModeCard:$('#riskModeCard'),riskModeLadder:$('#riskModeLadder'),riskCardActions:$('#riskCardActions'),riskLadderActions:$('#riskLadderActions'),riskLadderButton:$('#riskLadderButton'),riskCollectLadder:$('#riskCollectLadder'),riskNote:$('#riskNote')
+};
+let spinning=false,auto=false,audioCtx=null,toastTimer=null,remoteFriends=[],presenceState={},currentGame='shark-abyss';
+const GAME_DEFS={
+  'shark-abyss':{title:'SHARK ABYSS',logo:'<span>SHARK</span><b>ABYSS</b>',symbols:SYMBOLS,rows:4,info:'5 × 4 Walzen · 20 Linien · hohe Volatilität. Der Gesamteinsatz wird auf 20 Linien verteilt. Drei oder mehr Kraken starten 8–12 Freispiele. In Freispielen beginnt der Multiplikator bei x2; Mystery-Reveals erhöhen ihn bis x10.',rtp:'88,43 % simuliert'},
+  'fruit-reactor':{title:'FRUIT REACTOR',logo:'<span>FRUIT</span><b>REACTOR</b>',symbols:FRUIT_SYMBOLS,rows:3,info:'5 × 3 Walzen · 5 feste Linien · klassischer Früchte-Slot. Gewinne laufen von links nach rechts; Kirschen zählen bereits ab zwei Treffern. Keine Wilds, Scatter oder Freispiele. Gewinne können per Rot/Schwarz riskiert werden.',rtp:'88,63 % simuliert',gamble:['card']},
+  'fancy-harvest':{title:'FANCY HARVEST',logo:'<span>FANCY</span><b>HARVEST</b>',symbols:FANCY_SYMBOLS,rows:3,info:'5 × 3 Walzen · 5 feste Linien · niedrige Volatilität. Klassische Früchte ohne Wild, Scatter oder Freispiele. Nach Gewinnen stehen Kartenrisiko und Leiterrisiko zur Wahl.',rtp:'88,22 % simuliert',gamble:['card','ladder']},
+  'tomb-of-kings':{title:'TOMB OF KINGS',logo:'<span>TOMB OF</span><b>KINGS</b>',symbols:BOOK_SYMBOLS,rows:3,info:'5 × 3 Walzen · 10 Linien · hohe Volatilität. Drei oder mehr Bücher starten 10 Freispiele. Zu Beginn wird ein zufälliges reguläres Symbol gewählt, das sich in den Freispielen auf drei oder mehr getroffenen Walzen vollständig ausdehnt. Drei Bücher retriggern weitere 10 Freispiele.',rtp:'87,25 % simuliert'}
+};
+const gameDef=()=>GAME_DEFS[currentGame];
+function getGameState(key=currentGame){const fallback=key==='shark-abyss'?{featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null}:key==='tomb-of-kings'?{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}:{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null};return {...fallback,...(store.state.gameStates?.[key]||{}),featureState:{...fallback.featureState,...(store.state.gameStates?.[key]?.featureState||{})}}}
+function patchGameState(key,patch){const current=getGameState(key);store.patch({gameStates:{...(store.state.gameStates||{}),[key]:{...current,...patch,featureState:patch.featureState?{...current.featureState,...patch.featureState}:current.featureState}}})}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const RISK_GAMES=new Set(['fruit-reactor','fancy-harvest']);
+const hasPendingGamble=()=>store.state.pendingGamble?.status==='active';
+const gambleActive=()=>RISK_GAMES.has(currentGame)&&hasPendingGamble()&&store.state.pendingGamble?.gameKey===currentGame;
+const riskSpinBlocked=()=>hasPendingGamble();
+const localCard=()=>{const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'],suits=[['♥','red'],['♦','red'],['♠','black'],['♣','black']];const n=Math.floor(cryptoFloat()*52),[suit,color]=suits[Math.floor(n/13)],rank=ranks[n%13];return {rank,suit,color}};
+
+function renderGrid(grid,{mystery=[]}={}){
+  els.reels.innerHTML='';grid.forEach((col,c)=>{const reel=document.createElement('div');reel.className='reel';reel.dataset.reel=String(c);col.forEach((sym,r)=>{const d=document.createElement('div');d.className='symbol';d.dataset.cell=`${c}-${r}`;d.dataset.symbol=sym;d.innerHTML=symbolMarkup(currentGame,sym);if(mystery.some(([mc,mr])=>mc===c&&mr===r)){d.classList.add('algae');d.innerHTML='<span class="algae-frond a1"></span><span class="algae-frond a2"></span><span class="algae-frond a3"></span>'}reel.appendChild(d)});els.reels.appendChild(reel)})
+}
+function renderRandomFrame(){renderGrid(currentGame==='fruit-reactor'?createFruitGrid():currentGame==='fancy-harvest'?createFancyGrid():currentGame==='tomb-of-kings'?createBookGrid():createGrid().grid)}
+function setSymbolsBlur(on){$$('.symbol').forEach(x=>x.classList.toggle('blur',on))}
+function hydrateArtwork(){
+  $$('[data-lobby-art]').forEach(el=>{el.innerHTML=lobbyArt(el.dataset.lobbyArt)});
+  const hero=$('#heroCreature');if(hero)hero.innerHTML=symbolMarkup('shark-abyss','SHARK');
+}
+function clearPaylines(){if(els.paylineLayer){els.paylineLayer.innerHTML='';els.paylineLayer.classList.remove('active')}}
+function renderPaylines(spin){
+  if(!els.paylineLayer)return;const rows=gameDef().rows||3;els.paylineLayer.setAttribute('viewBox',`0 0 500 ${rows*100}`);
+  const lineWins=(spin.wins||[]).filter(w=>Number(w.lineIndex)>=0&&w.cells?.length>=2).slice(0,6);
+  if(!lineWins.length){clearPaylines();return}
+  els.paylineLayer.innerHTML=lineWins.map((w,i)=>{const points=w.cells.map(([c,r])=>`${c*100+50},${r*100+50}`).join(' ');return `<polyline points="${points}" style="--line-delay:${i*.13}s"></polyline>`}).join('');
+  els.paylineLayer.classList.remove('active');void els.paylineLayer.offsetWidth;els.paylineLayer.classList.add('active');
+}
+function sharkFeatureActive(){return currentGame==='shark-abyss'&&Number(getGameState('shark-abyss').featureState?.remaining||0)>0}
+function bookFeatureActive(){return currentGame==='tomb-of-kings'&&Number(getGameState('tomb-of-kings').featureState?.remaining||0)>0}
+function featureActive(){return sharkFeatureActive()||bookFeatureActive()}
+function renderState(){
+  const s=store.state;const feature=getGameState().featureState||{};els.balance.textContent=moneyCents(s.balanceCents);els.gameBalance.textContent=moneyCents(s.balanceCents);
+  const shownStake=featureActive()?feature.stakeCents:STAKES_CENTS[s.stakeIndex];els.stake.textContent=moneyCents(shownStake);
+  els.statWagered.textContent=moneyCents(s.stats.wageredCents);els.statWon.textContent=moneyCents(s.stats.wonCents);els.statSpins.textContent=s.stats.spins;els.sound.textContent=s.sound?'🔊':'🔇';els.quick.classList.toggle('on',s.turbo);
+  $('#avatarInitial').textContent=(s.profile?.name||'S').charAt(0).toUpperCase();
+  if(currentGame==='fruit-reactor'){if(!spinning)els.spinText.textContent='SPIN';els.feature.textContent='5 Linien · Kartenrisiko';els.multiplier.textContent='88,63%';els.app.classList.remove('feature-mode')}
+  else if(currentGame==='fancy-harvest'){if(!spinning)els.spinText.textContent='SPIN';els.feature.textContent='5 Linien · Karte + Leiter';els.multiplier.textContent='88,22%';els.app.classList.remove('feature-mode')}
+  else if(currentGame==='tomb-of-kings'&&bookFeatureActive()){const exp=feature.expandingSymbol||'?';if(!spinning)els.spinText.textContent=`FREE ${feature.remaining}`;els.feature.textContent=`Expand: ${exp} · ${feature.remaining} Freispiele`;els.multiplier.textContent='FREE';els.app.classList.add('feature-mode')}
+  else if(currentGame==='tomb-of-kings'){if(!spinning)els.spinText.textContent='SPIN';els.feature.textContent='3 Bücher = 10 Freispiele';els.multiplier.textContent='87,25%';els.app.classList.remove('feature-mode')}
+  else if(sharkFeatureActive()){els.spinText.textContent=spinning?'•••':`FREE ${feature.remaining}`;els.feature.textContent=`${feature.remaining} Freispiele übrig`;els.multiplier.textContent=`x${feature.multiplier||2}`;els.app.classList.add('feature-mode')}
+  else{if(!spinning)els.spinText.textContent='SPIN';els.feature.textContent='3 Kraken = Freispiele';els.multiplier.textContent='x1';els.app.classList.remove('feature-mode')}
+  const risk=gambleActive(),blocked=riskSpinBlocked();els.stakeDown.disabled=spinning||featureActive()||blocked;els.stakeUp.disabled=spinning||featureActive()||blocked;els.spin.disabled=spinning||blocked;
+  els.mainControls.hidden=risk;els.secondaryControls.hidden=risk;els.riskPanel.hidden=!risk;renderRisk();
+  if(els.connectionBadge){els.connectionBadge.textContent=backend.isAuthenticated?'LIVE':backend.isRemote?'ACCOUNT':'LOKAL';els.connectionBadge.dataset.mode=backend.isAuthenticated?'live':backend.isRemote?'ready':'local'}
+}
+function toast(msg){els.toast.textContent=msg;els.toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>els.toast.classList.remove('show'),2200)}
+function ensureAudio(){if(!store.state.sound)return null;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}}
+function tone(freq=260,duration=.06,type='sine',gain=.04,delay=0){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(freq,start);g.gain.setValueAtTime(Math.max(.0001,gain),start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
+function sweep(from,to,duration=.18,type='sine',gain=.035,delay=0){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(from,start);o.frequency.exponentialRampToValueAtTime(Math.max(1,to),start+duration);g.gain.setValueAtTime(gain,start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
+function soundFx(name,strength=1){if(!store.state.sound)return;switch(name){case 'spin':sweep(95,180,.32,'sawtooth',.018*strength);tone(64,.12,'sine',.04*strength);break;case 'stop':tone(88,.07,'sine',.055*strength);tone(260,.025,'square',.013*strength,.012);break;case 'anticipation':tone(420,.08,'triangle',.035*strength);tone(620,.08,'triangle',.03*strength,.1);break;case 'reveal':sweep(320,820,.16,'triangle',.045*strength);break;case 'feature':tone(440,.18,'triangle',.045);tone(660,.22,'triangle',.05,.1);tone(880,.28,'sine',.055,.2);break;case 'win':tone(392,.13,'sine',.04);tone(494,.13,'sine',.04,.08);tone(587,.18,'sine',.045,.16);break;case 'bigwin':tone(261,.2,'triangle',.045);tone(392,.28,'sine',.05,.08);tone(523,.35,'sine',.055,.16);tone(784,.42,'sine',.045,.28);break}}
+function haptic(pattern=10){try{navigator.vibrate?.(pattern)}catch{}}
+function renderRisk(){
+  const g=store.state.pendingGamble;if(!els.riskPanel)return;
+  if(!g||g.status!=='active'||g.gameKey!==currentGame){els.riskPanel.hidden=true;return}
+  els.riskPanel.hidden=false;els.riskAmount.textContent=moneyCents(g.currentCents||0);
+  const max=Math.max(1,Number(g.maxLevel||5)),initial=Math.max(1,Number(g.initialCents||g.currentCents||1));
+  els.riskLadder.innerHTML=Array.from({length:max},(_,i)=>{const level=i+1,amt=initial*(2**level),cl=level<=Number(g.level||0)?'done':level===Number(g.level||0)+1?'current':'';return `<div class="risk-step ${cl}">x${2**level}<br>${moneyCents(amt)}</div>`}).join('');
+  const modes=gameDef().gamble||['card'],mode=modes.includes(store.state.riskMode)?store.state.riskMode:modes[0];
+  els.riskModeSwitch.hidden=modes.length<2;els.riskModeCard.classList.toggle('active',mode==='card');els.riskModeLadder.classList.toggle('active',mode==='ladder');els.riskCardActions.hidden=mode!=='card';els.riskLadderActions.hidden=mode!=='ladder';
+  const card=g.lastCard;if(card?.type==='ladder'){els.riskCard.className=`risk-card ladder ${card.direction==='down'?'down':''}`;els.riskCard.innerHTML=`<span>${card.direction==='up'?'↑':'↓'}</span><small>${g.lastWon===true?'HOCH':'VERLOREN'}</small>`}
+  else if(card){els.riskCard.className=`risk-card ${card.color||''}`;els.riskCard.innerHTML=`<span>${escapeHtml(card.rank||'?')}${escapeHtml(card.suit||'')}</span><small>${g.lastWon===true?'TREFFER':g.lastWon===false?'VERLOREN':'KARTE'}</small>`}
+  else{els.riskCard.className=mode==='ladder'?'risk-card ladder':'risk-card';els.riskCard.innerHTML=mode==='ladder'?'<span>↟</span><small>LEITER</small>':'<span>?</span><small>KARTE</small>'}
+  els.riskNote.textContent=mode==='ladder'?'50/50 · eine Stufe hoch oder Gewinn weg':'50/50 · Farbe treffen und Gewinn verdoppeln';
+  const busy=Boolean(store.state.pendingGambleAction);els.riskPanel.classList.toggle('busy',busy);[els.riskRed,els.riskBlack,els.riskCollect,els.riskLadderButton,els.riskCollectLadder].forEach(x=>{if(x)x.disabled=busy});
+}
+function normalizeGamble(g){if(!g)return null;return {id:g.id||g.roundId,spinId:g.spinId||g.spin_id||null,gameKey:g.gameKey||g.game_key||'fruit-reactor',initialCents:Number(g.initialCents??g.initial_cents??g.currentCents??g.current_cents??0),currentCents:Number(g.currentCents??g.current_cents??0),level:Number(g.level||0),maxLevel:Number(g.maxLevel??g.max_level??5),status:g.status||'active',lastCard:g.card||g.lastCard||null,lastWon:g.won??g.lastWon??null}}
+async function executeGamble(action,choice=null,resume=null){
+  const g=store.state.pendingGamble;if(!g||g.status!=='active'||spinning)return;
+  const pending=resume||store.state.pendingGambleAction||{requestId:randomId(),roundId:g.id,action,choice};
+  if(!resume&&!store.state.pendingGambleAction)store.patch({pendingGambleAction:pending});renderState();
+  try{
+    let result;
+    if(backend.isAuthenticated){result=await backend.resolveGamble({roundId:pending.roundId,action:pending.action,choice:pending.choice,idempotencyKey:pending.requestId})}
+    else{
+      if(pending.action==='collect'){result={roundId:g.id,currentCents:g.currentCents,level:g.level,maxLevel:g.maxLevel,status:'collected',balanceCents:store.state.balanceCents+g.currentCents,card:null,won:null}}
+      else{const ladder=pending.choice==='ladder';const card=pending.card||(ladder?{type:'ladder',direction:cryptoFloat()<.5?'up':'down'}:localCard());if(!pending.card){pending.card=card;store.patch({pendingGambleAction:pending})}const won=ladder?card.direction==='up':pending.choice===card.color;let amount=won?g.currentCents*2:0,level=g.level+(won?1:0),status=won?'active':'lost',balance=store.state.balanceCents;if(won&&(level>=g.maxLevel||amount>=100000)){status='capped';balance+=amount}result={roundId:g.id,currentCents:amount,level,maxLevel:g.maxLevel,status,balanceCents:balance,card,won}}
+    }
+    const next=normalizeGamble({...g,...result});store.patch({balanceCents:Number(result.balanceCents??store.state.balanceCents),pendingGamble:next?.status==='active'?next:null,pendingGambleAction:null});renderState();
+    if(result.card){tone(result.won?620:150,.18,result.won?'sine':'sawtooth',.06);haptic(result.won?[12,35,12]:35);toast(result.won?`Treffer! ${moneyCents(result.currentCents)}`:'Risiko verloren.')}else{tone(430,.12,'triangle',.04);toast(`Gewinn genommen: ${moneyCents(g.currentCents)}`)}
+    if(result.status==='capped')toast(`Risikoleiter geschafft: ${moneyCents(result.currentCents)} automatisch gebucht.`);
+  }catch(error){console.error(error);store.patch({pendingGambleAction:null});renderState();toast(error?.message||'Risiko fehlgeschlagen.')}
+}
+function resumeGambleAction(){const p=store.state.pendingGambleAction;if(p&&store.state.pendingGamble?.status==='active')executeGamble(p.action,p.choice,p)}
+
+async function animateSpin(spin){
+  clearPaylines();els.overlay.hidden=true;const turbo=store.state.turbo;const base=turbo?300:900,tick=turbo?48:82,cycles=Math.max(5,Math.ceil(base/tick));
+  els.reelFrame.classList.add('machine-running');soundFx('spin');
+  for(let i=0;i<cycles;i++){renderRandomFrame();$$('.reel').forEach((r,idx)=>{r.classList.add('in-motion');r.style.setProperty('--reel-phase',`${idx*13}px`)});if(i%2===0)tone(105+i*3,.02,'square',.008);await sleep(tick)}
+  const anticipation=!spin.isFreeSpin&&(currentGame==='shark-abyss'||currentGame==='tomb-of-kings')&&Number(spin.scatterCount||0)>=2;
+  renderGrid(spin.grid,{mystery:spin.mystery});$$('.reel').forEach(r=>r.classList.add('in-motion'));
+  for(let c=0;c<5;c++){
+    if(anticipation&&c===4){els.reelFrame.classList.add('anticipation');els.feature.textContent='FEATURE CHANCE…';soundFx('anticipation');await sleep(turbo?120:520)}
+    const reel=$(`.reel[data-reel="${c}"]`);reel?.classList.remove('in-motion');reel?.classList.add('reel-settle');soundFx('stop',.9+c*.05);haptic(c===4?12:5);await sleep(turbo?36:95);reel?.classList.remove('reel-settle')
+  }
+  els.reelFrame.classList.remove('machine-running','anticipation');await sleep(turbo?45:120);
+  if(spin.mystery?.length){
+    els.feature.textContent='MYSTERY REVEAL';for(const [c,r] of spin.mystery){const cell=$(`[data-cell="${c}-${r}"]`);cell?.classList.add('reveal');await sleep(turbo?45:95);cell?.classList.remove('algae');if(cell)cell.innerHTML=symbolMarkup(currentGame,spin.grid[c][r]);soundFx('reveal');haptic(6)}await sleep(turbo?70:210);
+  }
+  if(spin.expanding?.reels?.length){els.feature.textContent='EXPANDING SYMBOL';for(const c of spin.expanding.reels){for(let r=0;r<3;r++){const cell=$(`[data-cell="${c}-${r}"]`);if(cell){cell.classList.add('reveal','winner');cell.innerHTML=symbolMarkup(currentGame,spin.expanding.symbol)}}await sleep(turbo?40:90);soundFx('reveal')}await sleep(turbo?70:180)}
+  if(spin.wins?.length){spin.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.add('winner'));renderPaylines(spin);els.paylineFlash.classList.remove('active');void els.paylineFlash.offsetWidth;els.paylineFlash.classList.add('active');soundFx(spin.totalCents>=spin.stakeCents*20?'bigwin':'win')}
+  if(spin.freeSpins>0)soundFx('feature');
+}
+async function showWin(spin){
+  if(!spin.totalCents)return;const ratio=spin.totalCents/Math.max(1,spin.stakeCents),tier=ratio>=100?'EPIC WIN':ratio>=50?'MEGA WIN':ratio>=20?'BIG WIN':ratio>=8?'NICE WIN':'GEWINN';
+  const duration=store.state.turbo?(ratio>=20?850:540):(ratio>=100?2600:ratio>=50?2200:ratio>=20?1850:ratio>=8?1250:850);
+  els.winLabel.textContent=tier;els.winMultiplier.textContent=`${ratio.toLocaleString('de-DE',{maximumFractionDigits:1})}× EINSATZ`;els.overlay.dataset.tier=ratio>=100?'epic':ratio>=50?'mega':ratio>=20?'big':ratio>=8?'nice':'win';els.overlay.hidden=false;els.overlay.classList.add('big');
+  if(ratio>=20)soundFx('bigwin');else soundFx('win');haptic(ratio>=20?[16,30,18,30,24]:14);
+  const start=performance.now(),ease=t=>1-Math.pow(1-t,3);await new Promise(resolve=>{const step=now=>{const t=Math.min(1,(now-start)/Math.max(220,duration*.65));els.winAmount.textContent=moneyCents(Math.round(spin.totalCents*ease(t)));if(t<1)requestAnimationFrame(step);else resolve()};requestAnimationFrame(step)});
+  await sleep(Math.max(120,duration-(performance.now()-start)));els.overlay.hidden=true;els.overlay.classList.remove('big');delete els.overlay.dataset.tier;
+}
+function applySpinSettlement(spin,{show=true,authoritativeBalanceCents=null,authoritativeFeatureState=null}={}){
+  const s=store.state;if(!s.pendingSpin||s.pendingSpin.id!==spin.id)return;
+  const spinGame=spin.gameKey||currentGame,riskWin=RISK_GAMES.has(spinGame)&&spin.totalCents>0;
+  const balanceCents=authoritativeBalanceCents??(riskWin?s.balanceCents:Math.max(0,s.balanceCents+spin.totalCents));
+  const before=s.pendingSpin.featureBefore||getGameState(spin.gameKey||currentGame).featureState;
+  const featureState=spinGame==='shark-abyss'?(authoritativeFeatureState||nextFeatureState(before,spin)):spinGame==='tomb-of-kings'?(authoritativeFeatureState||nextBookFeatureState(before,spin)):{remaining:0,multiplier:1,stakeCents:spin.stakeCents};
+  const stats={...s.stats,spins:s.stats.spins+1,paidSpins:s.stats.paidSpins+(spin.isFreeSpin?0:1),wageredCents:s.stats.wageredCents+(spin.isFreeSpin?0:spin.stakeCents),wonCents:s.stats.wonCents+spin.totalCents,biggestWinCents:Math.max(s.stats.biggestWinCents,spin.totalCents)};
+  let pendingGamble=s.pendingGamble;
+  if(riskWin){pendingGamble=normalizeGamble(spin.gambleRound||{id:`local-${spin.id}`,spinId:spin.id,gameKey:spinGame,initialCents:spin.totalCents,currentCents:spin.totalCents,level:0,maxLevel:5,status:'active'})}
+  store.patch({balanceCents,stats,pendingSpin:null,pendingGamble});patchGameState(spin.gameKey||currentGame,{featureState,sessionId:spin.sessionId??getGameState(spin.gameKey||currentGame).sessionId});els.lastWin.textContent=moneyCents(spin.totalCents);renderState();if(show&&spin.totalCents>0)void showWin(spin);
+  if(riskWin){auto=false;els.auto.classList.remove('on');setTimeout(()=>{renderState();toast(gameDef().gamble?.includes('ladder')?'Gewinn nehmen, Karte oder Leiter wählen.':'Gewinn nehmen oder riskieren.')},store.state.turbo?400:900)}
+  if(backend.isAuthenticated&&(spin.totalCents>=spin.stakeCents*20||spin.freeSpins>0))backend.broadcastActivity({kind:spin.freeSpins>0?'feature':'big_win',gameKey:spin.gameKey||currentGame,amountCents:spin.totalCents}).catch(()=>{});
+}
+
+function normalizeRemoteSpin(data,featureBefore){
+  const p=data.presentation||data.spin||data;return {id:p.id||data.spinId||randomId(),createdAt:Date.now(),gameKey:p.gameKey||currentGame,stakeCents:p.stakeCents,isFreeSpin:Boolean(p.isFreeSpin),multiplier:p.multiplier||1,grid:p.grid,mystery:p.mystery||[],wins:p.wins||[],totalCents:p.totalCents||0,freeSpins:p.freeSpins||0,scatterCount:p.scatterCount||0,nextMultiplier:p.nextMultiplier||p.multiplier||1,expanding:p.expanding||null,chosenExpandingSymbol:p.chosenExpandingSymbol||null,featureBefore,authoritativeBalanceCents:data.balanceCents,authoritativeFeatureState:data.featureState||null,sessionId:data.sessionId||getGameState().sessionId,gambleRound:data.gambleRound||null};
+}
+async function spin(){
+  if(spinning)return;if(riskSpinBlocked()){const pending=store.state.pendingGamble;toast(pending?.gameKey===currentGame?'Erst Gewinn nehmen oder riskieren.':`Offener Gewinn in ${GAME_DEFS[pending?.gameKey]?.title||'anderem Spiel'}.`);return}const featureBefore={...(getGameState().featureState||{})};const isFreeSpin=featureActive();const stakeCents=isFreeSpin?featureBefore.stakeCents:STAKES_CENTS[store.state.stakeIndex];
+  if(!isFreeSpin&&store.state.balanceCents<stakeCents){toast('Nicht genug Simulationsguthaben.');return}
+  spinning=true;els.spin.disabled=true;els.spin.classList.add('busy');els.spinText.textContent='•••';els.overlay.hidden=true;els.feature.textContent=isFreeSpin?'Freispiel läuft…':'Walzen laufen…';
+  try{
+    let prepared;
+    if(backend.isAuthenticated){
+      const data=await backend.requestSpin({stakeCents,sessionId:getGameState().sessionId,idempotencyKey:randomId(),gameKey:currentGame});prepared=normalizeRemoteSpin(data,featureBefore);
+      const preAnimationBalance=RISK_GAMES.has(currentGame)&&prepared.totalCents>0?prepared.authoritativeBalanceCents:Math.max(0,prepared.authoritativeBalanceCents-prepared.totalCents);store.patch({balanceCents:preAnimationBalance,pendingSpin:prepared});patchGameState(currentGame,{sessionId:prepared.sessionId});
+    }else{
+      prepared=currentGame==='fruit-reactor'?generateFruitSpin({stakeCents}):currentGame==='fancy-harvest'?generateFancySpin({stakeCents}):currentGame==='tomb-of-kings'?generateBookSpin({stakeCents,isFreeSpin,expandingSymbol:featureBefore.expandingSymbol||null}):generateSpin({stakeCents,isFreeSpin,multiplier:isFreeSpin?(featureBefore.multiplier||2):1});prepared.gameKey=currentGame;prepared.featureBefore=featureBefore;
+      store.patch({balanceCents:isFreeSpin?store.state.balanceCents:store.state.balanceCents-stakeCents,pendingSpin:prepared});
+    }
+    renderState();await animateSpin(prepared);
+    applySpinSettlement(prepared,{show:false,authoritativeBalanceCents:prepared.authoritativeBalanceCents,authoritativeFeatureState:prepared.authoritativeFeatureState});
+    if(prepared.totalCents>0)await showWin(prepared);
+    if(currentGame==='tomb-of-kings'&&prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele · Expand ${prepared.chosenExpandingSymbol||''}`);else if(currentGame==='tomb-of-kings'&&prepared.isFreeSpin&&prepared.freeSpins)toast('+10 Freispiele retriggert!');else if(prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele!`);else if(prepared.isFreeSpin&&prepared.mystery?.length&&getGameState('shark-abyss').featureState.remaining)toast(`Multiplikator steigt auf x${getGameState('shark-abyss').featureState.multiplier}`);
+  }catch(error){
+    console.error(error);toast(error?.message||'Spin fehlgeschlagen.');
+    // Remote errors happen before a result is persisted client-side. Local pending results remain resumable.
+    if(!store.state.pendingSpin)renderState();
+  }finally{
+    spinning=false;els.spin.disabled=false;els.spin.classList.remove('busy');renderState();if(auto&&!gambleActive()){await sleep(store.state.turbo?220:600);spin()}else if(gambleActive()){auto=false;els.auto.classList.remove('on')}
+  }
+}
+function resumePending(){
+  const p=store.state.pendingSpin;if(!p)return;if(p.gameKey&&GAME_DEFS[p.gameKey])setCurrentGame(p.gameKey,{presence:false});renderGrid(p.grid);applySpinSettlement(p,{show:false,authoritativeBalanceCents:p.authoritativeBalanceCents,authoritativeFeatureState:p.authoritativeFeatureState});els.lastWin.textContent=moneyCents(p.totalCents);toast('Unterbrochener Spin sicher abgeschlossen.')
+}
+function setCurrentGame(key,{presence=true}={}){if(!GAME_DEFS[key])return;currentGame=key;els.game.dataset.game=key;els.gameTitle.textContent=gameDef().title;els.slotLogo.innerHTML=gameDef().logo;els.lastWin.textContent='0,00 €';renderState();if(presence&&els.app.dataset.view==='game')backend.updatePresence(key).catch(()=>{})}
+function setView(view){const isGame=view==='game';els.lobby.hidden=isGame;els.game.hidden=!isGame;els.nav.hidden=isGame;$('.topbar').hidden=isGame;els.app.dataset.view=view;const entering=isGame?els.game:els.lobby;entering.classList.remove('view-enter');void entering.offsetWidth;entering.classList.add('view-enter');if(isGame){renderRandomFrame();clearPaylines();backend.updatePresence(currentGame).catch(()=>{});window.scrollTo(0,0)}else{backend.updatePresence(null).catch(()=>{});$$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.nav==='lobby'))}}
+function openSheet(html){els.sheetContent.innerHTML=html;els.sheet.showModal()}
+
+function renderFriendStrip(){
+  if(!els.friendList)return;
+  if(!backend.isAuthenticated){els.friendList.innerHTML=`<div class="friend-card demo-live"><div class="friend-avatar">${backend.isRemote?'A':'L'}</div><div class="friend-copy"><strong>${backend.isRemote?'Account bereit':'Lokaler Modus'}</strong><span>${backend.isRemote?'Einloggen für Live-Freunde':'Supabase noch nicht verbunden'}</span></div><span class="friend-state">${backend.isRemote?'LOGIN':'LOCAL'}</span></div>`;return}
+  const onlineIds=new Set();for(const values of Object.values(presenceState||{}))for(const state of values||[])if(state.userId)onlineIds.add(state.userId);
+  if(!remoteFriends.length){els.friendList.innerHTML='<div class="friend-card demo-live"><div class="friend-avatar">+</div><div class="friend-copy"><strong>Noch keine Freunde</strong><span>Über Freundescode hinzufügen</span></div><span class="friend-state">ADD</span></div>';return}
+  els.friendList.innerHTML=remoteFriends.slice(0,4).map(f=>`<div class="friend-card"><div class="friend-avatar">${escapeHtml((f.display_name||f.username||'?').charAt(0).toUpperCase())}</div><div class="friend-copy"><strong>${escapeHtml(f.display_name||f.username)}</strong><span>${onlineIds.has(f.friend_id)?`online${f.current_game?' · '+escapeHtml(f.current_game):''}`:'offline'}</span></div><span class="friend-state ${onlineIds.has(f.friend_id)?'online':''}">${onlineIds.has(f.friend_id)?'LIVE':'OFF'}</span></div>`).join('');
+}
+async function syncRemoteAccount(){
+  if(!backend.isAuthenticated){remoteFriends=[];presenceState={};renderFriendStrip();renderState();return}
+  try{
+    const [me,activeGamble]=await Promise.all([backend.getMe(),backend.getActiveGamble()]);store.patch({balanceCents:me.wallet.balance_cents,profile:{name:me.profile.display_name,username:me.profile.username,friendCode:me.profile.friend_code},stats:{...store.state.stats,spins:Number(me.wallet.spin_count),paidSpins:Number(me.wallet.spin_count),wageredCents:Number(me.wallet.lifetime_wagered_cents),wonCents:Number(me.wallet.lifetime_won_cents),biggestWinCents:Number(me.wallet.biggest_win_cents)},pendingGamble:normalizeGamble(activeGamble),pendingGambleAction:null,backendMode:'supabase'});
+    remoteFriends=await backend.listFriends();
+    await backend.startPresence({friendships:remoteFriends,gameKey:els.app.dataset.view==='game'?currentGame:null,onSync:state=>{presenceState=state;renderFriendStrip()},onBroadcast:event=>{if(event?.amountCents)toast(`Freund: ${moneyCents(event.amountCents)} ${event.kind==='feature'?'· Freispiele':''}`)}});
+  }catch(error){console.error(error);toast('Account-Daten konnten nicht geladen werden.')}
+  renderState();renderFriendStrip();
+}
+
+function openProfile(){
+  const s=store.state;
+  if(backend.isRemote&&!backend.isAuthenticated){
+    openSheet(`<h3>NOVA Account</h3><p>Mit einem Account werden Guthaben, Spins und Freundesdaten geräteübergreifend synchronisiert.</p><label class="sheet-field">E-Mail<input id="authEmail" type="email" autocomplete="email" placeholder="name@beispiel.de"></label><label class="sheet-field">Passwort<input id="authPassword" type="password" autocomplete="current-password" placeholder="mindestens 8 Zeichen"></label><label class="sheet-field">Anzeigename<input id="authName" maxlength="40" value="${escapeHtml(s.profile.name)}"></label><div class="sheet-actions"><button class="sheet-action primary" id="loginAccount">Einloggen</button><button class="sheet-action" id="createAccount">Account erstellen</button></div><p class="fineprint">Nur Simulationsguthaben. Keine Ein- oder Auszahlung.</p>`);
+    setTimeout(()=>{
+      const creds=()=>({email:$('#authEmail').value.trim(),password:$('#authPassword').value,displayName:$('#authName').value.trim()||'Spieler'});
+      $('#loginAccount')?.addEventListener('click',async()=>{try{await backend.signIn(creds());els.sheet.close();await syncRemoteAccount();toast('Eingeloggt.')}catch(e){toast(e.message)}});
+      $('#createAccount')?.addEventListener('click',async()=>{try{await backend.signUp(creds());els.sheet.close();await syncRemoteAccount();toast('Account angelegt. Prüfe ggf. deine E-Mail.')}catch(e){toast(e.message)}})
+    },0);return;
+  }
+  const mode=backend.isAuthenticated?'Live-Account':'Lokaler Testmodus';
+  openSheet(`<h3>Dein Profil</h3><div class="sheet-stat"><span>Modus</span><strong>${mode}</strong></div><div class="sheet-stat"><span>Name</span><strong>${escapeHtml(s.profile.name)}</strong></div>${backend.isAuthenticated?`<div class="sheet-stat"><span>Freundescode</span><strong>${escapeHtml(s.profile.friendCode)}</strong></div>`:''}<div class="sheet-stat"><span>Guthaben</span><strong>${moneyCents(s.balanceCents)}</strong></div><div class="sheet-stat"><span>Spins</span><strong>${s.stats.spins}</strong></div><div class="sheet-stat"><span>Größter Gewinn</span><strong>${moneyCents(s.stats.biggestWinCents)}</strong></div><p style="margin-top:14px">Simulationsguthaben besitzt keinen Echtgeldwert und kann weder eingezahlt, ausgezahlt noch übertragen werden.</p>${backend.isAuthenticated?'<button class="sheet-close" id="logoutAccount">Ausloggen</button>':'<button class="sheet-close" id="renameLocal">Lokalen Namen ändern</button><button class="sheet-close danger" id="resetDemo">Demo zurücksetzen</button>'}`);
+  setTimeout(()=>{
+    $('#logoutAccount')?.addEventListener('click',async()=>{await backend.signOut();store.reset();els.sheet.close();await syncRemoteAccount();toast('Ausgeloggt.')});
+    $('#renameLocal')?.addEventListener('click',()=>{const name=prompt('Anzeigename',store.state.profile.name);if(name?.trim()){store.patch({profile:{...store.state.profile,name:name.trim().slice(0,40)}});renderState();els.sheet.close()}});
+    $('#resetDemo')?.addEventListener('click',()=>{store.reset();renderState();els.sheet.close();toast('Demo auf 100,00 € zurückgesetzt.')})
+  },0)
+}
+async function openSocial(){
+  if(!backend.isAuthenticated){openSheet(`<h3>Freunde live</h3><p>${backend.isRemote?'Das Backend ist bereit. Melde dich zuerst mit deinem NOVA Account an.':'Die Social-Schicht ist vollständig vorbereitet, aber noch nicht an ein Supabase-Projekt gebunden. Im lokalen Modus werden bewusst keine erfundenen Live-Daten angezeigt.'}</p><div class="sheet-stat"><span>Status</span><strong>${backend.isRemote?'Account erforderlich':'Backend nicht konfiguriert'}</strong></div>`);return}
+  let html='<h3>Freunde</h3><label class="sheet-field">Freundescode<input id="friendCodeInput" maxlength="12" placeholder="z. B. A1B2C3D4"></label><button class="sheet-action primary full" id="addFriendButton">Freund hinzufügen</button>';
+  html+=remoteFriends.length?remoteFriends.map(f=>`<div class="sheet-stat friend-row"><span>${escapeHtml(f.display_name||f.username)}<small>${escapeHtml(f.direction==='incoming'&&f.status==='pending'?' möchte dich hinzufügen':f.status==='pending'?' · Anfrage gesendet':'')}</small></span>${f.direction==='incoming'&&f.status==='pending'?`<button class="mini-accept" data-accept-friend="${escapeHtml(f.friendship_id)}">Annehmen</button>`:`<strong>${escapeHtml(f.status||'accepted')}</strong>`}</div>`).join(''):'<p>Noch keine Freunde verbunden.</p>';
+  openSheet(html);setTimeout(()=>{
+    $('#addFriendButton')?.addEventListener('click',async()=>{try{const found=await backend.findFriend($('#friendCodeInput').value);if(!found)throw new Error('Code nicht gefunden.');if(found.id===backend.user.id)throw new Error('Das ist dein eigener Code.');await backend.sendFriendRequest(found.id);toast('Freundschaftsanfrage gesendet.');els.sheet.close();await syncRemoteAccount()}catch(e){toast(e.message)}});
+    $$('[data-accept-friend]').forEach(btn=>btn.addEventListener('click',async()=>{try{await backend.acceptFriend(btn.dataset.acceptFriend);toast('Freund hinzugefügt.');els.sheet.close();await syncRemoteAccount()}catch(e){toast(e.message)}}));
+  },0)
+}
+
+$$('[data-play]').forEach(b=>b.addEventListener('click',()=>{setCurrentGame(b.dataset.play);setView('game')}));$$('[data-coming]').forEach(b=>b.addEventListener('click',()=>toast(`${b.dataset.coming} kommt als Nächstes.`)));
+$('#closeGame').addEventListener('click',()=>{auto=false;els.auto.classList.remove('on');setView('lobby')});$('#brandButton').addEventListener('click',()=>setView('lobby'));els.spin.addEventListener('click',spin);
+els.stakeDown.addEventListener('click',()=>{if(spinning||featureActive())return;store.patch({stakeIndex:Math.max(0,store.state.stakeIndex-1)});renderState();tone(180)});els.stakeUp.addEventListener('click',()=>{if(spinning||featureActive())return;store.patch({stakeIndex:Math.min(STAKES_CENTS.length-1,store.state.stakeIndex+1)});renderState();tone(240)});
+els.sound.addEventListener('click',()=>{store.patch({sound:!store.state.sound});renderState()});els.quick.addEventListener('click',()=>{store.patch({turbo:!store.state.turbo});renderState();toast(store.state.turbo?'Turbo an':'Turbo aus')});els.auto.addEventListener('click',()=>{auto=!auto;els.auto.classList.toggle('on',auto);toast(auto?'Auto-Spin aktiviert':'Auto-Spin gestoppt');if(auto&&!spinning)spin()});
+els.riskRed.addEventListener('click',()=>executeGamble('risk','red'));els.riskBlack.addEventListener('click',()=>executeGamble('risk','black'));els.riskCollect.addEventListener('click',()=>executeGamble('collect'));els.riskLadderButton.addEventListener('click',()=>executeGamble('risk','ladder'));els.riskCollectLadder.addEventListener('click',()=>executeGamble('collect'));els.riskModeCard.addEventListener('click',()=>{store.patch({riskMode:'card'});renderRisk()});els.riskModeLadder.addEventListener('click',()=>{store.patch({riskMode:'ladder'});renderRisk()});
+$('#infoButton').addEventListener('click',()=>{const d=gameDef();openSheet(`<h3>${escapeHtml(d.title.toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase()))}</h3><p>${escapeHtml(d.info)}</p><div class="sheet-stat"><span>RTP-Modell</span><strong>${escapeHtml(d.rtp)}</strong></div><div class="sheet-stat"><span>Mathematik</span><strong>1 Mio. Spins geprüft</strong></div><div class="sheet-stat"><span>Max. Einsatz</span><strong>1,00 €</strong></div><div class="sheet-stat"><span>Echtgeldwert</span><strong>Keiner</strong></div>`)});
+$('#profileButton').addEventListener('click',openProfile);$('#socialButton').addEventListener('click',openSocial);$('#filterButton').addEventListener('click',()=>toast('Filter folgt mit Spielbibliothek.'));$('#sheetClose').addEventListener('click',()=>els.sheet.close());
+$$('[data-nav]').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.nav;if(v==='lobby')setView('lobby');else if(v==='profile')openProfile();else if(v==='social')openSocial();else toast('Favoriten folgen mit Spielbibliothek.')}));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(store.state.pendingSpin&&!spinning)resumePending();else resumeGambleAction()}});window.addEventListener('pageshow',()=>{if(store.state.pendingSpin&&!spinning)resumePending();else resumeGambleAction()});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+
+async function boot(){hydrateArtwork();setCurrentGame('shark-abyss',{presence:false});resumePending();renderState();renderRandomFrame();renderFriendStrip();await backend.init();backend.onChange(()=>syncRemoteAccount());await syncRemoteAccount()}
+boot();
+
+})();
+
+</script>
+</body>
+</html>
