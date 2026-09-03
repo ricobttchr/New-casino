@@ -89,6 +89,30 @@ serverseitiges Guthaben vermischt (`backend.isRemote` vs. `backend.isAuthenticat
 werden im UI unterschiedlich angezeigt: OFFLINE / LOGIN / LIVE, siehe
 `#connectionBadge`).
 
+## Audio: ehrliche iOS-Einschränkungen
+
+Die Audio-Engine (`ensureAudioGraph()`/`tone()`/`sweep()`/`soundFx()` in
+`nova-casino.html`) verwendet ausschließlich prozedural erzeugte Web-Audio-Oszillatoren
+über eine Bus-Architektur (Master → Limiter → UI-/Reel-/Win-/Feature-/Music-Bus) — kein
+externes Audio, keine Dateien, nichts, was offline fehlen könnte. Was in dieser Session
+**nicht** auf echter Hardware verifiziert werden konnte:
+
+- **Kopfhörer- vs. Lautsprecherverhalten**: nicht unterscheidbar/testbar ohne echtes Gerät.
+- **iOS-Lautlosmodus (Klingelschalter)**: iOS dämpft `AudioContext`-Ausgabe je nach
+  Systemkategorie unterschiedlich; nicht in einem Chromium-Headless-Test nachstellbar.
+- **Eingehender Anruf / echter Audio-Fokusverlust**: Der Code behandelt
+  `visibilitychange` (Context wird suspended/resumed, siehe `tests/audio-engine.js`),
+  aber ein echter iOS-Interruption-Event (`interruptionbegan`/-`ended`) existiert nur auf
+  echter Hardware.
+- **`navigator.vibrate()` ist auf iOS Safari grundsätzlich nicht implementiert** — die
+  App behandelt Haptik daher als reinen Bonus für Android/andere Browser, niemals als
+  garantiertes Feedback. Kein UI-Text im Produkt behauptet etwas anderes.
+
+Was tatsächlich mit Playwright/Chromium verifiziert wurde: AudioContext wird nicht vor
+der ersten Nutzerinteraktion erzeugt, Sound-Aus schaltet den Master-Bus sofort auf 0
+(nicht nur neue Töne blockiert), ein Limiter sitzt vor der Ausgabe, und alle fünf Busse
+existieren — siehe `tests/audio-engine.js`.
+
 ## Tests, die in dieser Session tatsächlich gelaufen sind
 
 Alle Ergebnisse in `RELEASE_REPORT.md` sind aus echten Läufen, keine Behauptungen ohne
