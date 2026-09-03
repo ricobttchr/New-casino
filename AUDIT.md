@@ -257,6 +257,30 @@ bestehen (Bonusstart/Freispiele auf Shark Abyss und Tomb of Kings, Mehrfachlinie
 Mystery/Algen, Expanding-Symbol-Freispiel, Fruit-Reactor-Gewinn/-Verlust/Kartenrisiko/
 Gewinn-nehmen, unzureichendes Guthaben, Fancy-Harvest-Leiterrisiko, Gastmodus-Reset).
 
+## Nachtrag (Nutzer-gemeldet — Algen-Persistenz)
+
+### B7 — Algen-Symbol zählte fast nie herunter, sondern verschwand fast immer sofort
+Vom Nutzer gemeldet: "die Algen Logik soll richtig sein, also dass die Alge nach unten
+geht mit jedem Spin aber bestehen bleibt an sich bis sie weg ist." Ursache in
+`prepareAlgaePresentation()` (Zeile 765): `if(!sym||sym!==state.symbol)return;` verwarf
+den Algen-Zustand stillschweigend, sobald das frisch zufällig gewürfelte Symbol an der
+gespeicherten Zellposition nicht mehr exakt dem ursprünglich verdeckten Symbol entsprach.
+Da jeder Spin ein komplett neues, unabhängiges Zufallsraster erzeugt (`evaluateGrid()`
+wertet immer `spin.grid` direkt aus, die Alge selbst hat nie Einfluss auf die Mathematik),
+ist eine zufällige Wiederholung desselben Symbols an derselben Position statistisch
+unwahrscheinlich — die Alge überlebte dadurch fast nie einen zweiten Spin, obwohl der
+Zähler (`remaining`) korrekt gepflegt wurde.
+→ Bedingung auf reine Board-Position reduziert (`if(!sym)return;`, Symbolvergleich
+entfernt) — die Alge zählt jetzt bei jedem Spin exakt einmal herunter, unabhängig vom
+darunterliegenden Zufallssymbol, bis sie entweder bei 0 ankommt oder Teil eines Gewinns
+wird. Neuer Test `tests/algae-persistence.js`: sät einen bekannten Algen-Spin (Seed 12)
+und verifiziert über mehrere echte (nicht geseedete) Spins hinweg, dass genau ein
+Algen-Zustand exakt um 1 pro Spin herunterzählt, mindestens einen zusätzlichen Spin
+übersteht (Beweis, dass der alte Sofort-Verschwinden-Bug behoben ist) und am Ende
+regulär aufgedeckt wird statt ewig zu bestehen. Vollständige Regressionssuite
+(smoke/settlement-invariant/test-matrix/tomb-of-kings-feature/touch-targets/
+reduced-motion/audio-engine/pwa-offline) danach erneut grün, keine Nebenwirkungen.
+
 ## Nicht abschließend geprüft (ehrliche Lücken dieser Session)
 
 - **Kein Zugriff auf das Supabase-Projekt** (`ucbkmlkxhfghfzgepkbl.supabase.co`): Ob die

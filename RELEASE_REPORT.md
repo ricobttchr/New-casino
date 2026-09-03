@@ -155,6 +155,7 @@ kanonischen Datei). Vollständiger Audit vor jeder Änderung: `AUDIT.md`.
 | B4 | Kartenvisualisierung blockiert "NEHMEN" | `tests/smoke.js`: "NEHMEN button is actually clickable" PASS (vorher reproduzierbar FAIL) |
 | H1/H4b | Drei widersprüchliche Versionsangaben | Lighthouse-Lauf deckte die dritte auf; alle drei per Grep verifiziert behoben |
 | H4b | Accessibility-Score 93 → 100 | Lighthouse JSON vorher/nachher, siehe unten |
+| B7 | Algen-Persistenz verglich mit unsichtbarem Grid-Symbol statt Board-Position | `tests/algae-persistence.js`: 5/5 PASS |
 
 ## 3. Tests, die tatsächlich gelaufen sind, mit Ergebnissen
 
@@ -189,6 +190,16 @@ wonCents` und `pendingSpin === null`; zusätzlich nach 5 regulär durchgespielte
 und valide (Name + ≥2 Icons), Gastmodus-Spin über HTTP, Seite lädt mit
 `context().setOffline(true)` weiterhin (gecachte App-Shell), **Gastmodus-Spin
 funktioniert vollständig offline nach dem ersten Laden**.
+
+### Algen-Persistenz-Test (`tests/algae-persistence.js`, nutzergemeldeter Bug)
+5/5 Assertions PASS: Seed 12 sät genau einen Algen-Zustand; über mehrere echte
+(nicht geseedete) Spins zählt der getrackte Zustand exakt um 1 pro Spin herunter,
+ohne Aussetzer; er übersteht mindestens einen zusätzlichen Spin (widerlegt den alten
+Sofort-Verschwinden-Bug); er wird am Ende regulär aufgedeckt statt ewig zu bestehen;
+null Konsolenfehler. Anschließend vollständige Regressionssuite (smoke,
+settlement-invariant, test-matrix, tomb-of-kings-feature, touch-targets,
+reduced-motion, audio-engine, pwa-offline) erneut ausgeführt — alle weiterhin grün,
+keine Nebenwirkungen durch den Fix.
 
 ### Lighthouse (echter Lauf gegen `http://localhost:8934/nova-casino.html`, Chromium headless, Desktop-Preset)
 Vorher: Performance 100, Accessibility 93, Best Practices 100, SEO 90.
