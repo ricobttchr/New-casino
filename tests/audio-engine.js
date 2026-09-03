@@ -12,6 +12,7 @@ const path = require('path');
   const page = await browser.newPage({ viewport: { width: 393, height: 852 } });
   const consoleErrors = [];
   page.on('pageerror', (e) => consoleErrors.push(e.message));
+  page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
   await page.goto('file://' + path.resolve(process.argv[2] || 'nova-casino.html'));
   await page.waitForTimeout(300);
 
