@@ -93,6 +93,22 @@ kanonischen Datei). Vollständiger Audit vor jeder Änderung: `AUDIT.md`.
   (Audio-Engine), da dort konkrete, testbare Technik-Anforderungen (Bus-Struktur,
   AudioContext-Lifecycle, Gain-Ramps) offen sind, während die Artwork-Vertiefung ohne
   harte Erfolgskriterien beliebig viel Zeit binden kann.
+- **Phase 6 — zentrale Audio-Engine**: Statt jedem Oszillator direkt an
+  `ctx.destination` anzuschließen, jetzt ein Master-Bus → Limiter
+  (`DynamicsCompressor`, verhindert Clipping bei Big-Win-Tonhäufungen) →
+  Ausgabe, mit getrennten UI-/Reel-/Win-/Feature-/Music-Bussen (Music-Bus ohne
+  aktuellen Titel, aber verdrahtet). `soundFx()` routet jeden Effekt in seinen
+  passenden Bus. Sound-Aus fährt jetzt den Master-Bus auf 0 (statt nur neue Töne
+  zu blockieren) — schaltet auch bereits klingende Töne sofort stumm; Sound-An
+  stellt ihn zurück. AudioContext wird bei `visibilitychange` sauber
+  suspended/resumed. Belegt durch `tests/audio-engine.js` (9/9, echte
+  Introspektion des Laufzeit-Audiographen über einen reinen Lese-Debug-Hook,
+  keine Behauptung ohne Beleg) plus erneutem `/code-review` (1 echter Fund,
+  behoben; 2 als absichtlicher Defensivcode bewertet und belassen).
+  **Offen aus Phase 6**: Kopfhörer-/Lautsprecher-Verhalten, echter
+  Audio-Fokusverlust (eingehender Anruf) und Lautlosmodus sind auf echter
+  iOS-Hardware nicht testbar in dieser Umgebung — dokumentierte Lücke, siehe
+  Abschnitt "Verbleibende bekannte Einschränkungen".
 - **Nicht verändert, bewusst dokumentiert**: Freundes-Aktivitätsfeed zeigt weiterhin
   Beträge (`AUDIT.md` M2, Produktentscheidung, nicht angetastet); Spielmathematik aller
   vier Spiele unverändert (siehe `RTP_REPORT.md` — Abweichungen dokumentiert, nicht
