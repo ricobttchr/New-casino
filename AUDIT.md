@@ -100,6 +100,9 @@ iPhone-Symptom aus dem Handoff. Es existiert keine zentrale `forceCompleteSpin()
 - Storage-Keys: `nova-v63-device-id`, `nova-v63-auth` (Zeile 485–486)
 - Info-Sheet nennt zusätzlich pauschal "1 Mio. Spins geprüft" (Zeile 946) für **alle**
   vier Spiele, ohne dass ein mitgelieferter Report das belegt.
+- Zusätzlich gefunden durch einen echten Lighthouse-Accessibility-Lauf (nicht durch
+  Code-Lektüre): Der Marken-Header zeigte fest verdrahtet "CASINO · BETA 6.3" — eine
+  dritte, bis dahin unentdeckte Versionsangabe neben UI-Banner und `BUILD_VERSION`.
 → `BUILD_VERSION` auf `6.4.0` angehoben, Storage-Keys auf `nova-v64-*` migriert (mit
 Fallback-Lesepfad für v63, analog zum bereits vorhandenen v1→v2-Migrationsmuster,
 Zeile 707–709). Der pauschale "1 Mio. Spins"-Text bleibt vorerst unverändert (Produktentscheidung,
@@ -119,6 +122,16 @@ vom tatsächlichen Auth-/Verbindungsstatus. Das ist irreführend (impliziert ein
 Verbindung, die im Gastmodus/offline nicht besteht) und grenzt an ein Transparenz-Problem,
 das die Produktregeln explizit vermeiden wollen (keine vorgetäuschten Live-Zustände).
 → In Phase 1 an den bestehenden `connectionBadge`-Status gekoppelt.
+
+### H4b — Barrierefreiheit: Zoom deaktiviert, fehlende Meta-Description, Name/Label-Mismatch
+Gefunden durch einen echten Lighthouse-Lauf gegen den lokalen HTTP-Server (Kategorie
+Accessibility: 93/100, Best Practices/Performance: 100/100, SEO: 90/100 vor dem Fix):
+`user-scalable=no` im Viewport-Meta verhindert Pinch-Zoom für sehbehinderte Nutzer,
+`#brandButton` hatte ein `aria-label`, das den sichtbaren Text "NOVA CASINO" nicht
+enthielt (Screenreader-Name und sichtbarer Text widersprachen sich), und es fehlte eine
+`<meta name="description">`. Alle drei in dieser Session behoben (Zoom erlaubt,
+Label um sichtbaren Text ergänzt, Description hinzugefügt) — nach dem Fix erneut mit
+Lighthouse verifiziert (siehe RELEASE_REPORT.md für die Vorher/Nachher-Scores).
 
 ### H4 — `navigator.vibrate()` ohne Realitäts-Disclaimer
 Haptik wird durchgängig aufgerufen (`haptic()`, Zeile 793 ff.) ohne jede Kennzeichnung,
