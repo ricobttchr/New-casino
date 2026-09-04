@@ -144,16 +144,26 @@ aber auch keine ehrliche Einordnung existiert. Dokumentiert in README.md.
 
 ## MEDIUM
 
-### M1 — 11 leere Catch-Blöcke (`catch{}`)
+### M1 — 11 leere Catch-Blöcke (`catch{}`) — behoben
 Fundstellen u. a. Zeile 491 (`localStorage`-Schreibzugriff), 494/495 (Session
 speichern/laden), 512 (`startPresence/updatePresence/broadcastActivity/stopPresence`),
 513 (`logError` selbst schluckt Fehler), 712/714 (`LocalCasinoStore.save/reset`),
 789/790/791 (Audio-Erzeugung), 793 (Haptik). Die meisten sind bewusste
 Best-Effort-Fallbacks (z. B. Audio auf Browsern ohne `AudioContext`, Vibration auf iOS)
 und funktional vertretbar — aber ausnahmslos ohne Logging, was künftige Fehlersuche
-erschwert. Keine Änderung an der Fehlerbehandlung selbst vorgenommen (Verhalten bewusst
-beibehalten, um keine neue Fehlerquelle einzuführen), aber als bekannte Einschränkung in
-README.md vermerkt.
+erschwert.
+→ Auf explizite Nutzeranfrage ("setze um was noch fehlt oder nicht geht") nachträglich
+behoben: 11 der inzwischen 14 vorhandenen `catch{}`-Blöcke (drei weitere waren im
+Laufe der Session dazugekommen, z. B. beim Reel-Motion-Umbau) bekamen ein
+`console.warn`/`.error` zur Diagnose — korrupte/nicht schreibbare Gast-Spielstände,
+fehlgeschlagene Best-Effort-Serveraufrufe (Presence-Sync, Device-Release, Logout,
+das Fehler-Logging selbst), Audio-Graph-Aufbau/-Stummschaltung, ein durchgereichter
+Fehler in einem Backend-Listener. Bewusst NICHT geändert: `tone()`, `sweep()`
+(mehrfach pro Spin aufgerufen) und `haptic()` (schlägt auf jedem iPhone bei jedem
+Aufruf fehl, da `navigator.vibrate` dort nicht existiert) — Logging dort würde die
+Konsole bei ganz normalem Spielverlauf fluten statt ein echtes Problem sichtbar zu
+machen. Keine Verhaltensänderung, nur ein Diagnose-Seitenkanal; vollständige
+Regressionssuite danach erneut grün (siehe RELEASE_REPORT.md).
 
 ### M2 — Freundes-Aktivitätsfeed zeigt Beträge (Produktentscheidung, nicht stillschweigend geändert)
 `renderLiveFeed()` (Zeile 906) zeigt `+${moneyCents(a.amount_cents||0)}` je Freundes-Gewinn.

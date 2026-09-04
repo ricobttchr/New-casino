@@ -264,9 +264,9 @@ Diese sind bewusst nicht als erledigt behauptet:
    Tatsache (aus dem GitHub-PR-Status), sein tatsächliches Verhalten im Browser wurde
    in dieser Session aber nicht geprüft — das müsste jemand mit Zugriff auf die URL
    von außerhalb dieser Sandbox nachholen.
-4. **11 leere `catch{}`-Blöcke unverändert** (AUDIT.md M1) — funktional meist
-   vertretbare Best-Effort-Fallbacks, aber ohne Logging, was künftige Fehlersuche
-   erschwert.
+4. ~~11 leere `catch{}`-Blöcke unverändert~~ — **behoben** (AUDIT.md M1): 11 der 14
+   `catch{}`-Blöcke loggen jetzt zur Diagnose; die verbleibenden 3 (`tone()`,
+   `sweep()`, `haptic()`) bleiben bewusst still (siehe AUDIT.md für die Begründung).
 5. **Kein Max-Win-Cap in der Spielmathematik gefunden** (siehe `RTP_REPORT.md`) — als
    Produktentscheidung markiert, nicht in dieser Session ergänzt.
 6. **RTP-Abweichungen bei Fancy Harvest/Tomb of Kings** sind dokumentiert, aber nicht
