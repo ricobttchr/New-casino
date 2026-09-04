@@ -72,13 +72,19 @@ function stddev(arr, m) { return Math.sqrt(mean(arr.map(x => (x - m) ** 2))); }
 function simulateSharkAbyss(gameMath, spins, rng) {
   const { generateSpin, nextFeatureState, STAKES_CENTS } = gameMath;
   const stakeCents = STAKES_CENTS[1]; // matches app default stakeIndex
-  let feature = { remaining: 0, multiplier: 2, stakeCents };
+  let feature = { remaining: 0, multiplier: 2, stakeCents, persistentStacks: [] };
   let wagered = 0, won = 0, hits = 0, featureRounds = 0, featureWon = 0, maxWin = 0, spinsRun = 0;
   const wins = [];
   for (let i = 0; i < spins; i++) {
     const isFreeSpin = feature.remaining > 0;
     const spinStake = isFreeSpin ? feature.stakeCents : stakeCents;
-    const spin = generateSpin({ stakeCents: spinStake, isFreeSpin, multiplier: isFreeSpin ? feature.multiplier : 1, rng });
+    const persistentIn = feature.persistentStacks || [];
+    // Free Games are stack-driven: the FIRST free spin of a feature forces fresh
+    // persistent stacks onto reels 1 & 3 (0-indexed); every later free spin just
+    // threads the previous spin's persistentOut back in as persistentIn — same
+    // contract generateLocalSpin() uses in the live client.
+    const isFirstFreeSpin = isFreeSpin && !persistentIn.length;
+    const spin = generateSpin({ stakeCents: spinStake, isFreeSpin, multiplier: isFreeSpin ? feature.multiplier : 1, persistentIn, forcedReels: isFirstFreeSpin ? [1, 3] : null, rng });
     spinsRun++;
     if (!isFreeSpin) wagered += spinStake;
     won += spin.totalCents;
@@ -151,7 +157,7 @@ function summarize(gameKey, claimedRTP, result) {
 function runAllGames(w, spinsPerSeed, seed) {
   const rng = mulberry32(seed);
   const stakeCents = w.__gameMath.STAKES_CENTS[1];
-  const shark = summarize('shark-abyss', 88.43, simulateSharkAbyss(w.__gameMath, spinsPerSeed, rng));
+  const shark = summarize('shark-abyss', 96.7, simulateSharkAbyss(w.__gameMath, spinsPerSeed, rng));
   const fruit = summarize('fruit-reactor', 88.63, simulateFlatGame(w.__fruitMath.generateFruitSpin, 'fruit-reactor', spinsPerSeed, rng, stakeCents));
   const fancy = summarize('fancy-harvest', 88.22, simulateFlatGame(w.__fancyMath.generateFancySpin, 'fancy-harvest', spinsPerSeed, rng, stakeCents));
   const book = summarize('tomb-of-kings', 87.25, simulateTombOfKings(w.__bookMath, stakeCents, spinsPerSeed, rng));

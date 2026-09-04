@@ -389,3 +389,20 @@ als Regressionsschutz fest, statt sich auf eine bloße Behauptung zu verlassen.
   sind Code-Analyse (Timer-/Lifecycle-Semantik), keine Messung auf echter Hardware.
 - Kein Lighthouse-/Accessibility-Audit-Tool mit Netzwerkzugriff auf eine deployte URL
   in dieser Session ausgeführt (kein Deployment vorhanden, siehe RELEASE_REPORT.md).
+
+## Nachtrag: Shark Abyss v2 (Mystery-Stack-Rebuild)
+
+Die oben unter "Persistenter Algen-Countdown" und "Nachtrag (Spins laufen nicht
+flüssig)" beschriebene Mechanik wurde komplett ersetzt — die Algen-Zelle ist
+kein reines UI-Overlay über einem unabhängigen Grid mehr, sondern der
+Deckungs-Zustand eines first-class `MysteryStack` in `js/game-math.js` selbst
+(`SEAWEED` ist ein echtes, von `evaluateGrid()` respektiertes Grid-Symbol).
+`tests/algae-persistence.js` wurde entfernt (testete eine jetzt nicht mehr
+existierende Mechanik) und durch `tests/shark-engine-math.js` (37 reine
+Mathematik-Assertions) sowie `tests/shark-abyss-v2-ui.js` (8 Live-UI-
+Assertions) ersetzt. Der Spin-Performance-Regressionstest (`tests/
+spin-performance.js`) wurde auf einen unter der neuen Engine tatsächlich
+"langweiligen" Referenz-Seed umgestellt (Seed 1 landet unter der neuen
+Mathematik zufällig einen vollen Golden-Shark-Kaskaden-Spin, nicht mehr den
+ereignislosen Spin, für den er ursprünglich gewählt wurde). Voller
+Architektur-, Test- und RTP-Bericht: siehe `SHARK_ABYSS_V2_REPORT.md`.

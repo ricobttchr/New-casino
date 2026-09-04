@@ -324,3 +324,14 @@ selbst ist damit verifiziert vorhanden, sein Verhalten im Browser aber nicht.
 
 Siehe README.md „iPhone-Installation“ — Standard-Safari-„Zum Home-Bildschirm“-Ablauf,
 in dieser Session nicht auf echter Hardware verifiziert (siehe Einschränkung 1).
+
+## 9. Nachtrag: Shark Abyss v2 (Mystery-Stack- & Razor-Reveal-Rebuild)
+
+Shark Abyss wurde komplett auf eine echte Mystery-Stack-Zustandsmaschine
+umgebaut (Golden Shark, Razor Reveal mit Sofortgewinnen bis 2500×, Sea-Mine-
+Scatter statt Kraken, Wild-Substitution, stack-getriebene Freispiele auf
+Walze 2 & 4 mit progressivem Multiplikator). Die alte, rein UI-seitige
+Algen-Countdown-Mechanik (Zeile 217ff. dieses Dokuments) wurde vollständig
+ersetzt. Neue RTP: **96,76 % simuliert** (10 Mio. Spins, vorher 88,43 %).
+Voller Bericht mit Architektur, Test-Ergebnissen, bekannten Abweichungen vom
+Referenzspiel und Einschränkungen: siehe `SHARK_ABYSS_V2_REPORT.md`.

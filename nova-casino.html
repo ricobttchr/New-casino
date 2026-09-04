@@ -190,7 +190,7 @@ button:active{transform:scale(.97)}
 
 /* Game-specific vector-art tuning */
 .game-view[data-game="shark-abyss"] .symbol{background:radial-gradient(circle at 42% 24%,#164968,#09263d 57%,#051624 100%)}
-.game-view[data-game="shark-abyss"] .symbol[data-symbol="SHARK"] .nova-symbol-svg{width:96%;height:96%}.game-view[data-game="shark-abyss"] .symbol[data-symbol="PEARL"] .nova-symbol-svg{width:72%;height:72%}.game-view[data-game="shark-abyss"] .symbol[data-symbol="OCTO"]{background:radial-gradient(circle at 50% 40%,#612c72,#25143e 70%);box-shadow:inset 0 0 16px rgba(211,109,255,.18)}
+.game-view[data-game="shark-abyss"] .symbol[data-symbol="GREAT_WHITE"] .nova-symbol-svg{width:96%;height:96%}.game-view[data-game="shark-abyss"] .symbol[data-symbol="GOLDEN_SHARK"] .nova-symbol-svg{width:96%;height:96%}.game-view[data-game="shark-abyss"] .symbol[data-symbol="SEA_MINE"]{background:radial-gradient(circle at 50% 40%,#3a1414,#160404 70%);box-shadow:inset 0 0 16px rgba(255,90,90,.22)}
 .game-view[data-game="fruit-reactor"] .symbol,.game-view[data-game="fancy-harvest"] .symbol,.game-view[data-game="tomb-of-kings"] .symbol{text-shadow:none}.game-view[data-game="fruit-reactor"] .symbol .nova-symbol-svg,.game-view[data-game="fancy-harvest"] .symbol .nova-symbol-svg,.game-view[data-game="tomb-of-kings"] .symbol .nova-symbol-svg{width:82%;height:82%}.game-view[data-game="fruit-reactor"] .symbol[data-symbol="SEVEN"] .nova-symbol-svg,.game-view[data-game="fancy-harvest"] .symbol[data-symbol="SEVEN"] .nova-symbol-svg{width:76%;height:76%}
 .game-view[data-game="tomb-of-kings"] .symbol[data-symbol="BOOK"] .nova-symbol-svg,.game-view[data-game="tomb-of-kings"] .symbol[data-symbol="KING"] .nova-symbol-svg{width:79%;height:79%}
 .feature-mode .underwater-bg{animation:featureBackdrop 4s ease-in-out infinite}@keyframes featureBackdrop{50%{filter:saturate(1.25) brightness(1.08)}}
@@ -225,6 +225,26 @@ button:focus-visible,input:focus-visible,.game-card:focus-visible{outline:2px so
 .symbol.algae-seed .algae-frond{animation:algaeGrow .38s cubic-bezier(.18,.8,.2,1) both}@keyframes algaeGrow{0%{opacity:0;filter:blur(2px)}100%{opacity:1;filter:none}}
 .symbol.algae-erode:before{z-index:4;inset:0;border:0;border-radius:0;background:radial-gradient(circle at 48% 56%,transparent 0 10%,rgba(118,236,128,.15) 11% 28%,transparent 29%),repeating-radial-gradient(circle at 40% 50%,transparent 0 5px,rgba(199,255,187,.2) 6px 8px,transparent 9px 14px);animation:algaeErode .42s ease-out both;mix-blend-mode:screen}@keyframes algaeErode{0%{opacity:.35;transform:scale(.55)}55%{opacity:1}100%{opacity:0;transform:scale(1.55)}}
 
+/* Mystery Stack v2: pre-reveal breathing glow, a golden shimmer once a stack
+   turns out to be the Golden Shark, a translate3d nudge for the stack physically
+   sliding one cell down, and a Razor Reveal mini-reel per golden cell. All
+   transform/opacity/filter — no layout-affecting properties, so this stays
+   compositor-cheap even during a long cascade (see spin-active perf note above). */
+.symbol.algae-breathe{animation:algaeBreathe .85s ease-in-out infinite}
+@keyframes algaeBreathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4) saturate(1.25)}}
+.symbol.golden-cell{box-shadow:inset 0 0 0 2px #ffd873,0 0 14px rgba(255,214,110,.55)}
+.reel.stack-nudge{animation:stackNudge .19s cubic-bezier(.3,.7,.3,1)}
+@keyframes stackNudge{0%{transform:translate3d(0,0,0)}45%{transform:translate3d(0,9%,0)}100%{transform:translate3d(0,0,0)}}
+.reel.reel-flip{animation:reelFlip .13s ease-in}
+@keyframes reelFlip{0%{filter:blur(0)}50%{filter:blur(3px)}100%{filter:blur(0)}}
+.reel-frame.razor-mode{box-shadow:0 0 0 3px #ffd873,0 0 40px rgba(255,214,110,.5)}
+.symbol.razor-cell{position:relative;z-index:6}
+.symbol.razor-cell .razor-face{position:absolute;inset:5%;display:flex;align-items:center;justify-content:center;border-radius:10px;font-weight:800;font-size:clamp(13px,4.4vw,20px);background:radial-gradient(circle at 40% 30%,#123246,#04141f 72%);color:#eafcff;box-shadow:inset 0 0 0 1px rgba(150,225,255,.35)}
+.symbol.razor-spinning .razor-face{animation:razorSpin .09s linear infinite}
+@keyframes razorSpin{0%{transform:translateY(-6%)}50%{transform:translateY(6%)}100%{transform:translateY(-6%)}}
+.symbol.razor-prize .razor-face.landed{background:radial-gradient(circle at 40% 25%,#ffe9ad,#c98f1c 75%);color:#2a1400;box-shadow:0 0 16px rgba(255,214,110,.65)}
+.symbol.razor-scatter .razor-face.landed{background:radial-gradient(circle at 45% 30%,#1c2c34,#050c10 75%);box-shadow:inset 0 0 0 2px rgba(255,90,90,.6)}
+
 /* Win choreography */
 .win-sparks i{left:var(--spark-x,50%);top:var(--spark-y,50%);width:var(--spark-size,5px);height:var(--spark-size,5px);animation-duration:var(--spark-duration,1.1s);animation-delay:var(--spark-delay,0s)}
 .win-overlay[data-tier="mega"] .win-sparks i,.win-overlay[data-tier="epic"] .win-sparks i{box-shadow:0 0 10px #ffca55,0 0 17px rgba(255,221,111,.38)}
@@ -235,7 +255,7 @@ button:focus-visible,input:focus-visible,.game-card:focus-visible{outline:2px so
 .spin-button:before{display:none!important}.spin-button:not(.busy):not(:disabled){animation:spinBreathe 3.8s ease-in-out infinite}@keyframes spinBreathe{0%,100%{transform:translateZ(0) scale(1);box-shadow:0 10px 30px rgba(110,72,255,.30),inset 0 2px 2px rgba(255,255,255,.34),inset 0 -8px 16px rgba(49,17,116,.3)}50%{transform:translateZ(0) scale(1.008);box-shadow:0 11px 33px rgba(110,72,255,.36),inset 0 2px 2px rgba(255,255,255,.36),inset 0 -8px 16px rgba(49,17,116,.28)}}
 .round-control.is-holding{transform:scale(.96);filter:brightness(1.16)}
 
-@media (prefers-reduced-motion:reduce){.spin-button:not(.busy):not(:disabled),.reel-frame.win-shake,#winAmount.milestone-pop,.symbol.algae-tick,.symbol.algae-seed .algae-frond,.symbol.algae-erode:before,.symbol.winner,.symbol.winner .nova-symbol-svg,.payline-flash.active{animation:none!important}.payline-layer.active polyline{animation:none!important;opacity:1;stroke-dashoffset:0}.symbol.algae .algae-frond{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.spin-button:not(.busy):not(:disabled),.reel-frame.win-shake,#winAmount.milestone-pop,.symbol.algae-tick,.symbol.algae-seed .algae-frond,.symbol.algae-erode:before,.symbol.winner,.symbol.winner .nova-symbol-svg,.payline-flash.active,.symbol.algae-breathe,.reel.stack-nudge,.reel.reel-flip,.symbol.razor-spinning .razor-face{animation:none!important}.payline-layer.active polyline{animation:none!important;opacity:1;stroke-dashoffset:0}.symbol.algae .algae-frond{transition:none!important}}
 
 </style>
   <title>NOVA Casino · Pro Polish 6.4</title>
@@ -347,7 +367,7 @@ button:focus-visible,input:focus-visible,.game-card:focus-visible{outline:2px so
             <span id="winMultiplier" class="win-multiplier"></span>
           </div>
         </div>
-        <div class="feature-bar"><span id="featureText">3 Kraken = Freispiele</span><strong id="multiplierLabel">x1</strong></div>
+        <div class="feature-bar"><span id="featureText">3 Seeminen = Freispiele</span><strong id="multiplierLabel">x1</strong></div>
       </section>
 
       <section class="control-deck">
@@ -406,9 +426,26 @@ button:focus-visible,input:focus-visible,.game-card:focus-visible{outline:2px so
   <script>
 
 /* js/game-math.js */
+/* NOVA Shark Abyss v2 (mystery-stack rebuild).
+ *
+ * Rebuilt from scratch as a real state-machine engine instead of a per-cell
+ * "algae" overlay flag. A Mystery Stack is a first-class, moving 4-row virtual
+ * window (visibleRowsForStack/nudgeStack) that can be PARTIALLY visible when it
+ * straddles the top/bottom of the 5x4 grid — never a random 2-4 cell blob. One
+ * settled round (one literal bet, i.e. one balance debit) can contain an entire
+ * land -> reveal -> evaluate -> nudge -> respin cascade; that whole sequence is
+ * computed up front from a single rng stream and returned as an ordered `steps`
+ * list (see runRound below) so the UI only ever plays back an already-decided
+ * outcome — it never re-rolls anything mid-animation, and a nudge can never
+ * trigger a second stake charge because the whole cascade is one generateSpin()
+ * call. Own NOVA symbol roster, paytable and Razor-Reveal prize table — a
+ * high-volatility mystery-stack mechanic inspired in FEEL by Push Gaming's Razor
+ * Shark, not a copy of its assets, code, exact math, or trigger tables.
+ */
 (function(){
 const STAKES_CENTS=[10,20,30,40,50,80,100];
 const GAME_KEY='shark-abyss';
+const ROWS=4,REELS=5;
 const PAYLINES=[
  [0,0,0,0,0],[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3],
  [0,1,2,1,0],[3,2,1,2,3],[0,0,1,0,0],[3,3,2,3,3],
@@ -418,26 +455,48 @@ const PAYLINES=[
 ];
 
 // Paytable is expressed as line-bet multipliers. Total stake is split across 20 lines.
-// Tuned by Monte Carlo rather than copied from a commercial game's proprietary reel strips.
+// Tuned by Monte Carlo (sim/shark-rtp-simulator.js) toward a 96.5-96.8% RTP target,
+// not copied from any commercial game's proprietary reel strips or paytable.
 const SYMBOLS={
-  SHARK:{glyph:'🦈',weight:5,pays:[0,0,58.8,147,490]},
-  DIVER:{glyph:'🤿',weight:8,pays:[0,0,39.2,88.2,254.8]},
-  TURTLE:{glyph:'🐢',weight:11,pays:[0,0,24.5,58.8,147]},
-  FISH:{glyph:'🐠',weight:15,pays:[0,0,19.6,39.2,88.2]},
-  SHELL:{glyph:'🐚',weight:18,pays:[0,0,12.74,25.48,58.8]},
-  PEARL:{glyph:'⚪',weight:20,pays:[0,0,9.8,18.62,37.24]},
-  OCTO:{glyph:'🐙',weight:0,pays:[0,0,0,0,0],scatter:true}
+  GREAT_WHITE:{weight:2,pays:[0,0,80,240,900],wild:true},
+  ORANGE_SHARK:{weight:6,pays:[0,0,50,150,500]},
+  PURPLE_SHARK:{weight:8,pays:[0,0,35,100,350]},
+  GREEN_SHARK:{weight:10,pays:[0,0,25,70,220]},
+  BLUE_SHARK:{weight:12,pays:[0,0,18,50,150]},
+  OXYGEN_TANK:{weight:16,pays:[0,0,12,30,90]},
+  CAMERA:{weight:18,pays:[0,0,10,24,70]},
+  GOGGLES:{weight:20,pays:[0,0,8,18,50]},
+  FLIPPERS:{weight:22,pays:[0,0,6,14,36]},
+  SEA_MINE:{weight:0,pays:[0,0,0,0,0],scatter:true},
+  SEAWEED:{weight:0,pays:[0,0,0,0,0],cover:true},
 };
+const REGULAR_KEYS=['ORANGE_SHARK','PURPLE_SHARK','GREEN_SHARK','BLUE_SHARK','OXYGEN_TANK','CAMERA','GOGGLES','FLIPPERS'];
+const REEL_WEIGHTS_KEYS=['GREAT_WHITE',...REGULAR_KEYS];
+const REEL_WEIGHTS=REEL_WEIGHTS_KEYS.map(k=>SYMBOLS[k].weight);
+const REEL_WEIGHTS_TOTAL=REEL_WEIGHTS.reduce((a,b)=>a+b,0);
+const LINE_CALIBRATION=1.005;
 
-const BASE_SYMBOL_KEYS=['SHARK','DIVER','TURTLE','FISH','SHELL','PEARL'];
-const BASE_WEIGHTS=BASE_SYMBOL_KEYS.map(k=>SYMBOLS[k].weight);
-const REVEAL_SYMBOLS=['SHARK','DIVER','TURTLE','FISH'];
-const LINE_CALIBRATION=.997;
+// Mystery stacks can reveal a regular symbol, the wild, or the special Golden
+// Shark (-> Razor Reveal). Own NOVA probabilities, documented, not claimed to
+// match any commercial game's undisclosed reveal weighting.
+const STACK_REVEAL_TABLE=[{type:'regular',weight:82},{type:'wild',weight:13},{type:'golden',weight:5}];
+// Razor Reveal instant-prize distribution: strongly right-skewed (own NOVA
+// design, high volatility). Values are stake multipliers; SCATTER is a distinct
+// outcome (no cash value) that counts toward the 3+ feature trigger anywhere on
+// the board, including from these mini-reels.
+const RAZOR_OUTCOMES=[
+  {kind:'scatter',weight:900},
+  {kind:'prize',value:1,weight:2400},{kind:'prize',value:2,weight:1800},{kind:'prize',value:5,weight:900},
+  {kind:'prize',value:10,weight:420},{kind:'prize',value:25,weight:160},{kind:'prize',value:50,weight:60},
+  {kind:'prize',value:100,weight:20},{kind:'prize',value:250,weight:6},{kind:'prize',value:500,weight:2},
+  {kind:'prize',value:1000,weight:.6},{kind:'prize',value:2500,weight:.12},
+];
+const RAZOR_TOTAL_WEIGHT=RAZOR_OUTCOMES.reduce((a,o)=>a+o.weight,0);
+const MAX_CYCLES=40; // defensive cap against a pathological rng chain, not expected to bind
+const LAND_STACK_CHANCE=.020,CASCADE_STACK_CHANCE=.008;
 
 function cryptoFloat(){
-  if(globalThis.crypto?.getRandomValues){
-    const a=new Uint32Array(1);globalThis.crypto.getRandomValues(a);return a[0]/4294967296;
-  }
+  if(globalThis.crypto?.getRandomValues){const a=new Uint32Array(1);globalThis.crypto.getRandomValues(a);return a[0]/4294967296;}
   return Math.random();
 }
 function randomId(){
@@ -445,70 +504,290 @@ function randomId(){
   const bytes=new Uint8Array(16);if(globalThis.crypto?.getRandomValues)globalThis.crypto.getRandomValues(bytes);else for(let i=0;i<16;i++)bytes[i]=Math.floor(Math.random()*256);
   return [...bytes].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
-function pickWeighted(rng=cryptoFloat){
-  const total=BASE_WEIGHTS.reduce((a,b)=>a+b,0);let r=rng()*total;
-  for(let i=0;i<BASE_SYMBOL_KEYS.length;i++){r-=BASE_WEIGHTS[i];if(r<=0)return BASE_SYMBOL_KEYS[i]}
-  return 'PEARL';
+function pickFromWeighted(entries,weightOf,rng){
+  const total=entries.reduce((a,e)=>a+weightOf(e),0);let r=rng()*total;
+  for(const e of entries){r-=weightOf(e);if(r<=0)return e;}
+  return entries[entries.length-1];
 }
-function randint(max,rng=cryptoFloat){return Math.min(max-1,Math.floor(rng()*max))}
+function pickReelSymbol(rng){
+  let r=rng()*REEL_WEIGHTS_TOTAL;
+  for(let i=0;i<REEL_WEIGHTS_KEYS.length;i++){r-=REEL_WEIGHTS[i];if(r<=0)return REEL_WEIGHTS_KEYS[i];}
+  return 'FLIPPERS';
+}
+function randint(max,rng){return Math.min(max-1,Math.floor(rng()*max));}
 
-function createGrid({rng=cryptoFloat,scatterReelChance=.09,mysteryChance=.18}={}){
-  const grid=Array.from({length:5},()=>Array.from({length:4},()=>pickWeighted(rng)));
-  // At most one scatter per reel; this keeps feature frequency realistic instead of flooding the grid.
-  for(let c=0;c<5;c++)if(rng()<scatterReelChance)grid[c][randint(4,rng)]='OCTO';
-  const mystery=[];
-  if(rng()<mysteryChance){
-    const col=1+randint(4,rng);const len=2+randint(3,rng);const start=randint(5-len,rng);const reveal=REVEAL_SYMBOLS[randint(REVEAL_SYMBOLS.length,rng)];
-    for(let r=start;r<Math.min(4,start+len);r++)if(grid[col][r]!=='OCTO'){grid[col][r]=reveal;mystery.push([col,r])}
+// ===========================================================================
+// MYSTERY STACK — a moving virtual 4-row window, not a per-cell overlay flag.
+// offset=0 means the stack's virtual span [offset,offset+3] exactly covers the
+// visible grid (all 4 rows visible); offset<0 means it is still scrolling in
+// from above (fewer visible rows, the rest are above row 0); offset>0 means it
+// is scrolling out below (the rest have exited past row 3).
+// ===========================================================================
+function visibleRowsForStack(stack){
+  const rows=[];for(let r=0;r<ROWS;r++){if(r>=stack.offset&&r<=stack.offset+3)rows.push(r);}
+  return rows;
+}
+function nudgeStack(stack,steps=1){return {...stack,offset:stack.offset+steps};}
+function isStackActive(stack){return visibleRowsForStack(stack).length>0;}
+function createMysteryStack({reel,rng,initialOffset=null}){
+  // New stacks always start still "arriving" (offset<=0) -- entering from above
+  // only, never born already mid-exit. Weighted toward a full 4-cell landing
+  // (own NOVA choice, documented, not a claim about the reference game): 4
+  // visible 55%, 3 visible 20%, 2 visible 15%, 1 visible 10%.
+  let offset=initialOffset;
+  if(offset==null){const roll=rng();offset=roll<.55?0:roll<.75?-1:roll<.90?-2:-3;}
+  return {id:randomId(),reel,offset,length:4,active:true,revealType:null,revealSymbol:null,golden:false,nudgeCount:0,revealed:false};
+}
+function decideStackReveal(rng){
+  const picked=pickFromWeighted(STACK_REVEAL_TABLE,o=>o.weight,rng);
+  if(picked.type==='wild')return {type:'wild',symbol:'GREAT_WHITE'};
+  if(picked.type==='golden')return {type:'golden',symbol:'GOLDEN_SHARK'};
+  return {type:'regular',symbol:REGULAR_KEYS[randint(REGULAR_KEYS.length,rng)]};
+}
+function resolveRazorCell(rng,forcedQueue){
+  if(forcedQueue&&forcedQueue.length){
+    const v=String(forcedQueue.shift()).trim().toUpperCase();
+    return v==='SCATTER'?{kind:'scatter'}:{kind:'prize',value:Number(v.replace(/X$/,''))||1};
   }
-  return {grid,mystery};
+  let r=rng()*RAZOR_TOTAL_WEIGHT;
+  for(const o of RAZOR_OUTCOMES){r-=o.weight;if(r<=0)return o.kind==='scatter'?{kind:'scatter'}:{kind:'prize',value:o.value};}
+  return {kind:'prize',value:1};
 }
 
+// ===========================================================================
+// GRID GENERATION — cells covered by an active stack's visible rows get
+// SEAWEED (a real, first-class grid symbol, not a DOM-only overlay flag); every
+// other cell is freshly, independently random every time this is called (used
+// both for the initial land and for each cascade cycle's "respin the rest").
+// ===========================================================================
+function coveredCellSet(stacks){
+  const set=new Set();for(const stack of stacks){if(!stack.active)continue;for(const r of visibleRowsForStack(stack))set.add(`${stack.reel}-${r}`);}
+  return set;
+}
+function generateReelSymbols({rng,covered,scatterChance=.042,forceScatterCount=0}){
+  const grid=Array.from({length:REELS},()=>Array.from({length:ROWS},()=>null));
+  for(let c=0;c<REELS;c++)for(let r=0;r<ROWS;r++){const key=`${c}-${r}`;grid[c][r]=covered.has(key)?'SEAWEED':pickReelSymbol(rng);}
+  if(forceScatterCount>0){
+    const free=[];for(let c=0;c<REELS;c++)for(let r=0;r<ROWS;r++)if(!covered.has(`${c}-${r}`))free.push([c,r]);
+    const reelsUsed=new Set();const chosen=[];
+    for(let i=free.length-1;i>0;i--){const j=randint(i+1,rng);[free[i],free[j]]=[free[j],free[i]];}
+    for(const [c,r] of free){if(chosen.length>=forceScatterCount)break;if(reelsUsed.has(c))continue;reelsUsed.add(c);chosen.push([c,r]);}
+    for(const [c,r] of chosen)grid[c][r]='SEA_MINE';
+  }else{
+    // At most one incidental scatter per reel, never on a covered cell -- a
+    // scatter never appears "under" seaweed.
+    for(let c=0;c<REELS;c++){
+      if(rng()<scatterChance){
+        const freeRows=[0,1,2,3].filter(r=>!covered.has(`${c}-${r}`));
+        if(freeRows.length)grid[c][freeRows[randint(freeRows.length,rng)]]='SEA_MINE';
+      }
+    }
+  }
+  return grid;
+}
+function applyReveal(grid,stack){for(const r of visibleRowsForStack(stack))grid[stack.reel][r]=stack.revealSymbol;return grid;}
+function createGrid({rng=cryptoFloat}={}){return {grid:generateReelSymbols({rng,covered:new Set()})};}
+
+// ===========================================================================
+// PAYLINE EVALUATION — wild-aware. For each line, walk left to right; wilds
+// extend a run of any base symbol, and a run that is ALL wild pays via the
+// wild's own (highest) paytable. Scatter (SEA_MINE) and an unrevealed mystery
+// cell (SEAWEED) both break a line match instead of extending it, and never
+// pay pre-reveal; the scatter itself pays "anywhere" on the board, counted
+// separately from paylines.
+// ===========================================================================
 function evaluateGrid(grid,stakeCents,{multiplier=1}={}){
   let rawLineWinCents=0;const wins=[];const lineBetCents=stakeCents/PAYLINES.length;
   PAYLINES.forEach((line,lineIndex)=>{
-    const first=grid[0][line[0]];if(SYMBOLS[first]?.scatter)return;
-    let count=1;for(let c=1;c<5;c++){if(grid[c][line[c]]===first)count++;else break}
-    const multiple=SYMBOLS[first]?.pays[count-1]||0;
+    const symbolsInLine=line.map((row,c)=>grid[c][row]);
+    if(SYMBOLS[symbolsInLine[0]]?.scatter||symbolsInLine[0]==='SEAWEED')return;
+    let baseSymbol=null,count=0;
+    for(let c=0;c<REELS;c++){
+      const sym=symbolsInLine[c];
+      if(SYMBOLS[sym]?.scatter||sym==='SEAWEED')break;
+      const isWild=SYMBOLS[sym]?.wild;
+      if(baseSymbol===null){if(isWild){count++;continue;}baseSymbol=sym;count++;continue;}
+      if(sym===baseSymbol||isWild){count++;continue;}
+      break;
+    }
+    // If the whole matched run turned out to be wild-only, baseSymbol stays
+    // null -- pay it via the wild's own table instead.
+    const payKey=baseSymbol||'GREAT_WHITE';
+    const multiple=SYMBOLS[payKey]?.pays[count-1]||0;
     if(count>=3&&multiple>0){
       const raw=multiple*lineBetCents*multiplier*LINE_CALIBRATION;rawLineWinCents+=raw;
-      wins.push({lineIndex,symbol:first,count,rawAmountCents:raw,cells:Array.from({length:count},(_,c)=>[c,line[c]])});
+      wins.push({lineIndex,symbol:payKey,count,rawAmountCents:raw,cells:Array.from({length:count},(_,c)=>[c,line[c]])});
     }
   });
-  const scatters=[];grid.forEach((col,c)=>col.forEach((s,r)=>{if(s==='OCTO')scatters.push([c,r])}));
-  const scatterCount=scatters.length;
-  const freeSpins=scatterCount===3?8:scatterCount===4?10:scatterCount>=5?12:0;
-  const scatterWinCents=scatterCount===3?stakeCents*2:scatterCount===4?stakeCents*10:scatterCount>=5?stakeCents*50:0;
-  if(scatterWinCents)wins.push({lineIndex:-1,symbol:'OCTO',count:scatterCount,rawAmountCents:scatterWinCents,cells:scatters});
-  const totalCents=Math.max(0,Math.round(rawLineWinCents+scatterWinCents));
-  const lineWinCents=Math.max(0,Math.round(rawLineWinCents));
+  const totalCents=Math.max(0,Math.round(rawLineWinCents));
   wins.forEach(w=>w.amountCents=Math.max(0,Math.round(w.rawAmountCents)));
-  return {totalCents,lineWinCents,scatterWinCents,wins,freeSpins,scatterCount};
+  return {totalCents,wins};
 }
+function countScatters(grid){const cells=[];grid.forEach((col,c)=>col.forEach((s,r)=>{if(s==='SEA_MINE')cells.push([c,r]);}));return cells;}
+function freeSpinsForScatterCount(n){return n===3?8:n===4?10:n>=5?12:0;}
 
-function generateSpin({stakeCents,isFreeSpin=false,multiplier=1,rng=cryptoFloat}={}){
-  const {grid,mystery}=createGrid({rng,mysteryChance:isFreeSpin?.45:.18});
-  const result=evaluateGrid(grid,stakeCents,{multiplier});
+// ===========================================================================
+// ROUND ORCHESTRATION — one settled round (one bet, or one free spin) computed
+// entirely up front from a single rng, returned as an ordered `steps` list the
+// UI only plays back. Two kinds of stack: TRANSIENT ones spawn during a round
+// and cascade (reveal -> evaluate -> nudge -> respin -> repeat) to full
+// completion WITHIN that round; PERSISTENT ones are the two feature-stacks that
+// open a Free Games bonus (reels 1 & 3, 0-indexed) and nudge exactly once per
+// actual free spin, carried across spins via persistentIn/persistentOut until
+// they fully exit. Own NOVA reconciliation of "cascade within one bet" (base
+// game) vs. "nudge once per feature spin" (free games) — a deliberate,
+// documented design choice, not a claim about the reference game's internals.
+// ===========================================================================
+function resolveRazorReveal(stack,rng,stakeCents,forcedQueue){
+  const cells=visibleRowsForStack(stack).map(r=>[stack.reel,r]);
+  const outcomes=cells.map(()=>resolveRazorCell(rng,forcedQueue));
+  let addedCents=0,scatterCells=[];
+  outcomes.forEach((o,i)=>{if(o.kind==='prize')addedCents+=Math.round(o.value*stakeCents);else scatterCells.push(cells[i]);});
+  return {cells,outcomes,addedCents,scatterCells};
+}
+function revealStack(stack,grid,rng,stakeCents,steps,totalsRef,scatterListRef,forcedRazorQueue){
+  grid=applyReveal(grid,stack);
+  if(!stack.revealed){
+    steps.push({type:'reveal',stackId:stack.id,reel:stack.reel,rows:visibleRowsForStack(stack),symbol:stack.revealSymbol,golden:stack.golden});
+    stack.revealed=true;
+    if(stack.golden){
+      const razor=resolveRazorReveal(stack,rng,stakeCents,forcedRazorQueue);
+      totalsRef.cents+=razor.addedCents;scatterListRef.push(...razor.scatterCells);
+      steps.push({type:'razorReveal',stackId:stack.id,cells:razor.cells,outcomes:razor.outcomes,addedCents:razor.addedCents});
+    }
+  }
+  return grid;
+}
+function spawnTransientStacks(rng,existingReels,forcedReels,isFirstLand,forcedStacks){
+  const spawned=[];
+  if(forcedStacks){
+    for(const spec of forcedStacks){
+      if(existingReels.has(spec.reel))continue;
+      const stack=createMysteryStack({reel:spec.reel,rng,initialOffset:spec.offset??0});
+      stack.revealType=spec.revealType||'regular';stack.revealSymbol=spec.revealSymbol||REGULAR_KEYS[0];stack.golden=stack.revealType==='golden';
+      spawned.push(stack);existingReels.add(spec.reel);
+    }
+    return spawned;
+  }
+  const candidateReels=(forcedReels&&isFirstLand)?forcedReels:[1,2,3,4].filter(r=>!existingReels.has(r));
+  const chance=isFirstLand?LAND_STACK_CHANCE:CASCADE_STACK_CHANCE;
+  for(const reel of candidateReels){
+    if(existingReels.has(reel))continue;
+    const forced=Boolean(forcedReels&&isFirstLand);
+    if(!forced&&rng()>=chance)continue;
+    const stack=createMysteryStack({reel,rng,initialOffset:forced?0:null});
+    const reveal=decideStackReveal(rng);
+    stack.revealType=reveal.type;stack.revealSymbol=reveal.symbol;stack.golden=reveal.type==='golden';
+    spawned.push(stack);existingReels.add(reel);
+  }
+  return spawned;
+}
+function runRound({stakeCents,multiplier,rng,persistentIn=[],forcedReels=null,forcePlan=null}){
+  const steps=[];const totalsRef={cents:0};const scatterCellsThisRound=[];
+  let persistent=persistentIn.map(s=>({...s,revealed:s.revealed??true}));
+  let transient=[];let nudgeEvents=0,multiplierGain=0;
+  const forcedRazorQueue=forcePlan?.razorOutcomes?[...forcePlan.razorOutcomes]:null;
+
+  const occupiedReels=new Set(persistent.filter(isStackActive).map(s=>s.reel));
+  const isFirstLand=persistentIn.length===0;
+  if(forcedReels&&isFirstLand){
+    for(const reel of forcedReels){
+      const stack=createMysteryStack({reel,rng,initialOffset:0});
+      const reveal=decideStackReveal(rng);
+      // The bonus-opening stacks are guaranteed a real (non-golden) reveal so
+      // the feature always has a clean, readable start -- own NOVA choice.
+      stack.revealType=reveal.type==='golden'?'regular':reveal.type;
+      stack.revealSymbol=reveal.type==='golden'?REGULAR_KEYS[randint(REGULAR_KEYS.length,rng)]:reveal.symbol;
+      stack.golden=false;
+      persistent.push(stack);occupiedReels.add(reel);
+    }
+  }
+  transient.push(...spawnTransientStacks(rng,occupiedReels,null,true,forcePlan?.stacks||null));
+
+  let grid=generateReelSymbols({rng,covered:coveredCellSet([...persistent,...transient]),forceScatterCount:forcePlan?.scatterCount||0});
+  steps.push({type:'land',grid:grid.map(c=>[...c]),persistentStacks:persistent.map(s=>({...s})),transientStacks:transient.map(s=>({...s}))});
+
+  for(const stack of persistent){if(isStackActive(stack))grid=revealStack(stack,grid,rng,stakeCents,steps,totalsRef,scatterCellsThisRound,forcedRazorQueue);}
+
+  // Every round evaluates its landed grid at least once, whether or not any
+  // mystery stack is involved (a do/while pattern, not a plain while keyed on
+  // "a stack is active" -- an earlier version of this engine made that mistake
+  // and silently never scored a stack-free spin at all).
+  let cycles=0,continueCascade=true;
+  while(continueCascade&&cycles<MAX_CYCLES){
+    cycles++;
+    for(const stack of transient){if(isStackActive(stack))grid=revealStack(stack,grid,rng,stakeCents,steps,totalsRef,scatterCellsThisRound,forcedRazorQueue);}
+    const coveredNow=coveredCellSet([...persistent,...transient]);
+    const scatterCellsNow=countScatters(grid).filter(([c,r])=>!coveredNow.has(`${c}-${r}`));
+    const evalResult=evaluateGrid(grid,stakeCents,{multiplier});
+    totalsRef.cents+=evalResult.totalCents;scatterCellsThisRound.push(...scatterCellsNow);
+    steps.push({type:'winEval',grid:grid.map(c=>[...c]),wins:evalResult.wins,addedCents:evalResult.totalCents,scatterCells:scatterCellsNow});
+
+    const beforeActive=transient.filter(isStackActive).length;
+    transient=transient.map(s=>isStackActive(s)?{...nudgeStack(s,1),revealed:s.revealed,revealType:s.revealType,revealSymbol:s.revealSymbol,golden:s.golden,nudgeCount:s.nudgeCount+1}:s);
+    nudgeEvents+=beforeActive;
+    if(beforeActive)steps.push({type:'nudge',scope:'transient',stacks:transient.map(s=>({id:s.id,reel:s.reel,offset:s.offset,active:isStackActive(s)}))});
+
+    if(!transient.some(isStackActive)){continueCascade=false;break;}
+    const stillOccupied=new Set([...persistent.filter(isStackActive),...transient.filter(isStackActive)].map(s=>s.reel));
+    const midRoundNew=spawnTransientStacks(rng,stillOccupied,null,false,null);
+    transient.push(...midRoundNew);
+    grid=generateReelSymbols({rng,covered:coveredCellSet([...persistent,...transient])});
+    steps.push({type:'respin',grid:grid.map(c=>[...c]),newStacks:midRoundNew.map(s=>({...s}))});
+  }
+
+  // Persistent stacks nudge exactly once, at the very end of this round (after
+  // their reveal and this round's win evaluation); each valid nudge grows the
+  // feature multiplier by 1.
+  const persistentBeforeNudge=persistent.filter(isStackActive);
+  persistent=persistent.map(s=>isStackActive(s)?{...nudgeStack(s,1),revealed:s.revealed,revealType:s.revealType,revealSymbol:s.revealSymbol,golden:s.golden,nudgeCount:s.nudgeCount+1}:s);
+  multiplierGain=persistentBeforeNudge.length;nudgeEvents+=persistentBeforeNudge.length;
+  if(persistentBeforeNudge.length)steps.push({type:'nudge',scope:'persistent',stacks:persistent.map(s=>({id:s.id,reel:s.reel,offset:s.offset,active:isStackActive(s)}))});
+
+  const scatterCount=scatterCellsThisRound.length;
+  const freeSpinsAwarded=freeSpinsForScatterCount(scatterCount);
+  return {steps,totalCents:totalsRef.cents,scatterCount,scatterCells:scatterCellsThisRound,freeSpinsAwarded,nudgeEvents,multiplierGain,persistentOut:persistent.filter(isStackActive)};
+}
+function generateSharkRound({stakeCents,isFreeSpin=false,multiplier=1,persistentIn=[],forcedReels=null,forcePlan=null,rng=cryptoFloat}={}){
+  const round=runRound({stakeCents,multiplier,rng,persistentIn,forcedReels,forcePlan});
+  return {id:randomId(),createdAt:Date.now(),gameKey:GAME_KEY,stakeCents,isFreeSpin,multiplier,steps:round.steps,totalCents:round.totalCents,scatterCount:round.scatterCount,scatterCells:round.scatterCells,freeSpins:round.freeSpinsAwarded,nudgeEvents:round.nudgeEvents,multiplierGain:round.multiplierGain,persistentOut:round.persistentOut};
+}
+function generateSpin({stakeCents,isFreeSpin=false,multiplier=1,persistentIn=[],forcedReels=null,forcePlan=null,rng=cryptoFloat}={}){
+  const round=generateSharkRound({stakeCents,isFreeSpin,multiplier,persistentIn,forcedReels,forcePlan,rng});
+  const gridSteps=round.steps.filter(s=>s.grid);
+  const landGrid=gridSteps.length?gridSteps[0].grid:[];
+  const finalGrid=gridSteps.length?gridSteps[gridSteps.length-1].grid:landGrid;
+  const wins=round.steps.filter(s=>s.type==='winEval').flatMap(s=>s.wins||[]);
   return {
-    id:randomId(),createdAt:Date.now(),stakeCents,isFreeSpin,multiplier,grid,mystery,
-    ...result,
-    // During free spins a mystery reveal raises the multiplier for the next free spin.
-    nextMultiplier:isFreeSpin&&mystery.length?Math.min(10,multiplier+1):multiplier
+    id:round.id,createdAt:round.createdAt,stakeCents,isFreeSpin,multiplier,
+    grid:landGrid,finalGrid,wins,totalCents:round.totalCents,
+    freeSpins:round.freeSpins,scatterCount:round.scatterCount,
+    steps:round.steps,persistentOut:round.persistentOut,multiplierGain:round.multiplierGain,
+    nextMultiplier:multiplier+(round.multiplierGain||0),
   };
 }
 
+// Free Games are stack-driven, not a simple remaining-count countdown: `remaining`
+// is a spin budget, but the feature keeps going as long as ANY persistent stack is
+// still active even if remaining has hit 0 (a stack mid-nudge is never cut off),
+// and a fresh 3+ scatter hit during the feature extends `remaining` further.
 function nextFeatureState(previous,spin){
-  const current=previous&&previous.remaining>0?{remaining:previous.remaining,multiplier:previous.multiplier||2,stakeCents:previous.stakeCents||spin.stakeCents}:{remaining:0,multiplier:2,stakeCents:spin.stakeCents};
-  if(!spin.isFreeSpin&&spin.freeSpins>0)return {remaining:spin.freeSpins,multiplier:2,stakeCents:spin.stakeCents};
-  if(spin.isFreeSpin){
-    let remaining=Math.max(0,current.remaining-1);
-    if(spin.freeSpins>0)remaining=Math.min(30,remaining+Math.min(5,spin.freeSpins));
-    return {remaining,multiplier:spin.nextMultiplier||current.multiplier,stakeCents:current.stakeCents};
+  const prevRemaining=Number(previous?.remaining)||0,prevMultiplier=Number(previous?.multiplier)||2;
+  if(!spin.isFreeSpin){
+    if(spin.freeSpins>0)return {remaining:spin.freeSpins,multiplier:2,stakeCents:spin.stakeCents,persistentStacks:[]};
+    return {remaining:0,multiplier:2,stakeCents:spin.stakeCents,persistentStacks:[]};
   }
-  return {remaining:0,multiplier:2,stakeCents:spin.stakeCents};
+  let remaining=Math.max(0,prevRemaining-1);
+  if(spin.freeSpins>0)remaining+=spin.freeSpins;
+  const persistentStacks=spin.persistentOut||[];
+  const multiplier=prevMultiplier+(spin.multiplierGain||0);
+  if(remaining<=0&&!persistentStacks.length)return {remaining:0,multiplier:2,stakeCents:spin.stakeCents,persistentStacks:[]};
+  return {remaining,multiplier,stakeCents:previous?.stakeCents||spin.stakeCents,persistentStacks};
 }
 
-window.__gameMath={STAKES_CENTS, GAME_KEY, PAYLINES, SYMBOLS, cryptoFloat, randomId, createGrid, evaluateGrid, generateSpin, nextFeatureState};
+window.__gameMath={STAKES_CENTS,GAME_KEY,ROWS,REELS,PAYLINES,SYMBOLS,REGULAR_KEYS,LINE_CALIBRATION,
+  cryptoFloat,randomId,createGrid,evaluateGrid,generateSpin,nextFeatureState,
+  visibleRowsForStack,nudgeStack,isStackActive,createMysteryStack,decideStackReveal,generateReelSymbols,coveredCellSet};
 })();
 
 
@@ -694,6 +973,24 @@ const fish=svg(`<path d="M20 54c10-22 34-31 55-18l17-13-3 28 3 26-18-13c-22 13-4
 const turtle=svg(`<ellipse cx="52" cy="54" rx="30" ry="25" fill="#55a56a" stroke="#1b5a3b" stroke-width="4"/><path d="M31 37l42 33M73 37L31 70M52 30v48M22 54h60" stroke="#2d7a4c" stroke-width="3" opacity=".75"/><ellipse cx="86" cy="54" rx="11" ry="9" fill="#6bc57a" stroke="#1b5a3b" stroke-width="3"/><circle cx="90" cy="51" r="2" fill="#0f2f24"/><path d="M25 36l-12-9m11 45-13 9m47-1 5 13" stroke="#4aa866" stroke-width="7" stroke-linecap="round"/>`);
 const diver=svg(`<circle cx="50" cy="40" r="22" fill="#263746" stroke="#0a1118" stroke-width="4"/><rect x="28" y="30" width="44" height="22" rx="9" fill="#85dded" stroke="#132533" stroke-width="4"/><rect x="34" y="36" width="14" height="9" rx="3" fill="#dffbff" opacity=".8"/><rect x="52" y="36" width="14" height="9" rx="3" fill="#dffbff" opacity=".8"/><path d="M28 62c8-8 36-8 44 0l9 27H19z" fill="#e7a928" stroke="#684817" stroke-width="4"/><path d="M72 43h13v24" fill="none" stroke="#cbd8df" stroke-width="5" stroke-linecap="round"/>`);
 const shark=svg(`<path d="M10 58c18-24 43-34 68-23l15-14-2 26 7 15-20-3c-20 19-48 21-68-1z" fill="#6fa6b9" stroke="#1f5060" stroke-width="4"/><path d="M43 34l10-22 13 24" fill="#5a91a3" stroke="#1f5060" stroke-width="4"/><path d="M31 65c15 6 30 4 42-4" fill="#eef7f7"/><circle cx="28" cy="45" r="4" fill="#071116"/><path d="M72 46l16 3-15 6" fill="#ebf5f5"/>`);
+// Shark Abyss v2 roster: one shared silhouette shape reused across the wild and
+// the four colored high-pay sharks (varying fill/fin-accent only, matching the
+// "same shape family, different rank" convention used by the diver-gear lows
+// below), plus original shapes for the special symbols. Own NOVA art, no emoji,
+// thicker highlight strokes and a soft rim-light per symbol per the art-direction
+// brief (section 8/15).
+const sharkBody=(fill,dark,finAccent)=>svg(`<path d="M8 60c17-27 45-38 71-26l16-16-1 29 8 16-21-2c-19 22-50 25-71 0-4 8-3 15 2 22-11-4-16-13-4-23z" fill="${fill}" stroke="${dark}" stroke-width="5"/><path d="M45 32l11-24 14 26" fill="${finAccent}" stroke="${dark}" stroke-width="5" stroke-linejoin="round"/><path d="M30 66c16 7 33 5 46-4" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="4" stroke-linecap="round"/><circle cx="26" cy="46" r="4.5" fill="#08131a"/><circle cx="24.5" cy="44.5" r="1.6" fill="#fff" opacity=".85"/><path d="M75 47l18 3-17 7z" fill="${finAccent}" stroke="${dark}" stroke-width="4" stroke-linejoin="round"/>`);
+const greatWhite=svg(`<path d="M6 60c18-29 47-40 74-27l17-17-1 31 9 17-23-2c-20 23-52 26-74 0-4 9-3 16 2 24-12-5-17-14-4-26z" fill="#eef6fa" stroke="#37505c" stroke-width="5"/><path d="M46 30l12-26 15 28" fill="#dcedf3" stroke="#37505c" stroke-width="5" stroke-linejoin="round"/><path d="M46 30l12-26 4 8-9 20z" fill="#ff5a4d"/><path d="M31 67c17 8 35 5 49-4" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="4" stroke-linecap="round"/><circle cx="27" cy="47" r="5" fill="#0a151b"/><circle cx="25.3" cy="45.3" r="1.8" fill="#fff"/><path d="M78 49l19 3-18 8z" fill="#dcedf3" stroke="#37505c" stroke-width="4" stroke-linejoin="round"/><path d="M20 55c5-8 12-14 20-18" stroke="rgba(255,90,77,.55)" stroke-width="3" stroke-linecap="round"/>`);
+const orangeShark=sharkBody('#f0913a','#7a3c10','#ffb066');
+const purpleShark=sharkBody('#a565e0','#4a2570','#c896f2');
+const greenShark=sharkBody('#4fbf7a','#1c5c37','#7fe0a3');
+const blueShark=sharkBody('#4a9fd8','#1c4a6b','#7fc4ee');
+const oxygenTank=svg(`<rect x="36" y="14" width="28" height="14" rx="4" fill="#8fa3ad" stroke="#334349" stroke-width="4"/><rect x="30" y="26" width="40" height="58" rx="14" fill="#eec23a" stroke="#7c5b12" stroke-width="5"/><rect x="30" y="26" width="40" height="20" rx="10" fill="#fddc7c" opacity=".7"/><circle cx="50" cy="10" r="6" fill="#5c6b71" stroke="#2c363a" stroke-width="3"/><path d="M40 58h20M40 68h20" stroke="#95710f" stroke-width="4" stroke-linecap="round"/>`);
+const camera=svg(`<rect x="14" y="34" width="72" height="46" rx="10" fill="#3b4652" stroke="#151b21" stroke-width="5"/><rect x="34" y="20" width="26" height="16" rx="5" fill="#3b4652" stroke="#151b21" stroke-width="5"/><circle cx="50" cy="58" r="20" fill="#0d1216" stroke="#4d5a66" stroke-width="4"/><circle cx="50" cy="58" r="12" fill="#2f7fb8"/><circle cx="45" cy="53" r="4" fill="#bfe6ff" opacity=".8"/><circle cx="72" cy="44" r="4" fill="#ff5a4d"/>`);
+const goggles=svg(`<circle cx="31" cy="52" r="20" fill="#3fc4e0" stroke="#155569" stroke-width="5"/><circle cx="69" cy="52" r="20" fill="#3fc4e0" stroke="#155569" stroke-width="5"/><circle cx="31" cy="52" r="12" fill="#dffcff" opacity=".55"/><circle cx="69" cy="52" r="12" fill="#dffcff" opacity=".55"/><path d="M51 48h-2M51 56h-2" stroke="#155569" stroke-width="5" stroke-linecap="round"/><path d="M11 40c-6 4-6 20 0 24M89 40c6 4 6 20 0 24" fill="none" stroke="#0d3947" stroke-width="5" stroke-linecap="round"/>`);
+const flippers=svg(`<path d="M22 20c-14 12-16 40-2 60 6 9 18 9 22-2 6-16-2-30-10-38-4-16 2-24-10-20z" fill="#ff7a59" stroke="#8c2f1c" stroke-width="5"/><path d="M78 20c14 12 16 40 2 60-6 9-18 9-22-2-6-16 2-30 10-38 4-16-2-24 10-20z" fill="#ff7a59" stroke="#8c2f1c" stroke-width="5"/><path d="M32 38c6 8 8 18 6 28M68 38c-6 8-8 18-6 28" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="4" stroke-linecap="round"/>`);
+const seaMine=svg(`<circle cx="50" cy="54" r="26" fill="#232a30" stroke="#0a0d10" stroke-width="5"/><circle cx="42" cy="46" r="7" fill="#4a565e" opacity=".8"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="47" y="8" width="6" height="20" rx="3" fill="#3a4349" stroke="#14181c" stroke-width="2" transform="rotate(${a} 50 54)"/>`).join('')}<circle cx="50" cy="54" r="26" fill="none" stroke="#ff5a4d" stroke-width="2.5" stroke-dasharray="4 6" opacity=".85"/><circle cx="44" cy="48" r="3.5" fill="#ff5a4d"/>`);
+const goldenShark=svg(`<path d="M8 60c18-29 47-40 74-27l17-17-1 31 9 17-23-2c-20 23-52 26-74 0-4 9-3 16 2 24-12-5-17-14-4-26z" fill="url(#novaGoldGrad)" stroke="#7a5313" stroke-width="5"/><path d="M46 30l12-26 15 28" fill="#ffe293" stroke="#7a5313" stroke-width="5" stroke-linejoin="round"/><path d="M31 67c17 8 35 5 49-4" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="4" stroke-linecap="round"/><circle cx="27" cy="47" r="5" fill="#3a2a05"/><circle cx="25.3" cy="45.3" r="1.8" fill="#fff"/><path d="M78 49l19 3-18 8z" fill="#ffe293" stroke="#7a5313" stroke-width="4" stroke-linejoin="round"/><defs><radialGradient id="novaGoldGrad" cx="40%" cy="30%" r="80%"><stop offset="0%" stop-color="#fff6d0"/><stop offset="45%" stop-color="#ffd85e"/><stop offset="100%" stop-color="#c8890f"/></radialGradient></defs>`);
 const octo=svg(`<path d="M28 47c0-20 10-31 25-31 16 0 25 12 25 31v14H28z" fill="#bc57b7" stroke="#54275e" stroke-width="4"/><circle cx="44" cy="42" r="4" fill="#fff"/><circle cx="62" cy="42" r="4" fill="#fff"/><circle cx="44" cy="43" r="2" fill="#1a1222"/><circle cx="62" cy="43" r="2" fill="#1a1222"/><path d="M31 61c-11 7-16 16-10 25 5 6 14 2 18-8m5-17c-4 10-3 23 7 27 9 2 13-8 9-18m5-9c2 12 9 23 19 19 8-4 5-14-2-21" fill="none" stroke="#a744a6" stroke-width="8" stroke-linecap="round"/>`);
 const scarab=svg(`<ellipse cx="50" cy="55" rx="20" ry="29" fill="#2db5a9" stroke="#0c5f65" stroke-width="4"/><path d="M50 29v53M30 52h40M25 38L11 28m14 43L9 81m66-43 14-10M75 71l15 10" stroke="#167d80" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="22" r="8" fill="#e2b54d"/>`);
 const crown=svg(`<path d="M15 30l20 16 15-28 15 28 20-16-7 49H22z" fill="#edbd47" stroke="#704515" stroke-width="5" stroke-linejoin="round"/><circle cx="35" cy="48" r="5" fill="#27b7c2"/><circle cx="50" cy="43" r="5" fill="#d75372"/><circle cx="65" cy="48" r="5" fill="#27b7c2"/><path d="M27 68h46" stroke="#fff0a4" stroke-width="5" stroke-linecap="round"/>`);
@@ -703,14 +1000,14 @@ const book=svg(`<path d="M19 24c17-8 28-5 31 1v58c-7-8-18-8-31-2z" fill="#9b3b2c
 const royalLetter=(txt,color='#3a1b64')=>svg(`<path d="M18 14h64v72H18z" rx="8" fill="rgba(255,245,213,.18)"/><text x="50" y="68" text-anchor="middle" font-size="52" font-weight="900" font-family="Georgia,serif" fill="${color}" stroke="#f0c66b" stroke-width="1.3">${txt}</text>`);
 
 const ART={
-  'shark-abyss':{SHARK:shark,DIVER:diver,TURTLE:turtle,FISH:fish,SHELL:shell,PEARL:pearl,OCTO:octo},
+  'shark-abyss':{GREAT_WHITE:greatWhite,ORANGE_SHARK:orangeShark,PURPLE_SHARK:purpleShark,GREEN_SHARK:greenShark,BLUE_SHARK:blueShark,OXYGEN_TANK:oxygenTank,CAMERA:camera,GOGGLES:goggles,FLIPPERS:flippers,SEA_MINE:seaMine,GOLDEN_SHARK:goldenShark},
   'fruit-reactor':{SEVEN:seven,BELL:bell,WATERMELON:melon,PLUM:grape,ORANGE:orange,LEMON:lemon,CHERRY:cherry},
   'fancy-harvest':{SEVEN:seven,GRAPE:grape,WATERMELON:melon,PLUM:plum,ORANGE:orange,LEMON:lemon,CHERRY:cherry},
   'tomb-of-kings':{KING:crown,QUEEN:amphora,GUARD:guard,SCARAB:scarab,A:royalLetter('A'),K:royalLetter('K'),Q:royalLetter('Q'),J:royalLetter('J'),TEN:royalLetter('10'),BOOK:book}
 };
 
 function symbolMarkup(gameKey,symbolKey){return ART[gameKey]?.[symbolKey]||`<span class="symbol-fallback">${String(symbolKey||'?')}</span>`}
-function lobbyArt(gameKey){const keys={'shark-abyss':'SHARK','fruit-reactor':'SEVEN','fancy-harvest':'WATERMELON','tomb-of-kings':'BOOK'};return symbolMarkup(gameKey,keys[gameKey])}
+function lobbyArt(gameKey){const keys={'shark-abyss':'GREAT_WHITE','fruit-reactor':'SEVEN','fancy-harvest':'WATERMELON','tomb-of-kings':'BOOK'};return symbolMarkup(gameKey,keys[gameKey])}
 function featureSymbolMarkup(gameKey,symbolKey){return `<span class="feature-symbol-mini">${symbolMarkup(gameKey,symbolKey)}</span>`}
 
 window.__symbolArt={symbolMarkup, lobbyArt, featureSymbolMarkup};
@@ -735,7 +1032,7 @@ const soundIconMarkup=on=>on?'<svg class="ui-icon" viewBox="0 0 24 24" aria-hidd
 
 class LocalCasinoStore{
   constructor(){this.key='nova-casino-state-v2';this.state=this.load()}
-  fallback(){return {balanceCents:10000,stakeIndex:1,stats:{spins:0,paidSpins:0,wageredCents:0,wonCents:0,biggestWinCents:0},favorites:['shark-abyss'],profile:{name:'Spieler',friendCode:'LOCAL'},pendingSpin:null,pendingRequest:null,featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null,gameStates:{'shark-abyss':{featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null},'fruit-reactor':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'fancy-harvest':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'tomb-of-kings':{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}},algaeBand:null,algaePresentation:null,pendingGamble:null,pendingGambleAction:null,riskMode:'card',sound:true,turbo:false,backendMode:'remote'};}
+  fallback(){return {balanceCents:10000,stakeIndex:1,stats:{spins:0,paidSpins:0,wageredCents:0,wonCents:0,biggestWinCents:0},favorites:['shark-abyss'],profile:{name:'Spieler',friendCode:'LOCAL'},pendingSpin:null,pendingRequest:null,featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null,gameStates:{'shark-abyss':{featureState:{remaining:0,multiplier:2,stakeCents:20,persistentStacks:[]},sessionId:null},'fruit-reactor':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'fancy-harvest':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'tomb-of-kings':{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}},pendingGamble:null,pendingGambleAction:null,riskMode:'card',sound:true,turbo:false,backendMode:'remote'};}
   load(){
     const fallback=this.fallback();
     try{
@@ -762,13 +1059,13 @@ let spinning=false,audioCtx=null,toastTimer=null,remoteFriends=[],remoteActivity
 // cancel them, instead of leaving them to run out their duration on now-detached nodes.
 const activeReelAnimations=new Set();
 const GAME_DEFS={
-  'shark-abyss':{title:'SHARK ABYSS',logo:'<span>SHARK</span><b>ABYSS</b>',symbols:SYMBOLS,rows:4,info:'5 × 4 Walzen · 20 Linien · hohe Volatilität. Der Gesamteinsatz wird auf 20 Linien verteilt. Drei oder mehr Kraken starten 8–12 Freispiele. In Freispielen beginnt der Multiplikator bei x2; Mystery-Reveals erhöhen ihn bis x10.',rtp:'88,43 % simuliert'},
+  'shark-abyss':{title:'SHARK ABYSS',logo:'<span>SHARK</span><b>ABYSS</b>',symbols:SYMBOLS,rows:4,info:'5 × 4 Walzen · 20 Linien · hohe Volatilität. Mystery-Stacks (Seetang) decken ganze Walzenabschnitte ab, öffnen sich und rutschen dann eine Reihe nach unten. Enthüllt eine Stack den Golden Shark, startet ein Razor Reveal mit Sofortgewinnen bis 2500×. Drei oder mehr Seeminen starten Freispiele mit Stacks auf Walze 2 und 4 und einem steigenden Multiplikator.',rtp:'96,76 % simuliert (10 Mio. Spins, Ziel 96,5–96,8 %)'},
   'fruit-reactor':{title:'FRUIT REACTOR',logo:'<span>FRUIT</span><b>REACTOR</b>',symbols:FRUIT_SYMBOLS,rows:3,info:'5 × 3 Walzen · 5 feste Linien · klassischer Früchte-Slot. Gewinne laufen von links nach rechts; Kirschen zählen bereits ab zwei Treffern. Keine Wilds, Scatter oder Freispiele. Gewinne können per Rot/Schwarz riskiert werden.',rtp:'88,63 % simuliert',gamble:['card']},
   'fancy-harvest':{title:'FANCY HARVEST',logo:'<span>FANCY</span><b>HARVEST</b>',symbols:FANCY_SYMBOLS,rows:3,info:'5 × 3 Walzen · 5 feste Linien · niedrige Volatilität. Klassische Früchte ohne Wild, Scatter oder Freispiele. Nach Gewinnen stehen Kartenrisiko und Leiterrisiko zur Wahl.',rtp:'88,22 % simuliert',gamble:['card','ladder']},
   'tomb-of-kings':{title:'TOMB OF KINGS',logo:'<span>TOMB OF</span><b>KINGS</b>',symbols:BOOK_SYMBOLS,rows:3,info:'5 × 3 Walzen · 10 Linien · hohe Volatilität. Drei oder mehr Bücher starten 10 Freispiele. Zu Beginn wird ein zufälliges reguläres Symbol gewählt, das sich in den Freispielen auf drei oder mehr getroffenen Walzen vollständig ausdehnt. Drei Bücher retriggern weitere 10 Freispiele.',rtp:'87,25 % simuliert'}
 };
 const gameDef=()=>GAME_DEFS[currentGame];
-function getGameState(key=currentGame){const fallback=key==='shark-abyss'?{featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null}:key==='tomb-of-kings'?{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}:{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null};return {...fallback,...(store.state.gameStates?.[key]||{}),featureState:{...fallback.featureState,...(store.state.gameStates?.[key]?.featureState||{})}}}
+function getGameState(key=currentGame){const fallback=key==='shark-abyss'?{featureState:{remaining:0,multiplier:2,stakeCents:20,persistentStacks:[]},sessionId:null}:key==='tomb-of-kings'?{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}:{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null};return {...fallback,...(store.state.gameStates?.[key]||{}),featureState:{...fallback.featureState,...(store.state.gameStates?.[key]?.featureState||{})}}}
 function patchGameState(key,patch){const current=getGameState(key);store.patch({gameStates:{...(store.state.gameStates||{}),[key]:{...current,...patch,featureState:patch.featureState?{...current.featureState,...patch.featureState}:current.featureState}}})}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const RISK_GAMES=new Set(['fruit-reactor','fancy-harvest']);
@@ -782,76 +1079,137 @@ const gambleActive=()=>RISK_GAMES.has(currentGame)&&hasPendingGamble()&&store.st
 const riskSpinBlocked=()=>hasPendingGamble();
 const localCard=(rng=cryptoFloat)=>{const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'],suits=[['♥','red'],['♦','red'],['♠','black'],['♣','black']];const n=Math.floor(rng()*52),[suit,color]=suits[Math.floor(n/13)],rank=ranks[n%13];return {rank,suit,color}};
 
-const algaeKey=(c,r)=>`${c}-${r}`;
+// Mystery Stack rendering (Shark Abyss v2): SEAWEED is a real, first-class grid
+// symbol produced by the math engine itself (see game-math.js), not a DOM-only
+// overlay flag layered on top of an unrelated random grid. A cell just shows the
+// seaweed/frond visual whenever the CURRENT grid snapshot says 'SEAWEED' there —
+// there is no separate "cover map"/"countdown remaining" bookkeeping on the UI
+// side anymore; the engine's own step sequence (see presentSharkSteps) is the
+// only thing that ever mutates which cells are covered.
 function algaeMarkup(){return `<span class="algae-frond a1"></span><span class="algae-frond a2"></span><span class="algae-frond a3"></span><span class="algae-frond a4"></span><span class="algae-frond a5"></span>`}
-function winningCellKeys(spin){return new Set((spin.wins||[]).flatMap(w=>w.cells||[]).map(([c,r])=>algaeKey(c,r)))}
-// Algae is a single contiguous vertical band in one reel column (createGrid() only
-// ever seeds one such run per triggering spin) that erodes exactly one row per spin,
-// from the top row of the band downward, until the whole band is gone -- e.g. a band
-// covering rows 0-3 shows all 4 rows covered on the spin it appears, then row 0
-// clears next spin, then row 1, then row 2, then row 3 (band gone). It is a pure
-// visual overlay: the real grid underneath is freshly randomized every spin
-// regardless (evaluateGrid() always scores spin.grid directly, algae never affects
-// it), so the band tracks only which rows of a fixed column are still covered, never
-// the symbol underneath. A win landing on a still-covered row reveals the entire
-// remaining band at once (never leaves a revealed gap in the middle of a covered band).
-function prepareAlgaePresentation(spin){
-  if(currentGame!=='shark-abyss')return {cover:{},tick:[],seeded:[],reveal:[]};
-  const cached=store.state.algaePresentation;if(cached?.spinId===spin.id)return cached;
-  const wins=winningCellKeys(spin);
-  const tick=[],seeded=[],reveal=[];
-  let band=store.state.algaeBand||null,freshBand=false;
-  if(band){
-    const stillCovered=band.rows.slice(band.revealedCount);
-    if(stillCovered.some(r=>wins.has(algaeKey(band.col,r)))){
-      stillCovered.forEach(r=>reveal.push({col:band.col,row:r,reason:'win'}));
-      band=null;
-    }else{
-      reveal.push({col:band.col,row:band.rows[band.revealedCount],reason:'countdown'});
-      const revealedCount=band.revealedCount+1;
-      band=revealedCount<band.rows.length?{...band,revealedCount}:null;
-    }
-  }
-  if(!band&&(spin.mystery||[]).length){
-    const col=spin.mystery[0][0];
-    const rows=[...new Set(spin.mystery.filter(([c])=>c===col).map(([,r])=>r))].sort((a,b)=>a-b);
-    if(rows.some(r=>wins.has(algaeKey(col,r)))){
-      rows.forEach(r=>reveal.push({col,row:r,reason:'win'}));
-    }else{
-      band={col,rows,revealedCount:0};freshBand=true;
-      rows.forEach(r=>seeded.push(algaeKey(col,r)));
-    }
-  }
-  const cover={};
-  if(band){
-    band.rows.slice(band.revealedCount).forEach((r,i)=>{
-      const key=algaeKey(band.col,r);
-      cover[key]={col:band.col,row:r,remaining:i+1};
-      if(!freshBand)tick.push(key);
-    });
-  }
-  const presentation={spinId:spin.id,cover,tick,seeded,reveal};
-  store.patch({algaeBand:band,algaePresentation:presentation});
-  return presentation;
-}
-function buildCellElement(c,r,sym,algaeMap,mystery){
-  const d=document.createElement('div');d.className='symbol';d.dataset.cell=`${c}-${r}`;d.dataset.symbol=sym;d.innerHTML=symbolMarkup(currentGame,sym);
-  const state=algaeMap[algaeKey(c,r)];
-  if(state){d.classList.add('algae');d.dataset.remaining=String(Math.max(0,Number(state.remaining||0)));d.innerHTML=algaeMarkup()}
-  else if(mystery.some(([mc,mr])=>mc===c&&mr===r)){d.classList.add('algae');d.dataset.remaining='5';d.innerHTML=algaeMarkup()}
+function buildCellElement(c,r,sym){
+  const d=document.createElement('div');d.className='symbol';d.dataset.cell=`${c}-${r}`;d.dataset.symbol=sym;
+  if(sym==='SEAWEED'){d.classList.add('algae');d.innerHTML=algaeMarkup();}
+  else d.innerHTML=symbolMarkup(currentGame,sym);
   return d;
 }
-function renderGrid(grid,{mystery=[],algae=null}={}){
-  const algaeMap=algae||{};els.reels.innerHTML='';grid.forEach((col,c)=>{const reel=document.createElement('div');reel.className='reel';reel.dataset.reel=String(c);col.forEach((sym,r)=>reel.appendChild(buildCellElement(c,r,sym,algaeMap,mystery)));els.reels.appendChild(reel)})
+function renderGrid(grid){
+  els.reels.innerHTML='';grid.forEach((col,c)=>{const reel=document.createElement('div');reel.className='reel';reel.dataset.reel=String(c);col.forEach((sym,r)=>reel.appendChild(buildCellElement(c,r,sym)));els.reels.appendChild(reel)})
 }
 // Swaps a single already-in-DOM .reel's content to its final, static symbols — used the
-// instant that reel's spin animation lands, so the rest of the app (algae countdown,
+// instant that reel's spin animation lands, so the rest of the app (mystery stacks,
 // expanding symbol, paylines, winner highlighting) keeps operating on the exact same
 // data-cell/.symbol structure renderGrid() has always produced.
-function landReelColumn(reelEl,c,colSymbols,algaeMap,mystery=[]){
-  reelEl.innerHTML='';colSymbols.forEach((sym,r)=>reelEl.appendChild(buildCellElement(c,r,sym,algaeMap,mystery)));
+function landReelColumn(reelEl,c,colSymbols){
+  reelEl.innerHTML='';colSymbols.forEach((sym,r)=>reelEl.appendChild(buildCellElement(c,r,sym)));
 }
 function generateFillerGrid(){return currentGame==='fruit-reactor'?createFruitGrid():currentGame==='fancy-harvest'?createFancyGrid():currentGame==='tomb-of-kings'?createBookGrid():createGrid().grid}
+const RAZOR_PREVIEW_LABELS=['1×','2×','5×','10×','25×','50×','100×','?'];
+function sharkStepCells(reel,rows){return rows.map(r=>$(`[data-cell="${reel}-${r}"]`)).filter(Boolean)}
+// One mystery stack revealing: the seaweed on its currently-visible rows opens
+// (from the center outward, all cells together — never one-by-one, since a real
+// stack always shows the SAME symbol on every visible cell of the band) to show
+// the symbol the engine already decided before this animation ever started.
+async function presentMysteryReveal(step,turbo){
+  const cells=sharkStepCells(step.reel,step.rows);
+  if(!cells.length)return;
+  els.feature.textContent=step.golden?'GOLDEN SHARK!':'MYSTERY REVEAL';
+  cells.forEach(cell=>cell.classList.add('algae-breathe'));
+  soundFx('anticipation',.85);await sleep(turbo?50:170);
+  cells.forEach(cell=>cell.classList.remove('algae-breathe'));
+  cells.forEach(cell=>cell.classList.add('algae-erode','reveal'));
+  await sleep(turbo?40:90);
+  cells.forEach(cell=>{
+    cell.classList.remove('algae','algae-erode');
+    cell.dataset.symbol=step.symbol;cell.innerHTML=symbolMarkup(currentGame,step.symbol);
+    if(step.golden)cell.classList.add('golden-cell');
+  });
+  soundFx('reveal');haptic(step.golden?[10,20,10,20]:8);
+  await sleep(turbo?70:210);
+}
+// Golden Shark -> Razor Reveal: every golden cell becomes its own independent
+// mini-reel with a real (if short) spin, landing on either an instant stake-
+// multiplier prize or a Sea Mine scatter — never an instant 200ms text swap.
+async function presentRazorReveal(step,turbo){
+  const cellEls=step.cells.map(([c,r])=>$(`[data-cell="${c}-${r}"]`)).filter(Boolean);
+  if(!cellEls.length)return;
+  els.feature.textContent='RAZOR REVEAL';els.reelFrame.classList.add('razor-mode');
+  soundFx('feature');haptic([12,24,12]);
+  await sleep(turbo?70:240);
+  await Promise.all(cellEls.map((el,i)=>(async()=>{
+    await sleep(i*(turbo?35:85));
+    el.classList.add('razor-cell','razor-spinning');
+    const cycles=turbo?4:7;
+    for(let k=0;k<cycles;k++){
+      el.innerHTML=`<div class="razor-face">${RAZOR_PREVIEW_LABELS[Math.floor(Math.random()*RAZOR_PREVIEW_LABELS.length)]}</div>`;
+      await sleep(turbo?24:52);
+    }
+    el.classList.remove('razor-spinning');
+    const outcome=step.outcomes[i]||{kind:'prize',value:1};
+    el.innerHTML=`<div class="razor-face landed">${outcome.kind==='scatter'?symbolMarkup(currentGame,'SEA_MINE'):`${outcome.value}×`}</div>`;
+    el.classList.add(outcome.kind==='scatter'?'razor-scatter':'razor-prize');
+    soundFx(outcome.kind==='scatter'?'reveal':(outcome.value>=100?'bigwin':'win'),outcome.kind==='prize'&&outcome.value>=100?1.3:1);
+    haptic(outcome.kind==='scatter'?[6,10,6]:10);
+  })()));
+  await sleep(turbo?110:300);
+  if(step.addedCents>0)toast(`Razor Reveal: +${moneyCents(step.addedCents)}`);
+  cellEls.forEach(el=>{el.classList.remove('razor-cell','razor-prize','razor-scatter');const sym=el.dataset.symbol;el.innerHTML=symbolMarkup(currentGame,sym);});
+  els.reelFrame.classList.remove('razor-mode');
+}
+async function presentWinEval(step,turbo,isFinal){
+  if(!step.wins?.length)return;
+  step.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.add('winner'));
+  renderPaylines({wins:step.wins});els.paylineFlash.classList.remove('active');void els.paylineFlash.offsetWidth;els.paylineFlash.classList.add('active');
+  soundFx(step.addedCents>=2000?'bigwin':'win');
+  await sleep(turbo?150:420);
+  // Every cycle but the LAST clears its highlight before the next nudge/respin
+  // repaints those cells with different content; the final cycle's win stays
+  // lit at rest, same convention the other 3 games use.
+  if(!isFinal){
+    step.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.remove('winner'));
+    clearPaylines();
+  }
+}
+// The stack physically moves one cell-height down (transform, not a DOM
+// replacement) — the reel it lives on gets a brief translate3d nudge so the
+// motion reads as the seaweed band sliding, not a hard cut to a new grid.
+async function presentNudge(step,turbo){
+  els.feature.textContent='STACK NUDGE';
+  const reelEls=step.stacks.map(s=>$(`.reel[data-reel="${s.reel}"]`)).filter(Boolean);
+  reelEls.forEach(el=>el.classList.add('stack-nudge'));
+  soundFx('algaeTick',.65);haptic(4);
+  await sleep(turbo?90:190);
+  reelEls.forEach(el=>el.classList.remove('stack-nudge'));
+}
+async function presentRespin(step,turbo){
+  const reelEls=$$('.reel');
+  reelEls.forEach(el=>el.classList.add('reel-flip'));
+  soundFx('stop',.65);
+  await sleep(turbo?60:130);
+  step.grid.forEach((colSymbols,c)=>{const reelEl=$(`.reel[data-reel="${c}"]`);if(reelEl)landReelColumn(reelEl,c,colSymbols);});
+  reelEls.forEach(el=>el.classList.remove('reel-flip'));
+  await sleep(turbo?30:70);
+}
+// Plays back the engine's already-decided step sequence (land -> reveal ->
+// razorReveal -> winEval -> nudge -> respin -> ...) exactly as generateSpin()
+// computed it. This never re-rolls anything — every value shown here was fixed
+// before the reels even started spinning in, which is what makes settlement
+// (one debit/credit for the WHOLE sequence, however many nudges it contains)
+// safe by construction.
+async function presentSharkSteps(spin,ctrl){
+  if(!spin.steps?.length)return; // server-authoritative path doesn't emit the v2 step sequence yet (see AUDIT.md)
+  const turbo=store.state.turbo;
+  const lastWinEvalStep=[...spin.steps].reverse().find(s=>s.type==='winEval');
+  for(const step of spin.steps){
+    if(ctrl.aborted)return;
+    if(step.type==='reveal')await presentMysteryReveal(step,turbo);
+    else if(step.type==='razorReveal')await presentRazorReveal(step,turbo);
+    else if(step.type==='winEval')await presentWinEval(step,turbo,step===lastWinEvalStep);
+    else if(step.type==='nudge')await presentNudge(step,turbo);
+    else if(step.type==='respin')await presentRespin(step,turbo);
+    if(ctrl.aborted)return;
+  }
+}
 function renderRandomFrame(){renderGrid(generateFillerGrid())}
 // Decorative-only filler symbols for the spinning reel strips (never scored) — reuses the
 // real, weighted per-game grid generators so filler still looks authentic to the game's
@@ -865,7 +1223,7 @@ function fillerColumnPool(count){
 }
 function hydrateArtwork(){
   $$('[data-lobby-art]').forEach(el=>{el.innerHTML=lobbyArt(el.dataset.lobbyArt)});
-  const hero=$('#heroCreature');if(hero)hero.innerHTML=symbolMarkup('shark-abyss','SHARK');
+  const hero=$('#heroCreature');if(hero)hero.innerHTML=symbolMarkup('shark-abyss','GREAT_WHITE');
 }
 function clearPaylines(){if(els.paylineLayer){els.paylineLayer.innerHTML='';els.paylineLayer.classList.remove('active')}}
 function renderPaylines(spin){
@@ -888,7 +1246,7 @@ function renderState(){
   else if(currentGame==='tomb-of-kings'&&bookFeatureActive()){const exp=feature.expandingSymbol||'?';if(!spinning)els.spinText.textContent=`FREE ${feature.remaining}`;els.feature.textContent=`Expand: ${exp} · ${feature.remaining} Freispiele`;els.multiplier.textContent='FREE';els.app.classList.add('feature-mode')}
   else if(currentGame==='tomb-of-kings'){if(!spinning)els.spinText.textContent='SPIN';els.feature.textContent='3 Bücher = 10 Freispiele';els.multiplier.textContent='87,25%';els.app.classList.remove('feature-mode')}
   else if(sharkFeatureActive()){els.spinText.textContent=spinning?'•••':`FREE ${feature.remaining}`;els.feature.textContent=`${feature.remaining} Freispiele übrig`;els.multiplier.textContent=`x${feature.multiplier||2}`;els.app.classList.add('feature-mode')}
-  else{if(!spinning)els.spinText.textContent='SPIN';els.feature.textContent='3 Kraken = Freispiele';els.multiplier.textContent='x1';els.app.classList.remove('feature-mode')}
+  else{if(!spinning)els.spinText.textContent='SPIN';els.feature.textContent='3 Seeminen = Freispiele';els.multiplier.textContent='x1';els.app.classList.remove('feature-mode')}
   const risk=gambleActive(),blocked=riskSpinBlocked();els.stakeDown.disabled=spinning||featureActive()||blocked;els.stakeUp.disabled=spinning||featureActive()||blocked;els.spin.disabled=spinning||blocked;
   els.mainControls.hidden=risk;els.secondaryControls.hidden=risk;els.riskPanel.hidden=!risk;renderRisk();
   if(els.connectionBadge){els.connectionBadge.textContent=backend.isAuthenticated?'LIVE':backend.isRemote?'LOGIN':'OFFLINE';els.connectionBadge.dataset.mode=backend.isAuthenticated?'live':backend.isRemote?'ready':'offline'}
@@ -1029,8 +1387,7 @@ async function animateSpin(spin,ctrl={aborted:false}){
   // motion itself is a WAAPI timeline with no natural per-frame JS callback to hang a
   // tick sound off, so this runs on its own short interval alongside it).
   let tickCount=0;const tickMs=turbo?55:85;const tickTimer=setInterval(()=>{if(ctrl.aborted){clearInterval(tickTimer);return}tone(105+(tickCount++%12)*3,.02,'square',.007)},tickMs);
-  const anticipation=!spin.isFreeSpin&&(currentGame==='shark-abyss'||currentGame==='tomb-of-kings')&&Number(spin.scatterCount||0)>=2;
-  const algaePresentation=prepareAlgaePresentation(spin);
+  const anticipation=!spin.isFreeSpin&&currentGame==='tomb-of-kings'&&Number(spin.scatterCount||0)>=2;
   const reelEls=$$('.reel');
   const beforePool=fillerColumnPool(rows),fillPool=fillerColumnPool(timing.fillerCount),afterPool=fillerColumnPool(1);
   const landings=reelEls.map((reelEl,c)=>{
@@ -1039,25 +1396,29 @@ async function animateSpin(spin,ctrl={aborted:false}){
       onHold:extraHoldMs>0?()=>{els.reelFrame.classList.add('anticipation');els.feature.textContent='FEATURE CHANCE…';soundFx('anticipation')}:null
     }).then(()=>{
       if(ctrl.aborted)return;
-      landReelColumn(reelEl,c,spin.grid[c],algaePresentation.cover,spin.mystery||[]);
+      landReelColumn(reelEl,c,spin.grid[c]);
       soundFx('stop',.9+c*.05);haptic(isLast?12:5);
     });
   });
   await Promise.all(landings);
   clearInterval(tickTimer);
   if(ctrl.aborted)return;
-  els.reelFrame.classList.remove('machine-running','anticipation');els.gameBackdrop?.classList.remove('spin-active');
+  els.reelFrame.classList.remove('machine-running','anticipation');
+  // Shark Abyss's post-land presentation (mystery reveal -> Razor Reveal ->
+  // cascade) can run several seconds longer than the other games' -- keep the
+  // ambient backdrop paused through all of it, not just the initial reel-spin,
+  // so a long cascade never reintroduces the background-position/filter repaint
+  // cost the spin-active fix exists to avoid (see tests/spin-performance.js).
+  if(currentGame!=='shark-abyss')els.gameBackdrop?.classList.remove('spin-active');
   if(ctrl.aborted)return;
-  if(currentGame==='shark-abyss'&&(algaePresentation.seeded.length||algaePresentation.tick.length||algaePresentation.reveal.length)){
-    algaePresentation.seeded.forEach(key=>$(`[data-cell="${key}"]`)?.classList.add('algae-seed'));
-    if(algaePresentation.tick.length){els.feature.textContent='ALGEN-COUNTDOWN';for(const key of algaePresentation.tick){if(ctrl.aborted)return;const cell=$(`[data-cell="${key}"]`);cell?.classList.add('algae-tick');soundFx('algaeTick',.78);haptic(2);await sleep(turbo?24:62);cell?.classList.remove('algae-tick')}}
-    if(ctrl.aborted)return;
-    if(algaePresentation.reveal.length){els.feature.textContent='MYSTERY REVEAL';for(const state of algaePresentation.reveal){if(ctrl.aborted)return;const {col:c,row:r}=state,cell=$(`[data-cell="${c}-${r}"]`);cell?.classList.add('algae-erode','reveal');await sleep(turbo?55:120);cell?.classList.remove('algae','algae-erode');if(cell){cell.removeAttribute('data-remaining');cell.innerHTML=symbolMarkup(currentGame,spin.grid[c][r])}soundFx('reveal');haptic(8)}await sleep(turbo?70:210)}
-  }
+  if(currentGame==='shark-abyss'){await presentSharkSteps(spin,ctrl);els.gameBackdrop?.classList.remove('spin-active');if(ctrl.aborted)return;}
   if(ctrl.aborted)return;
   if(spin.expanding?.reels?.length){els.feature.textContent='EXPANDING SYMBOL';for(const c of spin.expanding.reels){if(ctrl.aborted)return;for(let r=0;r<3;r++){const cell=$(`[data-cell="${c}-${r}"]`);if(cell){cell.classList.add('reveal','winner');cell.innerHTML=symbolMarkup(currentGame,spin.expanding.symbol)}}await sleep(turbo?40:90);soundFx('reveal')}await sleep(turbo?70:180)}
   if(ctrl.aborted)return;
-  if(spin.wins?.length){spin.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.add('winner'));renderPaylines(spin);els.paylineFlash.classList.remove('active');void els.paylineFlash.offsetWidth;els.paylineFlash.classList.add('active');soundFx(spin.totalCents>=spin.stakeCents*20?'bigwin':'win')}
+  // Shark Abyss already highlighted each cascade cycle's wins live, cycle by
+  // cycle, inside presentSharkSteps -- a final recap flash here would re-draw
+  // cells that have since moved on to a different symbol after a nudge/respin.
+  if(currentGame!=='shark-abyss'&&spin.wins?.length){spin.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.add('winner'));renderPaylines(spin);els.paylineFlash.classList.remove('active');void els.paylineFlash.offsetWidth;els.paylineFlash.classList.add('active');soundFx(spin.totalCents>=spin.stakeCents*20?'bigwin':'win')}
   if(spin.freeSpins>0)soundFx('feature');
 }
 async function showWin(spin){
@@ -1084,7 +1445,7 @@ function applySpinSettlement(spin,{show=true,authoritativeBalanceCents=null,auth
 }
 
 function normalizeRemoteSpin(data,featureBefore){
-  const p=data.presentation||data.spin||data;return {id:p.id||data.spinId||randomId(),createdAt:Date.now(),gameKey:p.gameKey||currentGame,stakeCents:p.stakeCents,isFreeSpin:Boolean(p.isFreeSpin),multiplier:p.multiplier||1,grid:p.grid,mystery:p.mystery||[],wins:p.wins||[],totalCents:p.totalCents||0,freeSpins:p.freeSpins||0,scatterCount:p.scatterCount||0,nextMultiplier:p.nextMultiplier||p.multiplier||1,expanding:p.expanding||null,chosenExpandingSymbol:p.chosenExpandingSymbol||null,featureBefore,authoritativeBalanceCents:data.balanceCents,authoritativeFeatureState:data.featureState||null,sessionId:data.sessionId||getGameState().sessionId,gambleRound:data.gambleRound||null};
+  const p=data.presentation||data.spin||data;return {id:p.id||data.spinId||randomId(),createdAt:Date.now(),gameKey:p.gameKey||currentGame,stakeCents:p.stakeCents,isFreeSpin:Boolean(p.isFreeSpin),multiplier:p.multiplier||1,grid:p.grid,finalGrid:p.finalGrid||p.grid,steps:p.steps||[],persistentOut:p.persistentOut||[],multiplierGain:p.multiplierGain||0,wins:p.wins||[],totalCents:p.totalCents||0,freeSpins:p.freeSpins||0,scatterCount:p.scatterCount||0,nextMultiplier:p.nextMultiplier||p.multiplier||1,expanding:p.expanding||null,chosenExpandingSymbol:p.chosenExpandingSymbol||null,featureBefore,authoritativeBalanceCents:data.balanceCents,authoritativeFeatureState:data.featureState||null,sessionId:data.sessionId||getGameState().sessionId,gambleRound:data.gambleRound||null};
 }
 // --- Guest mode: same math modules the server is expected to run, executed locally so a
 // spin never depends on network/login. Used whenever backend.isAuthenticated is false.
@@ -1102,9 +1463,38 @@ window.__novaTestHooks={
   clearSeed(){testRng=null},
   isSeeded(){return testRng!==null}
 };
+// Deterministic debug hooks for Shark Abyss v2 (guest/local mode only — a real
+// account's server-authoritative spin is never influenced by these). Each call
+// forces the shape of exactly the NEXT local spin, then self-clears, so a rare
+// state (Golden Shark, a retrigger, several stacks at once...) can be reached
+// on demand instead of by spinning hundreds of times hoping to hit it.
+window.__sharkDebug={
+  triggerMysteryStack({reel=1,reveal='GREEN_SHARK'}={}){pendingSharkForcePlan={stacks:[{reel,offset:0,revealType:reveal==='GREAT_WHITE'?'wild':reveal==='GOLDEN_SHARK'?'golden':'regular',revealSymbol:reveal}]};toast(`Debug: Mystery Stack auf Walze ${reel} (${reveal}) erzwungen.`)},
+  triggerMultipleMysteryStacks(){pendingSharkForcePlan={stacks:[{reel:0,offset:0,revealType:'regular',revealSymbol:'ORANGE_SHARK'},{reel:2,offset:0,revealType:'wild',revealSymbol:'GREAT_WHITE'}]};toast('Debug: 2 gleichzeitige Mystery Stacks erzwungen.')},
+  triggerGoldenShark({reel=2}={}){pendingSharkForcePlan={stacks:[{reel,offset:0,revealType:'golden',revealSymbol:'GOLDEN_SHARK'}]};toast(`Debug: Golden Shark auf Walze ${reel} erzwungen.`)},
+  triggerRazorReveal(outcomes=['2x','SCATTER','25x','2500x'],{reel=2}={}){pendingSharkForcePlan={stacks:[{reel,offset:0,revealType:'golden',revealSymbol:'GOLDEN_SHARK'}],razorOutcomes:outcomes};toast('Debug: Razor Reveal mit erzwungenen Ergebnissen.')},
+  triggerFreeGames(scatterCount=3){pendingSharkForcePlan={scatterCount:Math.max(3,Math.min(5,scatterCount))};toast(`Debug: ${scatterCount} Seeminen erzwungen (Freispiele).`)},
+  setFreeGameMultiplier(n){if(currentGame!=='shark-abyss'||!sharkFeatureActive()){toast('Debug: kein aktives Freispiel-Feature.');return}patchGameState('shark-abyss',{featureState:{multiplier:Math.max(1,Math.round(Number(n)||1))}});renderState();toast(`Debug: Multiplikator auf x${n} gesetzt.`)},
+  // NOVA Shark Abyss stacks only ever nudge downward by design (they always
+  // enter from above the grid, per createMysteryStack) — there is no upward
+  // nudge state to force. Kept as a no-op-with-explanation so a test suite
+  // calling every listed hook doesn't crash on this one.
+  triggerNudgeUp(){toast('Debug: Shark Abyss Stacks nudgen konzeptionell nur nach unten (kein Upward-Nudge implementiert).')},
+};
+// Shark Abyss debug hooks (window.__sharkDebug, see below) set this to force a
+// specific outcome shape on the NEXT local spin only, then it self-clears — a
+// deterministic way to reach rare states (Golden Shark, a retrigger, 2 stacks
+// at once...) for testing without waiting on hundreds of real spins. Never
+// used unless a test explicitly calls one of the debug functions.
+let pendingSharkForcePlan=null;
 function generateLocalSpin({gameKey,stakeCents,isFreeSpin,featureBefore}){
   const rng=testRng||cryptoFloat;
-  if(gameKey==='shark-abyss')return generateSpin({stakeCents,isFreeSpin,multiplier:isFreeSpin?(featureBefore.multiplier||2):1,rng});
+  if(gameKey==='shark-abyss'){
+    const persistentIn=featureBefore.persistentStacks||[];
+    const isFirstFreeSpin=isFreeSpin&&!persistentIn.length;
+    const forcePlan=pendingSharkForcePlan;pendingSharkForcePlan=null;
+    return generateSpin({stakeCents,isFreeSpin,multiplier:isFreeSpin?(featureBefore.multiplier||2):1,persistentIn,forcedReels:isFirstFreeSpin?[1,3]:null,forcePlan,rng});
+  }
   if(gameKey==='fruit-reactor')return generateFruitSpin({stakeCents,rng});
   if(gameKey==='fancy-harvest')return generateFancySpin({stakeCents,rng});
   if(gameKey==='tomb-of-kings')return generateBookSpin({stakeCents,isFreeSpin,expandingSymbol:featureBefore.expandingSymbol||null,rng});
@@ -1159,7 +1549,7 @@ async function spin(){
     }else{
       applySpinSettlement(prepared,{show:false,authoritativeBalanceCents:prepared.authoritativeBalanceCents,authoritativeFeatureState:prepared.authoritativeFeatureState});
       if(prepared.totalCents>0)await showWin(prepared);
-      if(currentGame==='tomb-of-kings'&&prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele · Expand ${prepared.chosenExpandingSymbol||''}`);else if(currentGame==='tomb-of-kings'&&prepared.isFreeSpin&&prepared.freeSpins)toast('+10 Freispiele retriggert!');else if(prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele!`);else if(prepared.isFreeSpin&&prepared.mystery?.length&&getGameState('shark-abyss').featureState.remaining)toast(`Multiplikator steigt auf x${getGameState('shark-abyss').featureState.multiplier}`);
+      if(currentGame==='tomb-of-kings'&&prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele · Expand ${prepared.chosenExpandingSymbol||''}`);else if(currentGame==='tomb-of-kings'&&prepared.isFreeSpin&&prepared.freeSpins)toast('+10 Freispiele retriggert!');else if(currentGame==='shark-abyss'&&prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele! Stacks auf Walze 2 & 4.`);else if(currentGame==='shark-abyss'&&prepared.isFreeSpin&&prepared.freeSpins)toast(`+${prepared.freeSpins} Freispiele retriggert!`);else if(prepared.freeSpins&&!prepared.isFreeSpin)toast(`${prepared.freeSpins} Freispiele!`);else if(currentGame==='shark-abyss'&&prepared.isFreeSpin&&prepared.multiplierGain&&getGameState('shark-abyss').featureState.remaining)toast(`Multiplikator steigt auf x${getGameState('shark-abyss').featureState.multiplier}`);
     }
   }catch(error){
     console.error(error);toast(error?.message||'Spin fehlgeschlagen.');
@@ -1183,9 +1573,11 @@ function forceCompleteSpin(p){
   $$('.symbol').forEach(s=>s.classList.remove('blur'));
   clearPaylines();
   if(p.gameKey&&GAME_DEFS[p.gameKey])setCurrentGame(p.gameKey,{presence:false});
-  const algaePresentation=prepareAlgaePresentation(p);
-  renderGrid(p.grid,{algae:algaePresentation.cover});
-  for(const state of algaePresentation.reveal||[]){const cell=$(`[data-cell="${state.col}-${state.row}"]`);if(cell){cell.classList.remove('algae');cell.removeAttribute('data-remaining');cell.innerHTML=symbolMarkup(currentGame,p.grid[state.col][state.row])}}
+  // A shark-abyss round can be a whole land->reveal->nudge->respin cascade; on
+  // a forced/crash recovery we don't replay that choreography, we jump straight
+  // to the mathematically-correct final grid (explicitly allowed by design —
+  // no win can be lost, no stack needs to visibly finish nudging out).
+  renderGrid(p.finalGrid||p.grid);
   if(p.expanding?.reels?.length){for(const c of p.expanding.reels)for(let r=0;r<3;r++){const cell=$(`[data-cell="${c}-${r}"]`);if(cell)cell.innerHTML=symbolMarkup(currentGame,p.expanding.symbol)}}
   if(p.wins?.length)p.wins.flatMap(w=>w.cells).forEach(([c,r])=>$(`[data-cell="${c}-${r}"]`)?.classList.add('winner'));
   applySpinSettlement(p,{show:false,authoritativeBalanceCents:p.authoritativeBalanceCents,authoritativeFeatureState:p.authoritativeFeatureState});

@@ -1,9 +1,13 @@
 // Regression test for a real, user-reported performance bug: "Spins laufen nicht
 // flüssig" (spins don't run smoothly). Root-caused with Chrome DevTools tracing
 // (disabled-by-default-devtools.timeline) on a CONTROLLED, seeded, identical spin
-// outcome (seed 1 = a "boring" spin: no win, no feature, no mystery, so animation
-// cost differences are never confounded by different random outcomes triggering
-// extra win/feature/algae work):
+// outcome (seed 2 = a "boring" spin under the Shark Abyss v2 engine: no win, no
+// mystery stack, no cascade, so animation cost differences are never confounded
+// by different random outcomes triggering extra win/feature/mystery-reveal work.
+// NOTE: this used to be seed 1 under the pre-rebuild math; the v2 engine consumes
+// its rng stream completely differently, and seed 1 now happens to land a Golden
+// Shark -> Razor Reveal with a 3-cycle cascade, so it was re-picked to keep this
+// test's actual intent -- measuring an ordinary, eventless spin -- accurate):
 //
 //   with the Phase-5 ambient background animations (rising bubbles, drifting shark
 //   silhouette, neon sparks, light motes, torch flicker -- one per game, all driven
@@ -42,10 +46,10 @@ async function traceOneSpin(page) {
   await page.click('[data-play="shark-abyss"]');
   await page.waitForTimeout(300);
 
-  // Seed 1: known "boring" spin (no win, no feature, no mystery) -- see
-  // scratchpad note in the algae/perf work -- so every run measures the exact same
-  // animation workload, not a random mix of win/feature/algae presentations on top.
-  await page.evaluate(() => window.__novaTestHooks.setSeed(1));
+  // Seed 2 (v2 engine): known "boring" spin (no win, no feature, no mystery
+  // stack) so every run measures the exact same animation workload, not a
+  // random mix of win/feature/mystery-reveal presentations on top.
+  await page.evaluate(() => window.__novaTestHooks.setSeed(2));
   const counts = await traceOneSpin(page);
   await page.evaluate(() => window.__novaTestHooks.clearSeed());
   console.log(`measured during spin: RasterTask=${counts.RasterTask||0} PaintImage=${counts.PaintImage||0} UpdateLayer=${counts.UpdateLayer||0} RunTask=${counts.RunTask||0}`);
@@ -58,7 +62,7 @@ async function traceOneSpin(page) {
 
   // Confirm the mechanism directly, not just its effect: the backdrop must actually
   // be paused while spinning and resume once idle.
-  await page.evaluate(() => window.__novaTestHooks.setSeed(1));
+  await page.evaluate(() => window.__novaTestHooks.setSeed(2));
   await page.click('#spinButton', { force: true });
   await page.waitForTimeout(150);
   const midSpin = await page.evaluate(() => {

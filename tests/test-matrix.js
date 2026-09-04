@@ -38,9 +38,14 @@ async function seededSpin(page, seed) {
   await page.click('[data-play="shark-abyss"]');
   await page.waitForTimeout(150);
 
-  await seededSpin(page, 42); // known: >=3 scatter -> free spins trigger
+  // NOTE: these seeds are for the Shark Abyss v2 (mystery-stack) engine — its rng
+  // consumption order is completely different from the pre-rebuild math, so the
+  // seeds that used to reproduce these scenarios no longer do; each was re-found
+  // against the current js/game-math.js via a throwaway node search (see
+  // tests/shark-engine-math.js for the math-only equivalents of these checks).
+  await seededSpin(page, 6); // known: base spin awards free spins (3+ scatters)
   let featureMode = await page.$eval('#app', (el) => el.classList.contains('feature-mode'));
-  results.push(['shark-abyss: Bonusstart/Freispiele (seed 42) actually entered feature-mode', featureMode]);
+  results.push(['shark-abyss: Bonusstart/Freispiele (seed 6) actually entered feature-mode', featureMode]);
   // Feature is now active; take one more (seeded, arbitrary) free spin to exercise the
   // free-spin path itself, then leave it be (feature state persists naturally).
   if (featureMode) {
@@ -53,21 +58,29 @@ async function seededSpin(page, seed) {
   await page.click('[data-play="shark-abyss"]');
   await page.waitForTimeout(150);
 
-  await seededSpin(page, 11); // known: >=3 distinct winning lines
+  await seededSpin(page, 14); // known: 4 distinct winning lines, single cycle (no cascade)
   let winnerCells = (await page.$$('.symbol.winner')).length;
-  // Distinct paylines can share grid cells, so 3+ winning lines don't guarantee 9+ unique
-  // highlighted cells — verified directly against this seed: 6 unique cells, 0.76€ win.
-  results.push(['shark-abyss: mehrere Linien gleichzeitig (seed 11, >=3 lines) shows a multi-cell win', winnerCells >= 6]);
+  // Distinct paylines can share grid cells; the final cascade cycle's win stays
+  // highlighted at rest (see presentWinEval's isFinal argument) — verified
+  // directly against this seed: 4 lines sharing down to 6 unique cells, 0.66€ win.
+  results.push(['shark-abyss: mehrere Linien gleichzeitig (seed 14, >=3 lines) shows a multi-cell win', winnerCells >= 6]);
 
   await page.evaluate(() => localStorage.removeItem('nova-casino-state-v2'));
   await page.reload();
   await page.click('[data-play="shark-abyss"]');
   await page.waitForTimeout(150);
-  await seededSpin(page, 12); // known: mystery reveal present
-  const hasAlgaeState = await page.evaluate(() => {
-    try { const s = JSON.parse(localStorage.getItem('nova-casino-state-v2')); return Object.keys(s.algaeStates || {}).length > 0 || (s.algaePresentation?.reveal?.length > 0); } catch { return false; }
-  });
-  results.push(['shark-abyss: Mystery/Algen (seed 12) actually seeded an algae cell', hasAlgaeState]);
+  // Mystery Stacks are first-class engine state now (see js/game-math.js), not a
+  // DOM-only overlay flag, so there is nothing to inspect in localStorage after
+  // the fact — a transient stack always cascades to a full exit within the same
+  // round (own NOVA design), so it's only ever on-screen WHILE the reveal step
+  // plays. Watch for it appearing during the animation instead.
+  await page.evaluate((s) => window.__novaTestHooks.setSeed(s), 1); // known: mystery reveal -> Golden Shark -> Razor Reveal cascade
+  await page.click('#spinButton', { force: true });
+  let sawMysteryReveal = false;
+  try { await page.waitForSelector('.symbol.algae-erode, .symbol.golden-cell', { timeout: 6000 }); sawMysteryReveal = true; } catch { sawMysteryReveal = false; }
+  await waitSpinIdle(page);
+  await page.evaluate(() => window.__novaTestHooks.clearSeed());
+  results.push(['shark-abyss: Mystery Stack (seed 1) actually revealed during the presentation', sawMysteryReveal]);
 
   // --- Tomb of Kings: free spins + (by construction) expanding symbol path ---
   await page.evaluate(() => localStorage.removeItem('nova-casino-state-v2'));
