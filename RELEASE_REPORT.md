@@ -192,14 +192,25 @@ und valide (Name + ≥2 Icons), Gastmodus-Spin über HTTP, Seite lädt mit
 funktioniert vollständig offline nach dem ersten Laden**.
 
 ### Algen-Persistenz-Test (`tests/algae-persistence.js`, nutzergemeldeter Bug)
-5/5 Assertions PASS: Seed 12 sät genau einen Algen-Zustand; über mehrere echte
-(nicht geseedete) Spins zählt der getrackte Zustand exakt um 1 pro Spin herunter,
-ohne Aussetzer; er übersteht mindestens einen zusätzlichen Spin (widerlegt den alten
-Sofort-Verschwinden-Bug); er wird am Ende regulär aufgedeckt statt ewig zu bestehen;
-null Konsolenfehler. Anschließend vollständige Regressionssuite (smoke,
-settlement-invariant, test-matrix, tomb-of-kings-feature, touch-targets,
-reduced-motion, audio-engine, pwa-offline) erneut ausgeführt — alle weiterhin grün,
-keine Nebenwirkungen durch den Fix.
+**Zweimal überarbeitet.** Erste Fassung (5/5 PASS) prüfte nur, dass ein Zustand
+überhaupt persistiert und irgendwann herunterzählt — der Nutzer stellte danach klar,
+dass die Mechanik selbst falsch war (siehe AUDIT.md). Aktuelle Fassung: **17/17
+Assertions PASS**, komplett deterministisch (4-Seed-Sequenz statt echter Zufalls-
+spins) — prüft für ein vollständiges 4-Reihen-Band exakt: alle 4 Reihen beim
+Erscheinen bedeckt, pro Spin genau die oberste verbleibende Reihe wird frei (nie
+eine andere), die Countdown-Zahl jeder Zelle stimmt exakt (nicht nur "irgendeine
+Zahl"), und das Band ist nach genau 4 Spins vollständig verschwunden.
+
+### Spin-Performance-Test (`tests/spin-performance.js`, nutzergemeldet: "Spins laufen nicht flüssig")
+5/5 Assertions PASS: Chrome-DevTools-Tracing eines kontrollierten, geseedeten Spins
+zeigt RasterTask/PaintImage nahe am nach dem Fix gemessenen Wert (~204/~359 statt
+~690/~653 vorher), der Hintergrund ist während des Spins nachweislich pausiert
+(`animation-play-state:paused`, nicht nur behauptet) und läuft danach wieder normal.
+
+Anschließend vollständige Regressionssuite (smoke, settlement-invariant, test-matrix,
+tomb-of-kings-feature, touch-targets, reduced-motion, audio-engine, pwa-offline,
+online-mode-auth-ui) erneut ausgeführt — alle weiterhin grün, keine Nebenwirkungen
+durch beide Fixes.
 
 ### Lighthouse (echter Lauf gegen `http://localhost:8934/nova-casino.html`, Chromium headless, Desktop-Preset)
 Vorher: Performance 100, Accessibility 93, Best Practices 100, SEO 90.

@@ -330,6 +330,51 @@ Commit gefunden und behoben: zwei Animationen können nicht unabhängig dieselbe
 erste vollständig statt sich zu kombinieren) — behoben, indem die Scanline-Ebene
 innerhalb der einen verbleibenden Animation konstant gehalten wird.
 
+## Nachtrag (Nutzer-gemeldet — Algen-Mechanik grundlegend falsch verstanden)
+
+Der Nutzer stellte klar, dass B7 (siehe oben) zwar den Persistenz-Bug behob, die
+Mechanik selbst aber falsch war: Der Code behandelte jede der 2–4 Zellen eines
+Mystery-Bandes als **unabhängigen** Countdown mit eigenem, zufälligem Startwert
+(2–5) — statt, wie vom Nutzer präzise beschrieben, als **ein zusammenhängendes,
+vertikales Band**, das pro Spin genau **eine Reihe von oben nach unten** freigibt
+(z. B. ein 4-Reihen-Band zeigt beim Erscheinen alle 4 Reihen bedeckt, dann Reihe 0
+frei, dann Reihe 1, dann Reihe 2, dann Reihe 3 — Band verschwunden).
+→ `prepareAlgaePresentation()` komplett umgebaut: verfolgt jetzt ein einzelnes Band
+`{col, rows, revealedCount}` statt einer Pro-Zelle-Zustandskarte; `revealedCount`
+steigt exakt um 1 pro Spin. Ein Gewinn auf einer noch bedeckten Reihe deckt das
+gesamte verbleibende Band sofort auf (keine Lücke mitten im Band). Weiterhin ein
+reiner visueller Overlay ohne jeden Einfluss auf Mathematik/RTP.
+Zusätzlich beim manuellen Sichtprüfen (Screenshots, nicht vom automatisierten Test
+allein) ein zweiter, unabhängiger Bug gefunden: Die Countdown-Zahl je Zelle war
+invertiert — die oberste (am schnellsten aufgedeckte) Reihe zeigte die HÖCHSTE Zahl
+statt der niedrigsten. Behoben.
+`tests/algae-persistence.js` komplett neu geschrieben: nutzt eine vollständig
+deterministische 4-Seed-Sequenz (offline gegen die exakte extrahierte Mathematik
+gesucht, `scratchpad/find-algae-sequence.js`) statt echter Zufallsspins für die
+Folgespins, damit die komplette 4-Reihen-Erosion bei jedem Testlauf tatsächlich
+durchlaufen wird (nicht nur "bis ein zufälliger Gewinn sie vorzeitig beendet").
+17/17 Prüfungen bestehen, inkl. der exakten Countdown-Zahl pro Schritt.
+
+## Nachtrag (Nutzer-gemeldet — "Spins laufen nicht flüssig")
+
+Root-Cause mit echtem Chrome-DevTools-Tracing gefunden (kontrollierter, geseedeter,
+identischer Spin-Ausgang, damit der Vergleich nicht durch unterschiedliche
+Zufallsergebnisse verfälscht wird): Die in der letzten Grafik-Aufwertung (siehe oben)
+ergänzten Hintergrund-Animationen (aufsteigende Blasen, Hai-Silhouette, Neon-Funken,
+Lichtpartikel, Fackel-Flackern) nutzen `background-position`/`filter`-Animationen,
+die auf JEDEM Frame einen Repaint erzwingen (anders als `transform`/`opacity`, die
+der Compositor ohne Repaint handhaben kann) — dieser Repaint konkurrierte während
+jedes einzelnen Spins mit der Walzen-Animation um dasselbe Frame-Budget. Gemessen:
+~690 RasterTask- und ~653 PaintImage-Events pro Spin mit laufender Hintergrund-
+Animation, isoliert auf genau diese Ebene (der bereits vorhandene Spin-Button-Glow
+zeigte keinen messbaren Unterschied).
+→ Der Hintergrund pausiert jetzt (`animation-play-state:paused`, kein Sprung beim
+Fortsetzen) für genau die Dauer, die `.reel-frame.machine-running` gesetzt ist —
+inklusive des Watchdog-Cleanup-Pfads. Nachher gemessen: ~204 RasterTask / ~359
+PaintImage pro Spin, praktisch identisch zum Zustand "Hintergrund-Animation
+vollständig deaktiviert". `tests/spin-performance.js` (neu) hält diese Messwerte
+als Regressionsschutz fest, statt sich auf eine bloße Behauptung zu verlassen.
+
 ## Nicht abschließend geprüft (ehrliche Lücken dieser Session)
 
 - **Kein Zugriff auf das Supabase-Projekt** (`ucbkmlkxhfghfzgepkbl.supabase.co`): Ob die
