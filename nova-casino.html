@@ -516,7 +516,7 @@ const errMessage=(data,status)=>{const code=String(data?.error||data?.code||'');
 class CasinoBackend{
   constructor(){this.mode=configured()?'remote':'offline';this.user=null;this.session=null;this.listeners=new Set();this.lastSnapshot=null;this.deviceConflict=false;let d=localStorage.getItem(DEVICE_STORAGE_KEY)||localStorage.getItem(LEGACY_DEVICE_STORAGE_KEY);if(!d){d=crypto.randomUUID()}localStorage.setItem(DEVICE_STORAGE_KEY,d);this.deviceId=d}
   get base(){return String(window.NOVA_CONFIG?.supabaseUrl||'').replace(/\/$/,'')} get key(){return window.NOVA_CONFIG?.supabasePublishableKey||''} get isRemote(){return this.mode==='remote'} get isAuthenticated(){return !!this.session?.access_token&&!!this.user}
-  onChange(fn){this.listeners.add(fn);return()=>this.listeners.delete(fn)} emit(){for(const fn of this.listeners)try{fn(this)}catch{}}
+  onChange(fn){this.listeners.add(fn);return()=>this.listeners.delete(fn)} emit(){for(const fn of this.listeners)try{fn(this)}catch(e){console.error('NOVA backend listener threw:',e)}}
   saveSession(v){this.session=v||null;this.user=v?.user||null;if(v)localStorage.setItem(AUTH_STORAGE_KEY,JSON.stringify(v));else localStorage.removeItem(AUTH_STORAGE_KEY)}
   loadSession(){try{const s=JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY)||localStorage.getItem(LEGACY_AUTH_STORAGE_KEY)||'null');if(s?.access_token&&s?.refresh_token)this.saveSession(s);localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY)}catch{this.saveSession(null)}}
   tokenExp(){try{return Number(JSON.parse(atob(this.session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp||0)}catch{return 0}}
@@ -527,7 +527,7 @@ class CasinoBackend{
   rpc(name,body={}){return this.authFetch(`/rest/v1/rpc/${name}`,{body})}
   async signUp({email,password,displayName}){if(!this.isRemote)throw new Error('NOVA-Server nicht erreichbar.');const data=await this.publicFetch('/auth/v1/signup',{body:{email,password,data:{display_name:displayName}}});if(data?.access_token)this.saveSession(data);else this.saveSession(null);this.emit();return data}
   async signIn({email,password}){if(!this.isRemote)throw new Error('NOVA-Server nicht erreichbar.');const data=await this.publicFetch('/auth/v1/token?grant_type=password',{body:{email,password}});this.saveSession(data);this.emit();return data}
-  async signOut(){if(this.isAuthenticated){try{await this.rpc('release_player_device',{p_device_id:this.deviceId})}catch{}try{await this.authFetch('/auth/v1/logout',{body:{}})}catch{}}this.saveSession(null);this.lastSnapshot=null;this.deviceConflict=false;this.emit()}
+  async signOut(){if(this.isAuthenticated){try{await this.rpc('release_player_device',{p_device_id:this.deviceId})}catch(e){console.warn('NOVA: release_player_device failed during logout (best-effort):',e)}try{await this.authFetch('/auth/v1/logout',{body:{}})}catch(e){console.warn('NOVA: server logout call failed (local session is cleared regardless):',e)}}this.saveSession(null);this.lastSnapshot=null;this.deviceConflict=false;this.emit()}
   async syncSnapshot(gameKey=null){if(!this.isAuthenticated)throw new Error('Bitte zuerst anmelden.');const snap=await this.rpc('client_sync_snapshot',{p_device_id:this.deviceId,p_build_version:BUILD_VERSION,p_game_key:gameKey,p_activity_limit:30});if(!snap?.deviceClaimed){this.deviceConflict=true;throw new Error('Dieser Account ist bereits auf einem anderen Gerät aktiv.')}this.deviceConflict=false;this.lastSnapshot=snap;return snap}
   async requestSpin({stakeCents,sessionId=null,idempotencyKey,gameKey='shark-abyss'}){if(!this.isAuthenticated)throw new Error('Bitte zuerst anmelden.');return this.authFetch('/functions/v1/spin',{body:{stakeCents,sessionId,idempotencyKey,gameKey,deviceId:this.deviceId,clientVersion:BUILD_VERSION}})}
   async resolveGamble({roundId,action,choice=null,idempotencyKey}){if(!this.isAuthenticated)throw new Error('Bitte zuerst anmelden.');return this.authFetch('/functions/v1/gamble',{body:{roundId,action,choice,idempotencyKey,deviceId:this.deviceId,clientVersion:BUILD_VERSION}})}
@@ -535,8 +535,8 @@ class CasinoBackend{
   async findFriend(code){const data=await this.rpc('find_profile_by_friend_code',{p_code:String(code).trim().toUpperCase()});return data?.[0]||null}
   async sendFriendRequest(addresseeId){await this.authFetch('/rest/v1/friendships',{body:{requester_id:this.user.id,addressee_id:addresseeId},headers:{Prefer:'return=minimal'}})}
   async acceptFriend(friendshipId){const data=await this.rpc('accept_friendship',{p_friendship_id:friendshipId});return Boolean(data)}
-  async startPresence(){return} async updatePresence(gameKey=null){if(!this.isAuthenticated)return;try{await this.syncSnapshot(gameKey)}catch{}} async broadcastActivity(){return} async stopPresence(){return}
-  async logError(code,gameKey=null,context={}){if(!this.isAuthenticated)return;try{await this.rpc('log_client_error',{p_build_version:BUILD_VERSION,p_error_code:String(code).slice(0,80),p_game_key:gameKey,p_network_state:navigator.onLine?'online':'offline',p_context:context})}catch{}}
+  async startPresence(){return} async updatePresence(gameKey=null){if(!this.isAuthenticated)return;try{await this.syncSnapshot(gameKey)}catch(e){console.warn('NOVA: presence sync failed (best-effort):',e)}} async broadcastActivity(){return} async stopPresence(){return}
+  async logError(code,gameKey=null,context={}){if(!this.isAuthenticated)return;try{await this.rpc('log_client_error',{p_build_version:BUILD_VERSION,p_error_code:String(code).slice(0,80),p_game_key:gameKey,p_network_state:navigator.onLine?'online':'offline',p_context:context})}catch(e){console.warn('NOVA: server-side error logging itself failed (not retried, to avoid a logging loop):',e)}}
 }
 window.__NOVA_BUILD=BUILD_VERSION;window.__backend={CasinoBackend};
 })();
@@ -732,12 +732,12 @@ class LocalCasinoStore{
       const saved=JSON.parse(localStorage.getItem(this.key)||'null');if(saved){const legacyFeature={...fallback.featureState,...saved.featureState};const gs={...fallback.gameStates,...saved.gameStates};gs['shark-abyss']={...fallback.gameStates['shark-abyss'],...(gs['shark-abyss']||{}),featureState:{...fallback.gameStates['shark-abyss'].featureState,...(gs['shark-abyss']?.featureState||legacyFeature)},sessionId:gs['shark-abyss']?.sessionId??saved.sessionId??null};return {...fallback,...saved,stats:{...fallback.stats,...saved.stats},gameStates:gs,featureState:legacyFeature};}
       const old=JSON.parse(localStorage.getItem('nova-casino-state-v1')||'null');
       if(old){return {...fallback,balanceCents:Math.round(Number(old.balance||100)*100),stakeIndex:old.stakeIndex??1,profile:old.profile||fallback.profile,sound:old.sound??true,turbo:old.turbo??false,stats:{...fallback.stats,spins:old.stats?.spins||0,paidSpins:old.stats?.spins||0,wageredCents:Math.round(Number(old.stats?.wagered||0)*100),wonCents:Math.round(Number(old.stats?.won||0)*100),biggestWinCents:Math.round(Number(old.stats?.biggestWin||0)*100)}}}
-    }catch{}
+    }catch(e){console.warn('NOVA: saved guest state was unreadable, starting fresh:',e)}
     return fallback;
   }
-  save(){try{localStorage.setItem(this.key,JSON.stringify(this.state))}catch{}}
+  save(){try{localStorage.setItem(this.key,JSON.stringify(this.state))}catch(e){console.warn('NOVA: could not persist guest state (private browsing / storage full?):',e)}}
   patch(next){this.state={...this.state,...next};this.save();return this.state}
-  reset(){try{localStorage.removeItem(this.key);localStorage.removeItem('nova-casino-state-v1')}catch{}this.state=this.fallback();this.save()}
+  reset(){try{localStorage.removeItem(this.key);localStorage.removeItem('nova-casino-state-v1')}catch(e){console.warn('NOVA: could not clear stored guest state:',e)}this.state=this.fallback();this.save()}
 }
 
 const store=new LocalCasinoStore();const backend=new CasinoBackend();
@@ -871,7 +871,7 @@ function ensureAudioGraph(){
     master.connect(limiter);limiter.connect(audioCtx.destination);
     const bus=()=>{const g=audioCtx.createGain();g.gain.value=1;g.connect(master);return g};
     audioBuses={master,limiter,ui:bus(),reel:bus(),win:bus(),feature:bus(),music:bus()};
-  }catch{audioCtx=null;audioBuses=null}
+  }catch(e){console.warn('NOVA: could not set up the audio engine, sound stays off:',e);audioCtx=null;audioBuses=null}
   return audioCtx;
 }
 function ensureAudio(){if(!store.state.sound)return null;const ctx=ensureAudioGraph();if(!ctx)return null;try{if(ctx.state==='suspended')ctx.resume().catch(()=>{})}catch{}return ctx}
@@ -883,7 +883,7 @@ function setAudioMuted(muted){
   try{
     const now=audioCtx.currentTime,g=audioBuses.master.gain;
     g.cancelScheduledValues(now);g.setValueAtTime(g.value,now);g.linearRampToValueAtTime(muted?0:1,now+.07);
-  }catch{}
+  }catch(e){console.warn('NOVA: could not ramp the master audio bus:',e)}
 }
 function tone(freq=260,duration=.06,type='sine',gain=.04,delay=0,busName='ui'){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(freq,start);g.gain.setValueAtTime(Math.max(.0001,gain),start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(audioBuses?.[busName]||ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
 function sweep(from,to,duration=.18,type='sine',gain=.035,delay=0,busName='ui'){const ctx=ensureAudio();if(!ctx)return;try{const o=ctx.createOscillator(),g=ctx.createGain(),start=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(from,start);o.frequency.exponentialRampToValueAtTime(Math.max(1,to),start+duration);g.gain.setValueAtTime(gain,start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);o.connect(g);g.connect(audioBuses?.[busName]||ctx.destination);o.start(start);o.stop(start+duration+.01)}catch{}}
@@ -978,7 +978,7 @@ function spinReelColumn(reelEl,{col,rows,finalSymbols,timing,before,fill,after,e
     if(anim.finished?.then)anim.finished.then(done).catch(done);else anim.onfinish=done;
   });
 }
-function cancelActiveReelAnimations(){for(const anim of activeReelAnimations){try{anim.cancel()}catch{}}activeReelAnimations.clear()}
+function cancelActiveReelAnimations(){for(const anim of activeReelAnimations){try{anim.cancel()}catch(e){console.warn('NOVA: reel animation cancel failed (already finished?):',e)}}activeReelAnimations.clear()}
 async function animateSpin(spin,ctrl={aborted:false}){
   clearPaylines();els.overlay.hidden=true;
   const turbo=store.state.turbo,timing=currentReelTiming(),rows=gameDef().rows||3;
