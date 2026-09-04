@@ -725,7 +725,7 @@ const soundIconMarkup=on=>on?'<svg class="ui-icon" viewBox="0 0 24 24" aria-hidd
 
 class LocalCasinoStore{
   constructor(){this.key='nova-casino-state-v2';this.state=this.load()}
-  fallback(){return {balanceCents:10000,stakeIndex:1,stats:{spins:0,paidSpins:0,wageredCents:0,wonCents:0,biggestWinCents:0},favorites:['shark-abyss'],profile:{name:'Spieler',friendCode:'LOCAL'},pendingSpin:null,pendingRequest:null,featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null,gameStates:{'shark-abyss':{featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null},'fruit-reactor':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'fancy-harvest':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'tomb-of-kings':{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}},algaeStates:{},algaePresentation:null,pendingGamble:null,pendingGambleAction:null,riskMode:'card',sound:true,turbo:false,backendMode:'remote'};}
+  fallback(){return {balanceCents:10000,stakeIndex:1,stats:{spins:0,paidSpins:0,wageredCents:0,wonCents:0,biggestWinCents:0},favorites:['shark-abyss'],profile:{name:'Spieler',friendCode:'LOCAL'},pendingSpin:null,pendingRequest:null,featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null,gameStates:{'shark-abyss':{featureState:{remaining:0,multiplier:2,stakeCents:20},sessionId:null},'fruit-reactor':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'fancy-harvest':{featureState:{remaining:0,multiplier:1,stakeCents:20},sessionId:null},'tomb-of-kings':{featureState:{remaining:0,multiplier:1,stakeCents:20,expandingSymbol:null},sessionId:null}},algaeBand:null,algaePresentation:null,pendingGamble:null,pendingGambleAction:null,riskMode:'card',sound:true,turbo:false,backendMode:'remote'};}
   load(){
     const fallback=this.fallback();
     try{
@@ -773,24 +773,56 @@ const riskSpinBlocked=()=>hasPendingGamble();
 const localCard=(rng=cryptoFloat)=>{const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'],suits=[['♥','red'],['♦','red'],['♠','black'],['♣','black']];const n=Math.floor(rng()*52),[suit,color]=suits[Math.floor(n/13)],rank=ranks[n%13];return {rank,suit,color}};
 
 const algaeKey=(c,r)=>`${c}-${r}`;
-function algaeStartValue(){const x=cryptoFloat();return x<.56?5:x<.72?4:x<.87?3:2}
-function algaeMarkup(state){const remaining=Math.max(0,Math.min(5,Number(state?.remaining??5)));return `<span class="algae-frond a1"></span><span class="algae-frond a2"></span><span class="algae-frond a3"></span><span class="algae-frond a4"></span><span class="algae-frond a5"></span><b class="algae-count" aria-label="${remaining} Spins bis Aufdeckung">${remaining}</b>`}
+function algaeMarkup(state){const remaining=Math.max(0,Number(state?.remaining??0));return `<span class="algae-frond a1"></span><span class="algae-frond a2"></span><span class="algae-frond a3"></span><span class="algae-frond a4"></span><span class="algae-frond a5"></span><b class="algae-count" aria-label="${remaining} Spins bis Aufdeckung">${remaining}</b>`}
 function winningCellKeys(spin){return new Set((spin.wins||[]).flatMap(w=>w.cells||[]).map(([c,r])=>algaeKey(c,r)))}
+// Algae is a single contiguous vertical band in one reel column (createGrid() only
+// ever seeds one such run per triggering spin) that erodes exactly one row per spin,
+// from the top row of the band downward, until the whole band is gone -- e.g. a band
+// covering rows 0-3 shows all 4 rows covered on the spin it appears, then row 0
+// clears next spin, then row 1, then row 2, then row 3 (band gone). It is a pure
+// visual overlay: the real grid underneath is freshly randomized every spin
+// regardless (evaluateGrid() always scores spin.grid directly, algae never affects
+// it), so the band tracks only which rows of a fixed column are still covered, never
+// the symbol underneath. A win landing on a still-covered row reveals the entire
+// remaining band at once (never leaves a revealed gap in the middle of a covered band).
 function prepareAlgaePresentation(spin){
   if(currentGame!=='shark-abyss')return {cover:{},tick:[],seeded:[],reveal:[]};
   const cached=store.state.algaePresentation;if(cached?.spinId===spin.id)return cached;
-  const existing={...(store.state.algaeStates||{})},next={},tick=[],seeded=[],reveal=[],wins=winningCellKeys(spin),mysteryKeys=new Set((spin.mystery||[]).map(([c,r])=>algaeKey(c,r)));
-  // Algae is a pure visual overlay tied to a fixed board position (col,row) — the real
-  // grid underneath is freshly randomized every spin regardless (evaluateGrid() always
-  // scores spin.grid directly, algae never affects it), so persistence must NOT depend on
-  // that invisible symbol happening to repeat. It previously did (checked against
-  // state.symbol) and was discarded otherwise — since a fresh random draw matching a
-  // fixed prior symbol is unlikely, algae almost never survived long enough to actually
-  // count down. Now it always ticks down at that position until it hits 0 or the cell
-  // becomes part of a win, whichever comes first — exactly once per spin, either way.
-  Object.entries(existing).forEach(([key,state])=>{const c=Number(state.col),r=Number(state.row),sym=spin.grid?.[c]?.[r];if(!sym)return;const remaining=Math.max(0,Number(state.remaining||0)-1),forceReveal=wins.has(key);const evolved={...state,symbol:sym,remaining,lastSpinId:spin.id};if(remaining<=0||forceReveal)reveal.push({...evolved,reason:forceReveal?'win':'countdown'});else{next[key]=evolved;tick.push(key)}});
-  for(const [c,r] of spin.mystery||[]){const key=algaeKey(c,r);if(next[key]||reveal.some(x=>algaeKey(x.col,x.row)===key))continue;const symbol=spin.grid?.[c]?.[r];if(!symbol)continue;const state={col:c,row:r,remaining:algaeStartValue(),symbol,createdAt:Date.now(),lastSpinId:spin.id};if(wins.has(key))reveal.push({...state,remaining:0,reason:'win'});else{next[key]=state;seeded.push(key)}}
-  const cover={...next};reveal.forEach(state=>{cover[algaeKey(state.col,state.row)]={...state,remaining:0}});const presentation={spinId:spin.id,cover,tick,seeded,reveal};store.patch({algaeStates:next,algaePresentation:presentation});return presentation;
+  const wins=winningCellKeys(spin);
+  const tick=[],seeded=[],reveal=[];
+  let band=store.state.algaeBand||null,freshBand=false;
+  if(band){
+    const stillCovered=band.rows.slice(band.revealedCount);
+    if(stillCovered.some(r=>wins.has(algaeKey(band.col,r)))){
+      stillCovered.forEach(r=>reveal.push({col:band.col,row:r,reason:'win'}));
+      band=null;
+    }else{
+      reveal.push({col:band.col,row:band.rows[band.revealedCount],reason:'countdown'});
+      const revealedCount=band.revealedCount+1;
+      band=revealedCount<band.rows.length?{...band,revealedCount}:null;
+    }
+  }
+  if(!band&&(spin.mystery||[]).length){
+    const col=spin.mystery[0][0];
+    const rows=[...new Set(spin.mystery.filter(([c])=>c===col).map(([,r])=>r))].sort((a,b)=>a-b);
+    if(rows.some(r=>wins.has(algaeKey(col,r)))){
+      rows.forEach(r=>reveal.push({col,row:r,reason:'win'}));
+    }else{
+      band={col,rows,revealedCount:0};freshBand=true;
+      rows.forEach(r=>seeded.push(algaeKey(col,r)));
+    }
+  }
+  const cover={};
+  if(band){
+    band.rows.slice(band.revealedCount).forEach((r,i)=>{
+      const key=algaeKey(band.col,r);
+      cover[key]={col:band.col,row:r,remaining:i+1};
+      if(!freshBand)tick.push(key);
+    });
+  }
+  const presentation={spinId:spin.id,cover,tick,seeded,reveal};
+  store.patch({algaeBand:band,algaePresentation:presentation});
+  return presentation;
 }
 function buildCellElement(c,r,sym,algaeMap,mystery){
   const d=document.createElement('div');d.className='symbol';d.dataset.cell=`${c}-${r}`;d.dataset.symbol=sym;d.innerHTML=symbolMarkup(currentGame,sym);

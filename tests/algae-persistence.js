@@ -1,7 +1,19 @@
-// Verifies the algae countdown fix: an algae cell must persist at its fixed board
-// position across consecutive spins, decrementing by exactly 1 each spin, until it
-// either reaches 0 (reveal) or becomes part of a win (early reveal) -- not vanish
-// silently because the freshly-randomized symbol underneath happened to change (the bug).
+// Verifies the algae mechanic precisely as specified by the product owner: an algae
+// band is a single contiguous vertical run of cells in one reel column (2-4 rows,
+// however many createGrid()'s mystery math produced this spin). It must NOT behave as
+// independent per-cell countdowns (the earlier, wrong implementation) -- it must erode
+// exactly ONE row per spin, always from the TOP of the band downward, until every row
+// in the band has been revealed. E.g. a 4-row band covering rows 0-3 shows all 4 rows
+// covered the spin it appears, then row 0 clears, then row 1, then row 2, then row 3
+// (band gone) -- never a random row, never more than one row per spin.
+//
+// This uses a fully deterministic 4-seed sequence (found via
+// scratchpad/find-algae-sequence.js against the exact math extracted from this file)
+// rather than real randomness for the follow-up spins, so the entire multi-step
+// erosion is verified end to end on every run instead of only "until a real-RNG win
+// happens to interrupt it" (a win landing on a still-covered row is a real, documented
+// exception -- forceCompleteSpin-style early full reveal -- but it must not be the
+// only thing this test happens to exercise).
 const { chromium } = require('playwright');
 const path = require('path');
 
@@ -10,6 +22,13 @@ async function waitSpinIdle(page, timeout = 8000) {
     const btn = document.querySelector('#spinButton');
     return btn && !btn.classList.contains('busy');
   }, { timeout });
+}
+
+async function seededSpin(page, seed) {
+  await page.evaluate((s) => window.__novaTestHooks.setSeed(s), seed);
+  await page.click('#spinButton', { force: true });
+  await waitSpinIdle(page);
+  await page.evaluate(() => window.__novaTestHooks.clearSeed());
 }
 
 (async () => {
@@ -25,60 +44,71 @@ async function waitSpinIdle(page, timeout = 8000) {
   await page.click('[data-play="shark-abyss"]');
   await page.waitForTimeout(150);
 
-  // Seed 12 is known (scratchpad/find_seeds.js) to produce a mystery reveal (a fresh
-  // algae cell) on the very first spin.
-  await page.evaluate((s) => window.__novaTestHooks.setSeed(s), 12);
-  await page.click('#spinButton', { force: true });
-  await waitSpinIdle(page);
-  await page.evaluate(() => window.__novaTestHooks.clearSeed());
-
-  const readAlgae = () => page.evaluate(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem('nova-casino-state-v2'));
-      return s.algaeStates || {};
-    } catch { return {}; }
+  const readBand = () => page.evaluate(() => {
+    try { return JSON.parse(localStorage.getItem('nova-casino-state-v2')).algaeBand || null; } catch { return null; }
   });
+  const readCoveredRows = (col) => page.evaluate((c) =>
+    [...document.querySelectorAll('.symbol.algae')]
+      .map((el) => el.dataset.cell)
+      .filter((key) => key.startsWith(`${c}-`))
+      .map((key) => Number(key.split('-')[1]))
+      .sort((a, b) => a - b)
+  , col);
+  // row -> displayed countdown number (data-remaining), so the badge itself is
+  // checked, not just which cells are covered -- catches a real bug found by eye
+  // during manual verification, where the topmost (soonest-to-reveal) row showed
+  // the HIGHEST number instead of the lowest.
+  const readRemainingByRow = (col) => page.evaluate((c) => {
+    const out = {};
+    document.querySelectorAll('.symbol.algae').forEach((el) => {
+      if (el.dataset.cell.startsWith(`${c}-`)) out[el.dataset.cell.split('-')[1]] = Number(el.dataset.remaining);
+    });
+    return out;
+  }, col);
 
-  let algae = await readAlgae();
-  let keys = Object.keys(algae);
-  results.push(['seed 12 seeded exactly one tracked algae cell', keys.length === 1]);
-  if (keys.length !== 1) {
-    console.log('unexpected algae state after seeding:', JSON.stringify(algae));
+  // Seed 24: fresh 4-row band, column 1, rows 0-3, zero winning cells.
+  await seededSpin(page, 24);
+  let band = await readBand();
+  results.push(['seed 24 seeded exactly one active band', !!band]);
+  if (!band) {
+    console.log('no algae band after seeding — aborting');
     await browser.close();
     console.log('\n=== ALGAE PERSISTENCE TEST ===');
     results.forEach(([n, p]) => console.log((p ? 'PASS' : 'FAIL') + '  ' + n));
     process.exit(1);
   }
-  const trackedKey = keys[0];
-  let remaining = algae[trackedKey].remaining;
-  const startRemaining = remaining;
-  console.log(`tracking algae at ${trackedKey}, starting remaining=${startRemaining}`);
+  const col = band.col;
+  results.push(['band spans exactly rows 0-3 (full 4-row column)', JSON.stringify(band.rows) === '[0,1,2,3]']);
+  results.push(['band starts with revealedCount=0 (all 4 rows covered on the seeding spin)', band.revealedCount === 0]);
+  let covered = await readCoveredRows(col);
+  results.push(['all 4 rows visibly covered right after seeding: "4 von 4"', JSON.stringify(covered) === '[0,1,2,3]']);
+  let remainingByRow = await readRemainingByRow(col);
+  results.push(['countdown badges count UP from the top (row0=1, row1=2, row2=3, row3=4) -- the topmost row reveals soonest', JSON.stringify(remainingByRow) === JSON.stringify({ '0': 1, '1': 2, '2': 3, '3': 4 })]);
 
-  // Spin repeatedly with REAL randomness (not seeded) -- the whole point is that the
-  // underlying grid symbol at that position will almost certainly change each time, and
-  // the algae must survive that regardless, ticking down by exactly 1 per spin, until it
-  // either disappears (revealed) or a win forces it to reveal early.
-  let ticks = 0, revealedNaturally = false, revealedByWin = false, brokenSequence = false;
-  for (let i = 0; i < startRemaining + 3 && !revealedNaturally && !revealedByWin; i++) {
-    await page.click('#spinButton', { force: true });
-    await waitSpinIdle(page);
-    algae = await readAlgae();
-    if (!(trackedKey in algae)) {
-      // Either fully counted down and revealed, or absorbed into a win early -- both are
-      // valid end states; distinguish via the toast/animation isn't reliable here, so
-      // just confirm it disappeared at a sane point (not on spin 1, i.e. not the old bug).
-      revealedNaturally = true;
-      break;
-    }
-    const newRemaining = algae[trackedKey].remaining;
-    ticks++;
-    if (newRemaining !== remaining - 1) { brokenSequence = true; console.log(`  tick ${ticks}: remaining ${remaining} -> ${newRemaining} (expected ${remaining - 1})`); }
-    remaining = newRemaining;
+  // Deterministic follow-up seeds (scratchpad/find-algae-sequence.js): none of these
+  // spins produce a win on the then-still-covered rows, so the erosion proceeds
+  // exactly one row at a time with no early-reveal exception firing.
+  const FOLLOWUP_SEEDS = [1, 1, 1];
+  const expectedCoveredAfterStep = [[1, 2, 3], [2, 3], [3]];
+  const expectedRemainingAfterStep = [{ '1': 1, '2': 2, '3': 3 }, { '2': 1, '3': 2 }, { '3': 1 }];
+
+  for (let i = 0; i < FOLLOWUP_SEEDS.length; i++) {
+    await seededSpin(page, FOLLOWUP_SEEDS[i]);
+    band = await readBand();
+    covered = await readCoveredRows(col);
+    remainingByRow = await readRemainingByRow(col);
+    results.push([`step ${i + 1}: revealedCount is ${i + 1} (advances by exactly 1)`, band?.revealedCount === i + 1]);
+    results.push([`step ${i + 1}: covered rows are exactly [${expectedCoveredAfterStep[i]}] -- row ${i} cleared from the TOP, nothing else changed`, JSON.stringify(covered) === JSON.stringify(expectedCoveredAfterStep[i])]);
+    results.push([`step ${i + 1}: countdown badges are ${JSON.stringify(expectedRemainingAfterStep[i])} (each remaining row's own countdown, not the old inverted values)`, JSON.stringify(remainingByRow) === JSON.stringify(expectedRemainingAfterStep[i])]);
   }
 
-  results.push(['algae ticked down by exactly 1 on every intermediate spin', !brokenSequence]);
-  results.push(['algae survived at least one full extra spin before disappearing (not the old immediate-vanish bug)', ticks >= 1 || revealedNaturally === false]);
-  results.push(['algae eventually disappeared (revealed) rather than living forever', revealedNaturally]);
+  // Final spin: the last remaining row (3) clears and the band is gone entirely.
+  await seededSpin(page, 1);
+  band = await readBand();
+  covered = await readCoveredRows(col);
+  results.push(['band is null after the 4th total spin (all rows revealed)', band === null]);
+  results.push(['no cells remain visually covered in that column', covered.length === 0]);
+
   results.push(['zero console/page errors', consoleErrors.length === 0]);
   if (consoleErrors.length) consoleErrors.forEach((e) => console.log('  error:', e));
 
