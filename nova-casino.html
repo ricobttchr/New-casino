@@ -221,8 +221,7 @@ button:focus-visible,input:focus-visible,.game-card:focus-visible{outline:2px so
 .symbol.algae[data-remaining="2"] .a3,.symbol.algae[data-remaining="1"] .a3,.symbol.algae[data-remaining="0"] .a3{opacity:0;transform:translateX(12px) rotate(32deg) scale(.72)}
 .symbol.algae[data-remaining="1"] .a2,.symbol.algae[data-remaining="0"] .a2{opacity:0;transform:translateX(-5px) rotate(9deg) scale(.72)}
 .symbol.algae[data-remaining="0"] .a1{opacity:0;transform:translateX(-19px) rotate(-30deg) scale(.68)}
-.algae-count{position:absolute;z-index:5;right:5px;top:5px;min-width:21px;height:21px;padding:0 5px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(180deg,rgba(7,28,23,.94),rgba(5,17,16,.96));border:1px solid rgba(146,255,168,.46);box-shadow:0 4px 12px rgba(0,0,0,.28),inset 0 1px rgba(216,255,222,.12);font:900 10px/1 "Space Grotesk",Inter,sans-serif;color:#c7ffd0;text-shadow:0 1px 4px #0b351c;letter-spacing:-.03em}
-.symbol.algae-tick{animation:algaeTick .25s ease-out}.symbol.algae-tick .algae-count{animation:countBadge .28s ease-out}@keyframes algaeTick{45%{transform:scale(.975);filter:brightness(1.18)}}@keyframes countBadge{45%{transform:scale(1.22);box-shadow:0 0 0 4px rgba(112,239,128,.11),0 4px 12px rgba(0,0,0,.3)}}
+.symbol.algae-tick{animation:algaeTick .25s ease-out}@keyframes algaeTick{45%{transform:scale(.975);filter:brightness(1.18)}}
 .symbol.algae-seed .algae-frond{animation:algaeGrow .38s cubic-bezier(.18,.8,.2,1) both}@keyframes algaeGrow{0%{opacity:0;filter:blur(2px)}100%{opacity:1;filter:none}}
 .symbol.algae-erode:before{z-index:4;inset:0;border:0;border-radius:0;background:radial-gradient(circle at 48% 56%,transparent 0 10%,rgba(118,236,128,.15) 11% 28%,transparent 29%),repeating-radial-gradient(circle at 40% 50%,transparent 0 5px,rgba(199,255,187,.2) 6px 8px,transparent 9px 14px);animation:algaeErode .42s ease-out both;mix-blend-mode:screen}@keyframes algaeErode{0%{opacity:.35;transform:scale(.55)}55%{opacity:1}100%{opacity:0;transform:scale(1.55)}}
 
@@ -236,7 +235,7 @@ button:focus-visible,input:focus-visible,.game-card:focus-visible{outline:2px so
 .spin-button:before{display:none!important}.spin-button:not(.busy):not(:disabled){animation:spinBreathe 3.8s ease-in-out infinite}@keyframes spinBreathe{0%,100%{transform:translateZ(0) scale(1);box-shadow:0 10px 30px rgba(110,72,255,.30),inset 0 2px 2px rgba(255,255,255,.34),inset 0 -8px 16px rgba(49,17,116,.3)}50%{transform:translateZ(0) scale(1.008);box-shadow:0 11px 33px rgba(110,72,255,.36),inset 0 2px 2px rgba(255,255,255,.36),inset 0 -8px 16px rgba(49,17,116,.28)}}
 .round-control.is-holding{transform:scale(.96);filter:brightness(1.16)}
 
-@media (prefers-reduced-motion:reduce){.spin-button:not(.busy):not(:disabled),.reel-frame.win-shake,#winAmount.milestone-pop,.symbol.algae-tick,.symbol.algae-tick .algae-count,.symbol.algae-seed .algae-frond,.symbol.algae-erode:before,.symbol.winner,.symbol.winner .nova-symbol-svg,.payline-flash.active{animation:none!important}.payline-layer.active polyline{animation:none!important;opacity:1;stroke-dashoffset:0}.symbol.algae .algae-frond{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.spin-button:not(.busy):not(:disabled),.reel-frame.win-shake,#winAmount.milestone-pop,.symbol.algae-tick,.symbol.algae-seed .algae-frond,.symbol.algae-erode:before,.symbol.winner,.symbol.winner .nova-symbol-svg,.payline-flash.active{animation:none!important}.payline-layer.active polyline{animation:none!important;opacity:1;stroke-dashoffset:0}.symbol.algae .algae-frond{transition:none!important}}
 
 </style>
   <title>NOVA Casino · Pro Polish 6.4</title>
@@ -784,7 +783,7 @@ const riskSpinBlocked=()=>hasPendingGamble();
 const localCard=(rng=cryptoFloat)=>{const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'],suits=[['♥','red'],['♦','red'],['♠','black'],['♣','black']];const n=Math.floor(rng()*52),[suit,color]=suits[Math.floor(n/13)],rank=ranks[n%13];return {rank,suit,color}};
 
 const algaeKey=(c,r)=>`${c}-${r}`;
-function algaeMarkup(state){const remaining=Math.max(0,Number(state?.remaining??0));return `<span class="algae-frond a1"></span><span class="algae-frond a2"></span><span class="algae-frond a3"></span><span class="algae-frond a4"></span><span class="algae-frond a5"></span><b class="algae-count" aria-label="${remaining} Spins bis Aufdeckung">${remaining}</b>`}
+function algaeMarkup(){return `<span class="algae-frond a1"></span><span class="algae-frond a2"></span><span class="algae-frond a3"></span><span class="algae-frond a4"></span><span class="algae-frond a5"></span>`}
 function winningCellKeys(spin){return new Set((spin.wins||[]).flatMap(w=>w.cells||[]).map(([c,r])=>algaeKey(c,r)))}
 // Algae is a single contiguous vertical band in one reel column (createGrid() only
 // ever seeds one such run per triggering spin) that erodes exactly one row per spin,
@@ -838,8 +837,8 @@ function prepareAlgaePresentation(spin){
 function buildCellElement(c,r,sym,algaeMap,mystery){
   const d=document.createElement('div');d.className='symbol';d.dataset.cell=`${c}-${r}`;d.dataset.symbol=sym;d.innerHTML=symbolMarkup(currentGame,sym);
   const state=algaeMap[algaeKey(c,r)];
-  if(state){d.classList.add('algae');d.dataset.remaining=String(Math.max(0,Number(state.remaining||0)));d.innerHTML=algaeMarkup(state)}
-  else if(mystery.some(([mc,mr])=>mc===c&&mr===r)){d.classList.add('algae');d.dataset.remaining='5';d.innerHTML=algaeMarkup({remaining:5})}
+  if(state){d.classList.add('algae');d.dataset.remaining=String(Math.max(0,Number(state.remaining||0)));d.innerHTML=algaeMarkup()}
+  else if(mystery.some(([mc,mr])=>mc===c&&mr===r)){d.classList.add('algae');d.dataset.remaining='5';d.innerHTML=algaeMarkup()}
   return d;
 }
 function renderGrid(grid,{mystery=[],algae=null}={}){
